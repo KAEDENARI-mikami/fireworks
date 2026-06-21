@@ -88,10 +88,9 @@ body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monos
 .speedbtn:hover{background:rgba(60,240,255,.12);}
 .speedbtn.on{color:var(--void); background:var(--cyan); box-shadow:0 0 16px rgba(60,240,255,.55);}
 /* 拠点 */
-#home,#deploy{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
+#home{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
 body.state-home #home{display:flex;}
-body.state-deploy #deploy{display:flex;}
-body.state-home .title, body.state-home .meta, body.state-home .hint, body.state-deploy .title, body.state-deploy .meta, body.state-deploy .hint{display:none;}
+body.state-home .title, body.state-home .meta, body.state-home .hint{display:none;}
 .home-top{display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center; font-family:"DotGothic16",monospace; font-size:.78rem; color:var(--ink);}
 .home-top .hcur b{color:var(--gold);}
 #hbank .hb{display:inline-flex; align-items:center; gap:.25rem; margin-right:.6rem;}
@@ -113,38 +112,10 @@ body.state-home .title, body.state-home .meta, body.state-home .hint, body.state
 .pc-rt{display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex:none;}
 .pc-val{font-size:1.05rem; font-weight:bold;}
 .pc-cost{font-size:.72rem; color:var(--dim);}
-.home-btns{display:flex; gap:1rem; margin-top:.7rem; align-items:center; flex-wrap:wrap; justify-content:center;}
-.deploy{pointer-events:auto; cursor:pointer; font-family:"Reggae One",sans-serif; font-size:1.15rem; letter-spacing:.06em; padding:.8rem 2.2rem; color:var(--void); background:linear-gradient(135deg,var(--cyan),var(--gold)); border:none; border-radius:6px; box-shadow:0 0 28px rgba(60,240,255,.4); transition:transform .2s, box-shadow .2s;}
-.deploy:hover{transform:translateY(-1px) scale(1.03); box-shadow:0 0 44px rgba(255,214,107,.55);}
-.home-x{pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--dim); background:transparent; border:1px solid rgba(234,240,255,.15); border-radius:3px; padding:.55rem .9rem;}
-.home-x:hover{color:var(--ink);}
-/* 出撃準備 */
-.dwrap{width:min(820px,94vw); display:flex; flex-direction:column; gap:1rem;}
-.dsec{border:1px solid rgba(234,240,255,.12); border-radius:10px; background:rgba(13,18,38,.6); padding:1rem 1.1rem;}
-.dsec h3{font-family:"DotGothic16",monospace; font-size:.82rem; letter-spacing:.12em; color:var(--ink); margin:0 0 .7rem;}
-.dsec h3 small{color:var(--dim); font-size:.6rem; letter-spacing:.05em; margin-left:.5rem;}
-.densval{display:flex; gap:1.4rem; flex-wrap:wrap; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--dim); margin-bottom:.7rem;}
-.densval b{color:var(--cyan); font-size:1.05rem; margin-left:.3rem;}
-input.drange{-webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:3px; background:linear-gradient(90deg,var(--green),var(--gold),var(--red)); outline:none; pointer-events:auto; cursor:pointer;}
-input.drange::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; border:2px solid var(--cyan); box-shadow:0 0 12px rgba(60,240,255,.7); cursor:pointer;}
-.dbars{display:flex; gap:.4rem; margin-top:.8rem;}
-.dbar{flex:1; display:flex; flex-direction:column; align-items:center; gap:.25rem; font-family:"DotGothic16",monospace; font-size:.62rem;}
-.dbar .track{width:100%; height:46px; display:flex; align-items:flex-end; background:rgba(234,240,255,.05); border-radius:3px; overflow:hidden;}
-.dbar .fill{width:100%; border-radius:3px 3px 0 0; transition:height .15s;}
-.bossgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:.6rem;}
-.bcard{text-align:left; pointer-events:auto; cursor:pointer; padding:.85rem .9rem; border:2px solid rgba(234,240,255,.14); border-radius:8px; background:rgba(13,18,38,.72); font-family:"DotGothic16",monospace; color:var(--ink); display:flex; flex-direction:column; gap:.45rem; transition:transform .12s, box-shadow .2s;}
-.bcard:hover{transform:translateY(-1px);}
-.bcard.on{background:rgba(234,240,255,.07);}
-.bcard .bname{font-size:.95rem; font-weight:bold;}
-.bcard .bdesc{font-size:.64rem; line-height:1.45; color:var(--dim);}
-.bcard .bstat{display:flex; flex-direction:column; gap:3px; font-size:.62rem; color:var(--dim); margin-top:.15rem; border-top:1px solid rgba(234,240,255,.08); padding-top:.5rem;}
-.bcard .bstat .row{display:flex; justify-content:space-between; gap:.5rem;}
-.bcard .bstat .row b{color:#fff; font-weight:bold;}
-@media(max-width:640px){ .bossgrid{grid-template-columns:1fr;} }
 /* モードバー（下部） */
 #modebar{display:none; position:fixed; left:0; right:0; bottom:0; z-index:11; height:58px;
   background:linear-gradient(0deg, rgba(5,6,14,.97), rgba(5,6,14,.72)); border-top:1px solid rgba(234,240,255,.12);}
-body.state-home #modebar, body.state-deploy #modebar{display:flex;}
+body.state-home #modebar{display:flex;}
 .mtab{flex:1; pointer-events:auto; cursor:pointer; background:transparent; border:none; border-right:1px solid rgba(234,240,255,.07);
   color:var(--dim); font-family:"DotGothic16",monospace; font-size:.78rem; letter-spacing:.1em; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; transition:color .2s, background .2s;}
 .mtab:last-child{border-right:none;}
@@ -254,30 +225,6 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div class="home-sub">恒常強化 — 持ち帰った資源で永続強化（次の防衛に反映）</div>
   <div id="cattabs"></div>
   <div id="permlist"></div>
-</div>
-<div id="deploy">
-  <div class="home-title">出撃準備 ／ DEPLOY</div>
-  <div class="home-sub">資源フィールドの密度と、最後に出現するボスを選択 — 密度↑で敵が強化される代わり報酬も増加</div>
-  <div class="dwrap">
-    <div class="dsec">
-      <h3>フィールド密度<small>総密度→敵Lv ／ 採取・報酬量</small></h3>
-      <div class="densval">
-        <span>密度<b id="dpct">100%</b></span>
-        <span>総密度<b id="dtotal">265</b></span>
-        <span>敵強度<b id="delv">×1.88</b></span>
-        <span>報酬<b id="drew">×1.00</b></span>
-      </div>
-      <input type="range" class="drange" id="dslider" min="50" max="300" step="5" value="100">
-      <div class="dbars" id="dbars"></div>
-    </div>
-    <div class="dsec">
-      <h3>ボス選択<small>規定時間を耐え抜くと最後に出現</small></h3>
-      <div class="bossgrid" id="bossgrid"></div>
-    </div>
-    <div class="home-btns">
-      <button class="deploy" id="deploy-go" type="button">出撃</button>
-    </div>
-  </div>
 </div>
 <nav id="modebar">
   <button class="mtab on" id="mode-base" type="button">強化</button>
@@ -556,7 +503,6 @@ const BOSSES = [
     baseHp:20000, baseAtk:540, orbSpd:0.18,
     desc:'3基のオービット（赤レーザー/青ダメ半減/緑回復）を従える超重量級。HP半減で第二形態＝常時増援＋大技プラズマ球。' },
 ];
-let selectedBoss = 0;
 function spawnBoss(){
   game.bosses=[];
   if(game.bossPlan==='all'){
@@ -1138,76 +1084,6 @@ function showMap(){ game.state='map'; document.body.classList.remove('state-titl
     if(mv){ devMode=true; setAvatar(avatarLL[0],avatarLL[1]); e.preventDefault(); } }); }
 }
 function showHome(){ game.state='home'; document.body.classList.remove('state-title','state-playing','state-result','state-deploy','state-map'); document.body.classList.add('state-home'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-base'); buildHome(); }
-function showDeploy(){ game.state='deploy'; document.body.classList.remove('state-title','state-playing','state-result','state-home'); document.body.classList.add('state-deploy'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-deploy'); buildDeploy(); }
-function updateDeployReadout(){
-  applyField();
-  const eMul = 1 + TOTAL/300;
-  $('dpct').textContent = Math.round(densityMul*100)+'%';
-  $('dtotal').textContent = TOTAL;
-  $('delv').textContent = '×'+eMul.toFixed(2);
-  $('drew').textContent = '×'+densityMul.toFixed(2);
-  const bars=$('dbars'); bars.textContent='';
-  const maxv=Math.max(...Object.values(DENS),1);
-  ['red','blue','green','yellow','purple'].forEach(c=>{
-    const col=document.createElement('div'); col.className='dbar';
-    const tr=document.createElement('div'); tr.className='track';
-    const fl=document.createElement('div'); fl.className='fill'; fl.style.background=COLORHEX[c]; fl.style.height=Math.round(DENS[c]/maxv*100)+'%';
-    tr.appendChild(fl);
-    const lb=document.createElement('div'); lb.textContent=DENS[c]; lb.style.color=COLORHEX[c];
-    col.appendChild(tr); col.appendChild(lb); bars.appendChild(col);
-  });
-}
-function buildDeploy(){
-  applyField();
-  $('dslider').value = Math.round(densityMul*100);
-  updateDeployReadout();
-  if(selectedBoss==='all' && densityMul<3) selectedBoss=0;
-  const bg=$('bossgrid'); bg.textContent='';
-  const eMul = 1 + TOTAL/300;
-  const fmt = n => n>=10000 ? (n/1000).toFixed(1)+'k' : Math.round(n);
-  const mkRow = (label,val)=>{ const r=document.createElement('div'); r.className='row'; const a=document.createElement('span'); a.textContent=label; const b=document.createElement('b'); b.textContent=val; r.appendChild(a); r.appendChild(b); return r; };
-  BOSSES.forEach((B,bi)=>{
-    const card=document.createElement('button'); card.type='button'; card.className='bcard'+(bi===selectedBoss?' on':'');
-    const hex='#'+B.col.toString(16).padStart(6,'0'); card.style.borderColor = bi===selectedBoss?hex:'rgba(234,240,255,.14)';
-    const nm=document.createElement('div'); nm.className='bname'; nm.style.color=hex; nm.textContent=B.name;
-    const ds=document.createElement('div'); ds.className='bdesc'; ds.textContent=B.desc;
-    const hp=B.baseHp*eMul, atk=B.baseAtk*eMul;
-    const st=document.createElement('div'); st.className='bstat';
-    st.appendChild(mkRow('HP', fmt(hp)));
-    st.appendChild(mkRow('攻撃力', fmt(atk)));
-    if(B.key==='inter'){
-      st.appendChild(mkRow('バリア', B.barrier+' (破壊で増援)'));
-      st.appendChild(mkRow('通常', 'ショットガン5発 (各'+fmt(atk*0.2)+')'));
-      st.appendChild(mkRow('突進', '350% ＋炎上3s'));
-      st.appendChild(mkRow('火の玉', 'HP50%以下 10〜19発'));
-    } else if(B.key==='fort'){
-      st.appendChild(mkRow('オービット', '赤/青/緑 3基 (各HP2000)'));
-      st.appendChild(mkRow('通常', '砲弾100% / ミサイル30%×10'));
-      st.appendChild(mkRow('大技', 'プラズマ球 (HP='+fmt(atk*10)+')'));
-      st.appendChild(mkRow('第二形態', 'HP50%で増援常時＋大技'));
-    } else {
-      const sShoot=Math.max(1,Math.round(10*B.sCount)), sSpiral=Math.max(1,Math.round(30*B.sCount));
-      st.appendChild(mkRow('通常射撃', fmt(atk*B.shootMul)+' / '+B.shootInt+'s'));
-      st.appendChild(mkRow('レーザー', fmt(atk*B.laserDmg*25)+'/s ×'+B.laserDur+'s'));
-      st.appendChild(mkRow('旋回速度', B.orbSpd.toFixed(2)+' rad/s'));
-      st.appendChild(mkRow('増援', '掃'+sShoot+'＋螺'+sSpiral+' ×'+B.summon.length+'波'));
-    }
-    card.appendChild(nm); card.appendChild(ds); card.appendChild(st);
-    card.addEventListener('click',()=>{ selectedBoss=bi; buildDeploy(); });
-    bg.appendChild(card);
-  });
-  // ALL（総攻撃）— 密度300%で解禁
-  const unlocked = densityMul>=3;
-  const allCard=document.createElement('button'); allCard.type='button'; allCard.className='bcard'+(selectedBoss==='all'?' on':'');
-  allCard.style.gridColumn='1 / -1';
-  allCard.style.borderColor = selectedBoss==='all'?'#FFD66B':(unlocked?'rgba(255,214,107,.55)':'rgba(234,240,255,.12)');
-  allCard.style.opacity = unlocked?'1':'0.5';
-  const an=document.createElement('div'); an.className='bname'; an.style.color='#FFD66B'; an.textContent='ALL ／ 総攻撃'+(unlocked?'':'（密度300%で解禁）');
-  const ad=document.createElement('div'); ad.className='bdesc'; ad.textContent='猛攻のあと、重戦車・掃討機・機動要塞が同時襲来する最高難度フィナーレ。';
-  allCard.appendChild(an); allCard.appendChild(ad);
-  if(unlocked){ allCard.addEventListener('click',()=>{ selectedBoss='all'; buildDeploy(); }); } else { allCard.disabled=true; }
-  bg.appendChild(allCard);
-}
 
 /* ===== ラン進行 ===== */
 function runStep(dt){
@@ -1357,8 +1233,6 @@ $('retry').addEventListener('click', ()=>startGame());
 $('tohome').addEventListener('click', showHome);
 $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
-$('deploy-go').addEventListener('click', ()=>startGame());
-$('dslider').addEventListener('input', e=>{ densityMul=(+e.target.value)/100; buildDeploy(); });
 $('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
 $('speedbtn').addEventListener('click', ()=>{ timeScale = timeScale===1?5:1; $('speedbtn').textContent = timeScale===1?'▶▶ 5×':'■ 1×'; $('speedbtn').classList.toggle('on', timeScale!==1); });
 $('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); });
