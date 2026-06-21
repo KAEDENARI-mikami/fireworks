@@ -155,9 +155,11 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 .mapcard{background:rgba(5,6,14,.88); border:1px solid rgba(60,240,255,.45); border-radius:10px; padding:.7rem .9rem; box-shadow:0 0 22px rgba(60,240,255,.18);}
 .mapcard .mc-top{display:flex; justify-content:space-between; align-items:baseline; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--ink); gap:.5rem;}
 .mapcard .mc-top b{color:var(--cyan); font-size:.92rem;}
-.mapbars{display:flex; gap:.3rem; margin:.5rem 0 .1rem; height:36px;}
-.mapbars .mb{flex:1; display:flex; flex-direction:column-reverse; background:rgba(234,240,255,.05); border-radius:3px; overflow:hidden;}
-.mapbars .mb i{display:block; width:100%;}
+.mapbars{display:flex; gap:.4rem; margin:.55rem 0 .15rem; align-items:flex-end;}
+.mapbars .mb{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;}
+.mapbars .mb-num{font-family:"DotGothic16",monospace; font-size:.84rem; font-weight:bold; line-height:1;}
+.mapbars .mb-track{width:100%; height:50px; display:flex; flex-direction:column-reverse; background:rgba(234,240,255,.06); border-radius:3px; overflow:hidden;}
+.mapbars .mb-track i{display:block; width:100%; transition:height .25s;}
 .mapgo{width:100%; cursor:pointer; font-family:"Reggae One",sans-serif; font-size:1.05rem; letter-spacing:.05em; padding:.6rem; color:var(--void); background:linear-gradient(135deg,var(--cyan),var(--gold)); border:none; border-radius:7px; box-shadow:0 0 20px rgba(60,240,255,.35); margin-top:.45rem;}
 .mapgo:disabled{opacity:.4; cursor:default;}
 .maphint{font-size:.58rem; color:var(--dim); text-align:center; margin-top:.35rem;}
@@ -285,12 +287,22 @@ const GeoCell = (() => {
 const TOD={MORNING:0,DAY:1,DUSK:2,NIGHT:3};
 const TOD_MUL={ red:[0.90,1.00,1.25,1.05], blue:[0.95,1.15,1.00,0.95], green:[1.30,1.00,0.85,0.80], yellow:[0.85,0.70,1.00,1.40], purple:[0.85,0.70,1.00,1.40] };
 function todBucketAt(utcMs,lng){ const localH=(((utcMs/3600000)+(lng/15))%24+24)%24; if(localH>=5&&localH<10)return TOD.MORNING; if(localH>=10&&localH<16)return TOD.DAY; if(localH>=16&&localH<19)return TOD.DUSK; return TOD.NIGHT; }
-const JACKPOT_RATE=0.03;
-function baseField(cellId){ const rng=makeRNG(hash32('FIELD|'+cellId)); const jackpot=rng.next()<JACKPOT_RATE; const base={};
-  if(jackpot){ for(const c of COLORS) base[c]=Math.round(70+rng.next()*25); }
-  else { const richCount=rng.next()<0.5?1:2; const order=COLORS.slice(); for(let i=order.length-1;i>0;i--){ const j=Math.floor(rng.next()*(i+1)); const t=order[i]; order[i]=order[j]; order[j]=t; } const rich=new Set(order.slice(0,richCount));
-    for(const c of COLORS) base[c]= rich.has(c)?Math.round(60+rng.next()*30):Math.round(5+rng.next()*25); }
-  return { base, jackpot }; }
+/* 滑らかな空間ノイズ（セル軸 q,r ベース・決定論）：隣接セルは近い値＝歩くと濃度が連続的に変化 */
+const COLOR_OFF={red:11,blue:23,green:37,yellow:53,purple:71};
+const FIELD_WL=9;   // ノイズ波長＝約9セル(≈700m)。この範囲でゆるやかに変化
+function _latv(ix,iy,off){ return (hash32('N',off,ix,iy)%100000)/100000; }   // 格子点値 0..1
+function vnoise(x,y,off){ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi, u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+  const a=_latv(xi,yi,off),b=_latv(xi+1,yi,off),c=_latv(xi,yi+1,off),d=_latv(xi+1,yi+1,off);
+  return (a+(b-a)*u)*(1-v)+(c+(d-c)*u)*v; }
+function fieldNoise(q,r,off){ let n=0,amp=1,fr=1/FIELD_WL,tot=0; for(let o=0;o<3;o++){ n+=amp*vnoise(q*fr,r*fr,off+o*97); tot+=amp; amp*=0.5; fr*=2; } return n/tot; }   // 0..1（多オクターブ）
+const JP_THRESH=0.74;   // 豊穣度ノイズの上位＝スイートスポット（数%）
+function baseField(cellId){ const ax=GeoCell.cellToAxial(cellId), q=ax[0], r=ax[1], base={};
+  const jp=fieldNoise(q,r,999);                              // 専用の滑らかな"豊穣度"場
+  const jackpot = jp>JP_THRESH;                              // 滑らかな高密度域（自然に稀）
+  for(const c of COLORS){ let v=6 + 94*Math.pow(fieldNoise(q,r,COLOR_OFF[c]),1.5);   // 6..100・powでコントラスト
+    if(jackpot) v=Math.max(v, 60 + 34*((jp-JP_THRESH)/(1-JP_THRESH)));               // スイートスポットは全色底上げ
+    base[c]=Math.round(Math.min(100,v)); }
+  return { base, jackpot }; }   // 隣接セルは近い値＝歩くと濃度がなめらかに変化
 function density(cellId,tod){ const {base}=baseField(cellId); const out={}; for(const c of COLORS){ const m=TOD_MUL[c][tod]||1; out[c]=Math.max(0,Math.min(100,Math.round(base[c]*m))); } return out; }
 function isSweetSpot(cellId){ return baseField(cellId).jackpot; }
 function jackpotScore(cellId){ const {base}=baseField(cellId); return COLORS.reduce((a,c)=>a+base[c],0); }
@@ -1043,11 +1055,9 @@ function drawCells(){
   if(LMAP && avatarLL){
     cellPolys.forEach(p=>LMAP.removeLayer(p)); cellPolys=[];
     const tod=todBucketAt(Date.now(), avatarLL[1]);
-    for(const id of GeoCell.gridDisk(selCell,5)){
-      const d=density(id,tod), dom=COLORS.reduce((a,c)=>d[c]>d[a]?c:a,'red'), jk=isSweetSpot(id), cur=(id===selCell);
-      const poly=L.polygon(GeoCell.cellToBoundary(id),{color: jk?'#FFD66B':COLORHEX[dom], weight: cur?3:(jk?2:1), opacity:.9, fillColor:COLORHEX[dom], fillOpacity: cur?0.5:(jk?0.42:0.16)});
-      poly.addTo(LMAP); cellPolys.push(poly);
-    }
+    const d=density(selCell,tod), dom=COLORS.reduce((a,c)=>d[c]>d[a]?c:a,'red'), jk=isSweetSpot(selCell);   // 今いるセルのみ強調
+    const poly=L.polygon(GeoCell.cellToBoundary(selCell),{color: jk?'#FFD66B':COLORHEX[dom], weight:3, opacity:.95, fillColor:COLORHEX[dom], fillOpacity:0.30});
+    poly.addTo(LMAP); cellPolys.push(poly);
   }
   renderCellCard(); }
 function renderCellCard(){
@@ -1055,15 +1065,18 @@ function renderCellCard(){
   const cell=selCell||GeoCell.latLngToCell(VENUE.lat,VENUE.lng), lng=avatarLL?avatarLL[1]:VENUE.lng;
   const f=fieldFromCell(cell, todBucketAt(Date.now(),lng), Date.now());
   const top=document.createElement('div'); top.className='mc-top';
-  const left=document.createElement('span'); left.textContent=(f.jackpot?'★ スイートスポット':'セル')+' '+cell;
+  const left=document.createElement('span'); left.textContent=(f.jackpot?'★ スイートスポット':'現在地')+'　総密度 '+f.TOTAL;
   const right=document.createElement('span'); right.textContent='敵Lv '; const bb=document.createElement('b'); bb.textContent='×'+f.eLvMul.toFixed(2); right.appendChild(bb);
   top.appendChild(left); top.appendChild(right); card.appendChild(top);
   const bars=document.createElement('div'); bars.className='mapbars';
-  for(const c of COLORS){ const col=document.createElement('div'); col.className='mb'; const fill=document.createElement('i'); fill.style.background=COLORHEX[c]; fill.style.height=Math.round(f.DENS[c])+'%'; col.appendChild(fill); bars.appendChild(col); }
+  for(const c of COLORS){ const col=document.createElement('div'); col.className='mb';
+    const num=document.createElement('div'); num.className='mb-num'; num.style.color=COLORHEX[c]; num.textContent=f.DENS[c];
+    const track=document.createElement('div'); track.className='mb-track'; const fl=document.createElement('i'); fl.style.background=COLORHEX[c]; fl.style.height=f.DENS[c]+'%'; track.appendChild(fl);
+    col.appendChild(num); col.appendChild(track); bars.appendChild(col); }
   card.appendChild(bars);
   const go=document.createElement('button'); go.className='mapgo'; go.type='button'; go.textContent='ここに出撃';
   go.addEventListener('click', ()=>deployFromCell(cell)); card.appendChild(go);
-  const hint=document.createElement('div'); hint.className='maphint'; hint.textContent= devMode ? 'DEVモード：地図クリック / 矢印キーで移動' : 'GPS現在地';
+  const hint=document.createElement('div'); hint.className='maphint'; hint.textContent= devMode ? 'DEVモード：地図クリック / 矢印キーで移動（濃度はなめらかに変化）' : 'GPS現在地（歩くと濃度がなめらかに変化）';
   card.appendChild(hint);
 }
 function startGPS(){
