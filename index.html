@@ -137,15 +137,25 @@ body.state-skill #modebar{display:flex;}
 .rslot.on{border-style:solid;color:var(--ink);}
 .rslot .rfill{position:absolute;left:0;bottom:0;height:3px;transition:width .25s;}
 #skcats{width:min(760px,94vw);display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
-#sklist{width:min(760px,94vw);display:flex;flex-direction:column;gap:.4rem;}
-.skcard{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.6rem .8rem;border:2px solid rgba(234,240,255,.14);border-radius:8px;background:rgba(13,18,38,.72);font-family:"DotGothic16",monospace;color:var(--ink);}
-.skcard .skn{font-size:.84rem;}
-.skcard .skd{font-size:.6rem;color:var(--dim);line-height:1.35;margin:.15rem 0;}
-.skcard .skstars{letter-spacing:1px;color:var(--gold);font-size:.7rem;}
-.skcard .skbtns{display:flex;gap:.4rem;flex:none;}
-.skcard button{pointer-events:auto;cursor:pointer;font-family:"DotGothic16",monospace;font-size:.7rem;padding:.4rem .55rem;border-radius:5px;border:1px solid rgba(234,240,255,.2);background:rgba(234,240,255,.05);color:var(--ink);}
-.skcard button.eq{border-color:var(--cyan);color:var(--cyan);}
-.skcard button:disabled{opacity:.4;cursor:default;}
+#sklist{width:min(760px,94vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(328px,1fr));gap:.55rem;align-content:start;}
+.skcard{--ac:#3CF0FF; position:relative; display:flex; flex-direction:column; gap:.28rem; padding:.65rem .8rem .65rem 1.05rem; border-radius:11px; font-family:"DotGothic16",monospace; color:var(--ink); overflow:hidden; transition:transform .12s, box-shadow .2s;
+  background:rgba(13,18,38,.82); background:linear-gradient(157deg, color-mix(in srgb, var(--ac) 10%, rgba(14,19,40,.88)), rgba(8,10,20,.94));
+  border:1px solid rgba(234,240,255,.14); border-color:color-mix(in srgb, var(--ac) 36%, rgba(234,240,255,.12));}
+.skcard::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--ac); box-shadow:0 0 12px var(--ac);}
+.skcard:hover{transform:translateY(-1px); box-shadow:0 7px 22px rgba(0,0,0,.42), 0 0 16px color-mix(in srgb, var(--ac) 32%, transparent);}
+.skcard.locked{opacity:.62;}
+.skcard .skhd{display:flex; align-items:baseline; justify-content:space-between; gap:.5rem;}
+.skcard .skn{font-family:"Reggae One",sans-serif; font-size:.96rem; letter-spacing:.02em; line-height:1.15;}
+.skcard .skbadge{flex:none; font-size:.64rem; color:var(--ac); border:1px solid color-mix(in srgb,var(--ac) 45%, rgba(234,240,255,.25)); border-radius:999px; padding:.06rem .5rem; white-space:nowrap;}
+.skcard .skd{font-size:.64rem; color:var(--dim); line-height:1.42; min-height:1.7em;}
+.skcard .skstars{letter-spacing:2px; color:var(--gold); font-size:.76rem;}
+.skcard .skbtns{display:flex; gap:.4rem; margin-top:.2rem;}
+.skcard .skbtns button{flex:1; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.74rem; padding:.5rem .4rem; border-radius:7px; color:var(--ink); transition:.15s;
+  background:rgba(234,240,255,.06); background:color-mix(in srgb, var(--ac) 16%, rgba(234,240,255,.04));
+  border:1px solid rgba(234,240,255,.2); border-color:color-mix(in srgb, var(--ac) 48%, rgba(234,240,255,.2));}
+.skcard .skbtns button:hover:not(:disabled){background:color-mix(in srgb, var(--ac) 30%, transparent); transform:translateY(-1px);}
+.skcard .skbtns button.eq{border-color:var(--cyan); color:var(--cyan); background:color-mix(in srgb, var(--cyan) 20%, transparent);}
+.skcard .skbtns button:disabled{opacity:.4; cursor:default;}
 .mtab{flex:1; pointer-events:auto; cursor:pointer; background:transparent; border:none; border-right:1px solid rgba(234,240,255,.07);
   color:var(--dim); font-family:"DotGothic16",monospace; font-size:.78rem; letter-spacing:.1em; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; transition:color .2s, background .2s;}
 .mtab:last-child{border-right:none;}
@@ -1314,27 +1324,29 @@ function buildSkills(){ try{
     // ノード一覧（選択色で絞り込み）：空き枠にセット
     const el0=$('sklist'); el0.textContent=''; const freeSlot = meta.research.slots.indexOf(null)>=0;
     for(const n of RESEARCH){ if(n.c!==skillCat) continue; const lv=resLv(n.key), maxed=!!(n.max&&lv>=n.max), inSlot=meta.research.slots.some(s=>s&&s.key===n.key), c=resCost(n);
-      const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=COLORHEX[n.c]; if(maxed)card.style.opacity='.55';
-      const left=document.createElement('div'); const nm=document.createElement('div'); nm.className='skn'; nm.textContent=n.name+' Lv'+lv+(n.max?('/'+n.max):''); left.appendChild(nm);
-      const ds=document.createElement('div'); ds.className='skd'; ds.textContent=n.val(lv)+(maxed?'':(' → '+n.val(lv+1)+' （'+c+'m）')); left.appendChild(ds);
-      const btns=document.createElement('div'); btns.className='skbtns'; const b=document.createElement('button'); b.style.borderColor=COLORHEX[n.c];
-      b.textContent = maxed?'MAX' : inSlot?'研究中' : freeSlot?'セット' : '枠なし';
+      const card=document.createElement('div'); card.className='skcard'+(maxed?' locked':''); card.style.setProperty('--ac', COLORHEX[n.c]);
+      const hd=document.createElement('div'); hd.className='skhd'; const nm=document.createElement('div'); nm.className='skn'; nm.textContent=n.name;
+      const bd=document.createElement('span'); bd.className='skbadge'; bd.textContent='Lv '+lv+(n.max?('/'+n.max):''); hd.appendChild(nm); hd.appendChild(bd);
+      const ds=document.createElement('div'); ds.className='skd'; ds.textContent=n.val(lv)+(maxed?'':(' → '+n.val(lv+1))); card.appendChild(hd); card.appendChild(ds);
+      const btns=document.createElement('div'); btns.className='skbtns'; const b=document.createElement('button');
+      b.textContent = maxed?'MAX' : inSlot?'研究中…' : freeSlot?('セット  '+c+'m') : '枠なし';
       if(inSlot) b.className='eq'; if(maxed||inSlot||!freeSlot) b.disabled=true; b.addEventListener('click',()=>assignResearch(n.key)); btns.appendChild(b);
-      card.appendChild(left); card.appendChild(btns); el0.appendChild(card); }
+      card.appendChild(btns); el0.appendChild(card); }
     return; }
   const sl=$('skslots'); sl.textContent=''; const maxSlot=3+resLv('extraSlot'); while(meta.skillEquip.length<maxSlot) meta.skillEquip.push(null);
   for(let k=0;k<maxSlot;k++){ const id=meta.skillEquip[k]; const d=document.createElement('div'); d.className='skslot'+(id?' on':''); if(id){ const def=SKILL_BY_ID[id]; d.style.borderColor=COLORHEX[def.color]; d.textContent=def.name; } else d.textContent='＋ 空き枠'; d.addEventListener('click',()=>{ if(id){ meta.skillEquip[k]=null; saveMeta(); buildSkills(); } }); sl.appendChild(d); }
   const el=$('sklist'); el.textContent='';
   for(const def of SKILLS){ if(def.color!==skillCat) continue; const o=meta.skillOwned[def.id];
-    const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=o?COLORHEX[def.color]:'rgba(234,240,255,.1)'; if(!o)card.style.opacity='.55';
-    const left=document.createElement('div');
-    const nm=document.createElement('div'); nm.className='skn'; nm.textContent=def.name+(o?(' Lv'+o.level+'/'+def.maxLv):'（未開放）'); left.appendChild(nm);
-    const ds=document.createElement('div'); ds.className='skd'; ds.textContent=def.desc; left.appendChild(ds);
-    if(o){ const st=document.createElement('div'); st.className='skstars'; const pot=Math.max(0,Math.min(def.potMax,o.pot|0)); st.textContent='潜在 '+'★'.repeat(pot)+'☆'.repeat(Math.max(0,def.potMax-pot)); left.appendChild(st); }
+    const card=document.createElement('div'); card.className='skcard'+(o?'':' locked'); card.style.setProperty('--ac', COLORHEX[def.color]);
+    const hd=document.createElement('div'); hd.className='skhd'; const nm=document.createElement('div'); nm.className='skn'; nm.textContent=def.name;
+    const bd=document.createElement('span'); bd.className='skbadge'; bd.textContent=o?('Lv '+o.level+'/'+def.maxLv):'未開放'; hd.appendChild(nm); hd.appendChild(bd);
+    const ds=document.createElement('div'); ds.className='skd'; ds.textContent=def.desc; card.appendChild(hd); card.appendChild(ds);
+    if(o){ const st=document.createElement('div'); st.className='skstars'; const pot=Math.max(0,Math.min(def.potMax,o.pot|0)); st.textContent='潜在 '+'★'.repeat(pot)+'☆'.repeat(Math.max(0,def.potMax-pot)); card.appendChild(st); }
     const btns=document.createElement('div'); btns.className='skbtns';
-    if(o){ const lvb=document.createElement('button'); const c2=skillLevelCost(def,o.level); lvb.textContent=o.level>=def.maxLv?'MAX':('Lv↑ '+c2); lvb.style.borderColor=COLORHEX[def.color]; if(o.level>=def.maxLv||meta.bank[def.color]<c2) lvb.disabled=true; lvb.addEventListener('click',()=>levelUpSkill(def.id)); btns.appendChild(lvb);
+    if(o){ const lvb=document.createElement('button'); const c2=skillLevelCost(def,o.level); lvb.textContent=o.level>=def.maxLv?'MAX':('Lv↑ '+c2); if(o.level>=def.maxLv||meta.bank[def.color]<c2) lvb.disabled=true; lvb.addEventListener('click',()=>levelUpSkill(def.id)); btns.appendChild(lvb);
       const eq=meta.skillEquip.indexOf(def.id)>=0; const eqb=document.createElement('button'); eqb.textContent=eq?'装備中':'装備'; if(eq)eqb.className='eq'; eqb.addEventListener('click',()=>equipSkill(def.id)); btns.appendChild(eqb); }
-    card.appendChild(left); card.appendChild(btns); el.appendChild(card);
+    else { const gb=document.createElement('button'); gb.textContent='🔒 ガチャで開放'; gb.disabled=true; btns.appendChild(gb); }
+    card.appendChild(btns); el.appendChild(card);
   }
 }catch(e){ const el=$('sklist'); if(el) el.textContent='buildSkills ERR: '+(e&&e.message); console.log('buildSkills',e); } }
 
