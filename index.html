@@ -60,6 +60,13 @@ body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monos
 .skillbtn .chg{position:absolute; left:0; bottom:0; height:3px; background:var(--yellow); box-shadow:0 0 8px var(--yellow); width:0%;}
 .skillbtn.ready{box-shadow:0 0 22px rgba(255,214,107,.55);}
 .skillbtn:disabled{opacity:.6; cursor:default;}
+#skillacts{position:absolute; right:1.4rem; bottom:calc(1.2rem + 66px); display:flex; flex-direction:column; gap:.4rem; align-items:stretch; width:140px; pointer-events:none;}
+.actbtn{position:relative; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; padding:.45rem .5rem; border:1px solid rgba(180,107,255,.5); border-radius:7px; background:rgba(13,10,26,.85); color:var(--ink); overflow:hidden; text-align:center;}
+.actbtn .al{display:block; font-size:.78rem;}
+.actbtn .as{display:block; font-size:.6rem; color:var(--gold);}
+.actbtn .chg{position:absolute; left:0; bottom:0; height:3px; background:var(--purple); box-shadow:0 0 8px var(--purple); width:0%;}
+.actbtn.ready{box-shadow:0 0 18px rgba(180,107,255,.6); border-color:var(--purple);}
+.actbtn:disabled{opacity:.45; cursor:default;}
 .res{position:absolute; left:1.2rem; top:50px; bottom:5rem; width:15rem; overflow-y:auto; display:flex; flex-direction:column; gap:.28rem; pointer-events:auto; padding-right:.3rem;}
 .res::-webkit-scrollbar{width:6px;} .res::-webkit-scrollbar-thumb{background:rgba(234,240,255,.16); border-radius:3px;}
 .catlbl{font-size:.62rem; letter-spacing:.1em; margin-top:.3rem;}
@@ -116,6 +123,26 @@ body.state-home .title, body.state-home .meta, body.state-home .hint{display:non
 #modebar{display:none; position:fixed; left:0; right:0; bottom:0; z-index:11; height:58px;
   background:linear-gradient(0deg, rgba(5,6,14,.97), rgba(5,6,14,.72)); border-top:1px solid rgba(234,240,255,.12);}
 body.state-home #modebar{display:flex;}
+/* スキル画面 */
+#skills{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
+body.state-skill #skills{display:flex;}
+body.state-skill .title, body.state-skill .meta, body.state-skill .hint, body.state-skill #hud{display:none;}
+body.state-skill #modebar{display:flex;}
+.skgacha{pointer-events:auto;cursor:pointer;font-family:"Reggae One",sans-serif;font-size:1rem;letter-spacing:.04em;padding:.6rem 1.6rem;color:var(--void);background:linear-gradient(135deg,var(--purple),var(--gold));border:none;border-radius:7px;box-shadow:0 0 22px rgba(180,107,255,.5);}
+.skreveal{font-family:"DotGothic16",monospace;font-size:.82rem;color:var(--cyan);min-height:1.2em;}
+.skslots{display:flex;gap:.5rem;width:min(760px,94vw);}
+.skslot{flex:1;min-height:52px;border:2px dashed rgba(234,240,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:"DotGothic16",monospace;font-size:.8rem;color:var(--dim);cursor:pointer;pointer-events:auto;text-align:center;padding:.3rem;}
+.skslot.on{border-style:solid;color:var(--ink);}
+#skcats{width:min(760px,94vw);display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
+#sklist{width:min(760px,94vw);display:flex;flex-direction:column;gap:.4rem;}
+.skcard{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.6rem .8rem;border:2px solid rgba(234,240,255,.14);border-radius:8px;background:rgba(13,18,38,.72);font-family:"DotGothic16",monospace;color:var(--ink);}
+.skcard .skn{font-size:.84rem;}
+.skcard .skd{font-size:.6rem;color:var(--dim);line-height:1.35;margin:.15rem 0;}
+.skcard .skstars{letter-spacing:1px;color:var(--gold);font-size:.7rem;}
+.skcard .skbtns{display:flex;gap:.4rem;flex:none;}
+.skcard button{pointer-events:auto;cursor:pointer;font-family:"DotGothic16",monospace;font-size:.7rem;padding:.4rem .55rem;border-radius:5px;border:1px solid rgba(234,240,255,.2);background:rgba(234,240,255,.05);color:var(--ink);}
+.skcard button.eq{border-color:var(--cyan);color:var(--cyan);}
+.skcard button:disabled{opacity:.4;cursor:default;}
 .mtab{flex:1; pointer-events:auto; cursor:pointer; background:transparent; border:none; border-right:1px solid rgba(234,240,255,.07);
   color:var(--dim); font-family:"DotGothic16",monospace; font-size:.78rem; letter-spacing:.1em; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; transition:color .2s, background .2s;}
 .mtab:last-child{border-right:none;}
@@ -201,6 +228,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <button class="speedbtn" id="speedbtn" type="button">▶▶ 5×</button>
   <div class="toast" id="toast"></div>
   <div class="hpwrap"><div class="lab"><span>TOWER HP</span><span id="hptext">1000</span></div><div class="hpbar"><i id="hpfill"></i></div></div>
+  <div id="skillacts"></div>
   <button class="skillbtn" id="skillbtn" type="button"><span id="skilllbl">解放 $1000</span><span class="chg" id="skillchg"></span></button>
 </div>
 
@@ -228,8 +256,22 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div id="cattabs"></div>
   <div id="permlist"></div>
 </div>
+<div id="skills">
+  <div class="home-top"><span class="hcur">SPARK <b id="skspark">0</b></span><span class="hcur" id="skbank"></span><span class="hcur">歩行 <b id="skdist">0</b>m</span></div>
+  <div class="home-title">スキル ／ SKILL</div>
+  <div class="home-sub">SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）</div>
+  <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+    <button class="skgacha" id="skgacha" type="button">ガチャ</button>
+    <button class="skgacha" id="skresbtn" type="button" style="background:linear-gradient(135deg,var(--cyan),var(--green));">🔬 リサーチ</button>
+    <span class="skreveal" id="skreveal"></span>
+  </div>
+  <div class="skslots" id="skslots"></div>
+  <div id="skcats"></div>
+  <div id="sklist"></div>
+</div>
 <nav id="modebar">
   <button class="mtab on" id="mode-base" type="button">強化</button>
+  <button class="mtab" id="mode-skill" type="button">スキル</button>
   <button class="mtab" id="mode-map" type="button">🗺 出撃</button>
   <button class="mtab" id="mode-title" type="button">タイトル</button>
 </nav>
@@ -425,7 +467,7 @@ const ene = new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1), new THREE.Mesh
 ene.instanceMatrix.setUsage(THREE.DynamicDrawUsage); ene.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(MAXE*3),3); ene.frustumCulled=false; scene.add(ene);
 const ecol=ene.instanceColor.array, edm=new THREE.Object3D();
 let enemyId=0;
-const E=new Array(MAXE); for(let i=0;i<MAXE;i++) E[i]={active:false,id:0,kind:'',shooter:false,range:0,shotCd:0,boss:false,repCd:0,shootCd:0,laserCd:0,laserT:0,laserAcc:0,tx:0,ty:0,tz:0,ang:0,orbR:0,tgtR:0,enraged:false,enrageT:0,sum70:false,sum30:false,x:0,y:0,z:0,hp:0,maxhp:1,spd:1,dmg:1,size:6,col:[1,1,1],spin:0,phase:0};
+const E=new Array(MAXE); for(let i=0;i<MAXE;i++) E[i]={active:false,id:0,kind:'',shooter:false,range:0,shotCd:0,boss:false,repCd:0,shootCd:0,laserCd:0,laserT:0,laserAcc:0,tx:0,ty:0,tz:0,ang:0,orbR:0,tgtR:0,enraged:false,enrageT:0,sum70:false,sum30:false,x:0,y:0,z:0,hp:0,maxhp:1,spd:1,dmg:1,size:6,col:[1,1,1],spin:0,phase:0,eb:0,ebDmg:0,zatk:1};
 const ETYPES=[
   {key:'mote',  hp:8,  spd:46, dmg:4,  size:6,  col:[.7,.95,1.0]},   // 粒子兵
   {key:'halo',  hp:42, spd:20, dmg:13, size:12, col:[.4,.7,1.0]},    // 光輪重装（青寄り）
@@ -445,25 +487,27 @@ function spawnEnemy(){
   e.maxhp = t.hp * eLvMul * (1 + DENS.blue/180) * eRamp;
   e.hp = e.maxhp;
   e.spd = t.spd * (0.85 + 0.0015*DENS.purple) * (1/(1+0.06*game.slow));   // 紫で自分が遅延付与→ここでは敵速の基礎、playerのslowは別途
-  e.dmg = t.dmg * eLvMul * (1 + DENS.red/160) * eRamp;
+  e.dmg = t.dmg * eLvMul * (1 + DENS.red/160) * eRamp * (game.enemyAtkMul||1); e.eb=0; e.ebDmg=0; e.zatk=1;
   e.size=t.size; e.col=t.col.slice(); e.spin=srand(-.04,.04); e.phase=ang;
   e.kind=t.key; e.shooter=!!t.shooter; e.range=t.range||0; e.shotCd=srand(0.5,3); e.boss=false; e.fireball=false; e.barrierMax=0; e.orbit=false; e.plasma=false;
   // （旧・猛攻フェーズは廃止：無限ウェーブ化）
 }
 function updateEnemies(dt){
-  const slowF = 1/(1+0.10*game.slowLv);   // 紫アップグレード＝敵減速
+  const slowF = game.skillStun>0 ? 0 : (1/(1+0.10*game.slowLv))*(game.enemySpdMul||1);   // 紫減速＋スキル(stun/速度)
   for(let i=0;i<MAXE;i++){ const e=E[i]; const i3=i*3;
     if(!e.active){ ecol[i3]=ecol[i3+1]=ecol[i3+2]=0; edm.position.set(0,-99999,0); edm.scale.set(0,0,0); edm.updateMatrix(); ene.setMatrixAt(i,edm.matrix); continue; }
     if(e.boss){ updateBoss(e, dt, i3, i); continue; }
     if(e.orbit){ updateOrbit(e, dt, i3, i); continue; }
     if(e.plasma){ updatePlasma(e, dt, i3, i); continue; }
+    if(e.eb>0){ e.eb-=dt; const bd=(e.ebDmg||0)*dt; if(bd>0){ e.hp-=bd; if(RENDER&&(game.tick&3)===0) emitP(e.x,e.y,e.z,0,.2,0,8,1,.4,.12,1.6); } if(e.hp<=0){ onEnemyDeath(e); continue; } }   // スキル：炎上DoT
+    let zspd=1; e.zatk=1; const _ZN=game.skillZones; for(let z=0;z<_ZN.length;z++){ const Z=_ZN[z]; if(Math.hypot(e.x-Z.x,e.y-Z.y,e.z-Z.z)<=Z.r){ zspd*=Z.spdMul; e.zatk*=Z.atkMul; } }   // スキル：ゾーン
     // 中心へ前進
     const dx=CORE.x-e.x, dy=CORE.y-e.y, dz=CORE.z-e.z, d=Math.hypot(dx,dy,dz)||1;
     const inRange = e.shooter && d <= e.range;
-    if(!inRange){ const v=e.spd*slowF*dt; e.x+=dx/d*v; e.y+=dy/d*v; e.z+=dz/d*v; }   // 射撃兵は射程内で停止
+    if(!inRange){ const v=e.spd*slowF*zspd*dt; e.x+=dx/d*v; e.y+=dy/d*v; e.z+=dz/d*v; }   // 射撃兵は射程内で停止
     // 塔に到達→ダメージ
     if(inRange){ e.shotCd -= dt; if(e.shotCd<=0){ e.shotCd += 3; fireEnemyBullet(e); } }
-    if(d < 78){ damageTower(e.dmg); if(e.fireball) applyBurn(1.0); burst(e.x,e.y,e.z, e.fireball?[1,.55,.2]:[1,.4,.3],26,1.1); e.active=false; continue; }
+    if(d < 78){ damageTower(e.dmg*(e.zatk||1)); if(e.fireball) applyBurn(1.0); burst(e.x,e.y,e.z, e.fireball?[1,.55,.2]:[1,.4,.3],26,1.1); e.active=false; continue; }
     const hpf = clamp(e.hp/e.maxhp,0,1), s=e.size*(0.7+0.3*hpf);
     edm.position.set(e.x,e.y,e.z); edm.rotation.set(e.phase, e.phase*0.7, 0); e.phase+=e.spin; edm.scale.set(s,s,s); edm.updateMatrix(); ene.setMatrixAt(i,edm.matrix);
     const b=0.55+0.45*hpf; ecol[i3]=e.col[0]*b; ecol[i3+1]=e.col[1]*b; ecol[i3+2]=e.col[2]*b;
@@ -547,7 +591,7 @@ function summon(typeKey, n, hpMul, dmgMul, spdMul){
     e.active=true; e.id=++enemyId; e.x=Math.cos(a)*r; e.y=y; e.z=Math.sin(a)*r;
     e.maxhp = t.hp * eLvMul * (1+DENS.blue/180) * hpMul; e.hp=e.maxhp;
     e.spd = t.spd * (0.85 + 0.0015*DENS.purple) * (spdMul||1);
-    e.dmg = t.dmg * eLvMul * (1+DENS.red/160) * dmgMul;
+    e.dmg = t.dmg * eLvMul * (1+DENS.red/160) * dmgMul * (game.enemyAtkMul||1); e.eb=0; e.ebDmg=0; e.zatk=1;
     e.size=t.size; e.col=t.col.slice(); e.spin=srand(-.04,.04); e.phase=a;
     e.kind=t.key; e.shooter=!!t.shooter; e.range=t.range||0; e.shotCd=srand(0.5,3); e.boss=false; e.enrageT=0; e.sum70=true; e.sum30=true; e.fireball=false; e.barrierMax=0; e.orbit=false; e.plasma=false;
   }
@@ -596,6 +640,7 @@ function bossDefeated(e){
 
 /* ===== 共通ダメージ処理（ボスのバリア対応） ===== */
 function hurtEnemy(t, dd){
+  { const _ZN=game.skillZones; for(let z=0;z<_ZN.length;z++){ const Z=_ZN[z]; if(Z.dmgMul!==1 && Math.hypot(t.x-Z.x,t.y-Z.y,t.z-Z.z)<=Z.r) dd*=Z.dmgMul; } }   // スキル：ゾーン被ダメ増
   if(game.blueAura){ const a=game.blueAura; if(Math.hypot(t.x-a.x,t.y-a.y,t.z-a.z)<=a.r) dd*=0.5; }   // 青オービット範囲：被ダメ半減
   if(t.boss && t.barrierMax>0 && t.barrier>0){
     if(t.barrier>=dd){ t.barrier-=dd; dd=0; } else { dd-=t.barrier; t.barrier=0; onBarrierBreak(t); }
@@ -603,14 +648,16 @@ function hurtEnemy(t, dd){
   if(dd>0) t.hp-=dd;
   if(t.boss && t.enrageT>0) t.hp=Math.min(t.maxhp, t.hp+t.maxhp*0.03);
   if(t.boss && t.charging) t.hp=Math.min(t.maxhp, t.hp+t.maxhp*0.001);   // 機動要塞 大技チャージ中：被弾0.1%回復
+  dispatch('onEnemyHurt',DT,t,dd);
 }
 function onBarrierBreak(e){ e.barrierLock=12; summon('spiral',5,2,1,2); toast('掃討機 バリア破壊！ 高速増援×5'); burst(e.x,e.y,e.z,[.4,.95,1],150,2.4); }
-function applyBurn(dur){ game.burn=Math.min(6, game.burn+dur); }
+function applyBurn(dur){ game.burn=Math.min(6, game.burn+dur*(game.burnResist||1)); }
 function onEnemyDeath(t){
-  if(t.boss){ bossDefeated(t); return; }
+  if(t.boss){ dispatch('onKill',DT,t); bossDefeated(t); return; }
   if(t.orbit){ orbitDestroyed(t); return; }
   if(t.plasma){ t.active=false; t.plasma=false; if(plasmaMesh) plasmaMesh.visible=false; burst(t.x,t.y,t.z,[.85,.5,1],160,2.6); return; }
   t.active=false; game.cash+=Math.ceil((2+t.maxhp*0.18)*game.cashMul); game.kills++; game.score=game.kills; burst(t.x,t.y,t.z,t.col,40,1.3);
+  game.cashEarned+=Math.ceil((2+t.maxhp*0.18)*game.cashMul); dispatch('onKill',DT,t);
 }
 function orbitDestroyed(t){ if(t.orbitDead) return; t.orbitDead=true; t.reviveAt=game.t+30; t.hp=0; if(t.orbitType==='blue') game.blueAura=null; if(orbitMeshes[t.orbitType]) orbitMeshes[t.orbitType].visible=false; burst(t.x,t.y,t.z,t.col,150,2.4); toast('要塞オービット破壊（30s後復活）'); }
 function hideFortressFx(){ if(typeof orbitLaser!=='undefined'&&orbitLaser) orbitLaser.visible=false; if(typeof auraMesh!=='undefined'&&auraMesh) auraMesh.visible=false; if(typeof plasmaMesh!=='undefined'&&plasmaMesh) plasmaMesh.visible=false; if(typeof orbitMeshes!=='undefined') for(const t in orbitMeshes) orbitMeshes[t].visible=false; game.blueAura=null; }
@@ -805,7 +852,7 @@ const pcl=proj.instanceColor.array, pdm=new THREE.Object3D(); let prcur=0;
 function fireProjectile(idx){ const e=E[idx], p=PR[prcur]; prcur=(prcur+1)%MAXPRJ;
   const ox=0, oy=CORE.y+40, oz=0, dx=e.x-ox, dy=e.y-oy, dz=e.z-oz, d=Math.hypot(dx,dy,dz)||1;
   p.active=true; p.x=ox; p.y=oy; p.z=oz; p.vx=dx/d*PROJ_SPEED; p.vy=dy/d*PROJ_SPEED; p.vz=dz/d*PROJ_SPEED;
-  p.dmg=game.dmg; p.ti=idx; p.tid=e.id; p.life=4;
+  p.dmg=game.dmg*(game.skillBuffs.dmgMul||1); p.ti=idx; p.tid=e.id; p.life=4;
 }
 function updateProjectiles(dt){
   for(let i=0;i<MAXPRJ;i++){ const p=PR[i], i3=i*3;
@@ -813,7 +860,7 @@ function updateProjectiles(dt){
     const tgt = (p.ti>=0 && E[p.ti].active && E[p.ti].id===p.tid) ? E[p.ti] : null;
     if(tgt){ const dx=tgt.x-p.x, dy=tgt.y-p.y, dz=tgt.z-p.z, d=Math.hypot(dx,dy,dz)||1;
       p.vx=dx/d*PROJ_SPEED; p.vy=dy/d*PROJ_SPEED; p.vz=dz/d*PROJ_SPEED;   // 軽ホーミング
-      if(d < tgt.size+8){ const dd=p.dmg*(game.rng.chance(game.critChance)?game.critPower:1)*game.vuln; hurtEnemy(tgt, dd); emitP(tgt.x,tgt.y,tgt.z, rand(-.4,.4),rand(-.2,.4),rand(-.4,.4), 10,.4,1,1,1.8);
+      if(d < tgt.size+8){ let dd=p.dmg*(game.rng.chance(game.critChance)?game.critPower:1)*game.vuln; const _h={dd}; dispatch('onTowerHit',DT,tgt,_h); dd=_h.dd; hurtEnemy(tgt, dd); emitP(tgt.x,tgt.y,tgt.z, rand(-.4,.4),rand(-.2,.4),rand(-.4,.4), 10,.4,1,1,1.8);
         if(tgt.hp<=0){ onEnemyDeath(tgt); } p.active=false; continue; } }
     else { p.life-=dt; if(p.life<=0){ p.active=false; continue; } }
     p.x+=p.vx*dt; p.y+=p.vy*dt; p.z+=p.vz*dt;
@@ -826,7 +873,7 @@ function updateProjectiles(dt){
 
 function towerFire(dt){
   game.fireCd -= dt;
-  const interval = 1/game.fireRate;
+  const interval = 1/(game.fireRate*(game.skillBuffs.rofMul||1));
   while(game.fireCd <= 0){
     game.fireCd += interval;
     // 射程内の最も近い敵を multishot 体
@@ -836,6 +883,7 @@ function towerFire(dt){
     cands.sort((a,b)=>a[0]-b[0]);
     const shots=Math.min(game.multishot, cands.length);
     for(let s=0;s<shots;s++){ fireProjectile(cands[s][1]); }
+    dispatch('onTowerFire',dt,{cands,shots});
   }
 }
 
@@ -858,6 +906,7 @@ const game = {
   phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[],
   rng:null, rngState:0, tick:0, seedInfo:null,
   result:null, resultShown:false, purchases:[], _pidx:0, ended:false,
+  skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[],
 };
 function resetGame(){
   eLvMul = 1 + TOTAL/300;
@@ -867,7 +916,8 @@ function resetGame(){
     res:{red:0,blue:0,green:0,yellow:0,purple:0}, lv:{},
     skillUnlocked:false, skillCharge:0, skillMax:18, kills:0, score:0, wave:1, spawnCd:0,
     phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[], tick:0,
-    result:null, resultShown:false, purchases:[], _pidx:0, ended:false });
+    result:null, resultShown:false, purchases:[], _pidx:0, ended:false,
+    skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[] });
   for(let i=0;i<MAXE;i++) E[i].active=false;
   tracers.length=0;
   waves.length=0; for(const m of waveMeshes){ m.visible=false; m.material.opacity=0; }
@@ -908,11 +958,12 @@ function applyPurchasesUpTo(tick){ const P=game.purchases; while(game._pidx<P.le
 
 function recentHits(){ const cut=game.t-10, L=game.hitLog; while(L.length && L[0]<cut) L.shift(); return L.length; }
 function damageTower(d){ if(game.state!=='playing') return;
-  const reduction = game.armor * Math.max(0, 1 - recentHits()/100);   // 過去10秒の被弾が多いほど防御力は減衰（飽和）
-  let dd = Math.max(0, d - reduction) * (1 - game.dr);
+  const _in={d}; dispatch('onTowerHurt',DT,_in); d=_in.d; if(d<=0){ game.hitLog.push(game.t); return; }
+  const reduction = game.armor * Math.max(0, (1+(game.armorDecayBoost||0)) - recentHits()/100);   // 過去10秒の被弾が多いほど防御力は減衰（飽和）
+  let dd = Math.max(0, d - reduction) * (1 - game.dr) * (game.dmgTakenMul||1);
   if(game.shield>0){ if(game.shield>=dd){ game.shield-=dd; dd=0; } else { dd-=game.shield; game.shield=0; } }
-  game.hp-=dd; game.hitLog.push(game.t);
-  if(game.hp<=0){ game.hp=0; finishRun(false); } }
+  game.hp-=dd; game.hitLog.push(game.t); dispatch('onTowerHurtPost',DT,dd);
+  if(game.hp<=0){ game.hp=0; if(!tryReviveSkill()) finishRun(false); } }
 
 /* スキル：大火 — タワー上空を起点に球状の衝撃波が広がり、波面が到達した敵にダメージ */
 const WAVE_ORIGIN = new THREE.Vector3(0, H+30, 0);          // 塔の頂部上空
@@ -929,6 +980,125 @@ function spawnWave(maxR, speed, dmg, hex, origin, healAmt){
   if(mesh){ mesh.material.color.setHex(hex); mesh.visible=true; mesh.position.set(o.x,o.y,o.z); mesh.scale.setScalar(1); mesh.material.opacity=0.85; }
   waves.push({ mesh, r:1, maxR, speed, dmg, hit:new Set(), ox:o.x, oy:o.y, oz:o.z, heal:healAmt||0 });
 }
+/* ===== スキルエンジン（データ駆動・決定論フック式・スキル空時はベースライン一致） ===== */
+const SKILLS = [
+/* ===== 赤 ===== */
+{id:'oohi',color:'red',name:'大火',desc:'起点から球状の波動。範囲の敵に大ダメージ（自動）',type:'active',autofire:true,potMax:5,maxLv:12,lvBase:30,lvR:2.0,
+  period:(l,p)=>Math.max(5,18*Math.pow(0.97,l-1)*(1-0.05*p)), cost:(l,p)=>Math.max(5,18*Math.pow(0.97,l-1)*(1-0.05*p)),
+  hooks:{ active:(S,c)=>{ const g=c.game,dmg=70*(1+0.12*(S.lv-1))*(1+0.05*S.pot)*g.skillPow,R=1250*(1+0.04*S.pot); if(RENDER) burst(WAVE_ORIGIN.x,WAVE_ORIGIN.y,WAVE_ORIGIN.z,[1,.82,.42],120,2.4); c.spawnWave(R,900,dmg,0xFFD66B); } } },
+{id:'supertower',color:'red',name:'スーパータワー',desc:'被弾するたび一定時間 攻撃力と連射1.3倍（再被弾で延長）',type:'trigger',potMax:5,maxLv:10,lvBase:40,lvR:2.0,
+  st0:()=>({buffT:0}),
+  hooks:{ onTowerHurt:(S,c,dR)=>{ if(dR.d>0) S.st.buffT=3+0.5*(S.lv-1)+0.3*S.pot; },
+    onTickPre:(S,c)=>{ if(S.st.buffT>0){ S.st.buffT-=c.dt; const m=1.30+0.04*(S.lv-1)+0.03*S.pot; c.game.skillBuffs.dmgMul*=m; c.game.skillBuffs.rofMul*=m; } } } },
+{id:'miniorbit',color:'red',name:'ミニオービット',desc:'数秒ごとに最寄りの非ボス敵を即死させるビーム',type:'timer',potMax:5,maxLv:8,lvBase:55,lvR:2.0,
+  period:(l,p)=>Math.max(1.2,4*Math.pow(0.92,l-1)*(1-0.06*p)),
+  hooks:{ onTimer:(S,c)=>{ const beams=1+(S.pot>=3?1:0)+(S.pot>=5?1:0),frac=1+0.2*(S.lv-1),cand=[];
+    for(let i=0;i<c.MAXE;i++){ const e=c.E[i]; if(!e.active||e.boss||e.orbit||e.plasma||e.orbitDead) continue; cand.push([Math.hypot(e.x-c.CORE.x,e.y-c.CORE.y,e.z-c.CORE.z),i]); }
+    cand.sort((a,b)=>a[0]-b[0]); for(let k=0;k<Math.min(beams,cand.length);k++){ const e=c.E[cand[k][1]]; c.hurtEnemy(e,e.maxhp*frac); if(e.hp<=0) onEnemyDeath(e); if(RENDER) burst(e.x,e.y,e.z,[1,.4,.3],26,1.5); } } } },
+{id:'stormbolt',color:'red',name:'電撃嵐',desc:'数秒ごとにランダムな敵の周囲にDPSの一部を雷撃',type:'timer',potMax:5,maxLv:8,lvBase:55,lvR:2.0,
+  period:(l,p)=>Math.max(4,10*Math.pow(0.95,l-1)*(1-0.05*p)),
+  hooks:{ onTimer:(S,c)=>{ const g=c.game,critB=1+g.critChance*(g.critPower-1),dps=g.dmg*g.fireRate*critB,frac=0.40+0.04*(S.lv-1)+0.05*S.pot,aoeR=100+10*S.pot,dmg=frac*dps*g.vuln,cand=[];
+    for(let i=0;i<c.MAXE;i++){ const e=c.E[i]; if(!e.active||e.orbitDead) continue; if(Math.hypot(e.x-c.CORE.x,e.y-c.CORE.y,e.z-c.CORE.z)<=1000) cand.push(i); }
+    if(!cand.length) return; const ci=c.E[cand[(g.rng.next()*cand.length)|0]],cx=ci.x,cy=ci.y,cz=ci.z;
+    for(let i=0;i<c.MAXE;i++){ const e=c.E[i]; if(!e.active||e.orbitDead) continue; if(Math.hypot(e.x-cx,e.y-cy,e.z-cz)<=aoeR){ c.hurtEnemy(e,dmg); if(e.hp<=0&&!e.boss&&!e.orbit&&!e.plasma) onEnemyDeath(e); } }
+    if(RENDER) burst(cx,cy,cz,[.6,.85,1],70,2.2); } } },
+{id:'glass',color:'red',name:'ガラス',desc:'HP・防御・回復が半減するが攻撃2.5倍',type:'passive',potMax:5,maxLv:10,lvBase:50,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ const g=c.game,atk=2.5+0.15*(S.lv-1)+0.10*S.pot,frail=Math.min(1,0.5+0.04*(S.lv-1)+0.04*S.pot); g.maxhp*=frail; g.hp=g.maxhp; g.armor*=frail; g.regen*=frail; g.dr*=frail; g.dmg*=atk; g.dmgTakenMul*=(2-frail); } } },
+/* ===== 青 ===== */
+{id:'tetsupeki',color:'blue',name:'鉄壁',desc:'最大HP・防御力・防御率を強化',type:'passive',potMax:5,maxLv:20,lvBase:24,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ const g=c.game,r=g.maxhp>0?g.hp/g.maxhp:1; g.maxhp*=1.20+0.04*(S.lv-1)+0.05*S.pot; g.hp=g.maxhp*r; g.armor*=1.25+0.05*(S.lv-1)+0.05*S.pot; g.dr=Math.min(0.6,g.dr+0.04+0.005*(S.lv-1)+0.005*S.pot); } } },
+{id:'tekiou',color:'blue',name:'適応形防壁',desc:'防御力倍率の減衰開始を遅らせる（被弾耐性）',type:'passive',potMax:5,maxLv:20,lvBase:28,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.armorDecayBoost+=0.20+0.03*(S.lv-1)+0.04*S.pot; } } },
+{id:'kobou',color:'blue',name:'防御は最大の攻撃なり',desc:'防御力/バリアを攻撃に、防御率を連射に転化',type:'passive',potMax:5,maxLv:20,lvBase:34,lvR:2.0,
+  st0:()=>({dDmg:0,fMul:1}),
+  hooks:{ onTickPre:(S,c)=>{ const g=c.game,scale=1+0.10*(S.lv-1)+0.10*S.pot; g.dmg-=S.st.dDmg; if(S.st.fMul!==1) g.fireRate/=S.st.fMul; S.st.dDmg=(g.armor/10+g.barrier/100)*scale; S.st.fMul=1+g.dr*0.5*scale; g.dmg+=S.st.dDmg; g.fireRate*=S.st.fMul; } } },
+{id:'zetteki',color:'blue',name:'絶敵の誓い',desc:'一定間隔でHP回復＋巨大バリア（超過は徐々に減衰）',type:'timer',potMax:5,maxLv:20,lvBase:40,lvR:2.0,
+  period:(l,p)=>Math.max(8,50-2*(l-1)-3*p),
+  hooks:{ onTimer:(S,c)=>{ const g=c.game; g.hp=Math.min(g.maxhp,g.hp+g.maxhp*(0.20+0.01*(S.lv-1))); if(g.barrier<=0) g.barrier=Math.max(1,g.maxhp*0.05); g.shield=Math.max(g.shield,g.barrier)+g.barrier*10; if(RENDER) burst(CORE.x,CORE.y,CORE.z,[.4,.7,1],120,2.4); },
+    onTickPre:(S,c)=>{ const g=c.game; if(g.shield>g.barrier){ const over=(g.shield-g.barrier)/Math.max(1,g.barrier); g.shield-=g.barrier*(0.10+0.10*over)*c.dt; if(g.shield<g.barrier)g.shield=g.barrier; } } } },
+{id:'tenshi',color:'blue',name:'天使に誓う',desc:'死亡時 体力とバリアを半分回復し他スキルを発動（長CD）',type:'active',autofire:true,potMax:5,maxLv:20,lvBase:60,lvR:2.0,
+  cost:(l,p)=>Math.max(300,3600-120*(l-1)-200*p), st0:(l,p)=>({revives:1+(p>=3?1:0)+(p>=5?1:0),charge:Math.max(300,3600-120*(l-1)-200*p)}),
+  hooks:{ onTickPre:(S,c)=>{ const cst=S.def.cost(S.lv,S.pot); S.st.charge=Math.min(cst,(S.st.charge||0)+c.dt); },
+    onDeath:(S,c)=>{ const g=c.game,cst=S.def.cost(S.lv,S.pot); if(S.st.revives>0&&S.st.charge>=cst){ S.st.revives--; S.st.charge=0; g.hp=g.maxhp*0.5; g.shield=Math.max(g.shield,g.barrier*0.5); for(const O of g.skillRT){ if(O===S) continue; if(O.def.hooks.active){ const oc=O.def.cost?O.def.cost(O.lv,O.pot):0; if((O.st.charge||0)>=oc){O.st.charge=0;O.def.hooks.active(O,c);} } else if(O.def.hooks.onTimer){ O.def.hooks.onTimer(O,c); } } if(RENDER) burst(CORE.x,CORE.y,CORE.z,[1,1,.7],300,3); return true; } return false; } } },
+/* ===== 緑 ===== */
+{id:'flametower',color:'green',name:'火炎タワー',desc:'通常弾が確率で雑魚に炎上付与。被炎上耐性も得る',type:'passive',potMax:5,maxLv:20,lvBase:30,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.burnResist*=(S.pot>=3?0.35:0.5); },
+    onTowerHit:(S,c,t,ddR)=>{ if(t.boss) return; const ch=Math.min(1,0.10+0.01*(S.lv-1)+0.02*S.pot); if(!c.game.rng.chance(ch)) return; const dpsFrac=0.18+0.03*(S.lv-1)+0.05*S.pot,dur=3+0.25*(S.lv-1)+0.5*S.pot; t.ebDmg=Math.max(t.ebDmg||0,ddR.dd*dpsFrac); t.eb=Math.max(t.eb||0,dur); if(RENDER) emitP(t.x,t.y,t.z,0,.3,0,10,1,.4,.12,1.8); } } },
+{id:'coinup',color:'green',name:'コインアップ',desc:'Spark獲得量が増加',type:'passive',potMax:5,maxLv:15,lvBase:25,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.sparkMul*=1.20+0.05*(S.lv-1)+0.04*S.pot; } } },
+{id:'bloodfield',color:'green',name:'血塗られし戦場',desc:'撃破で永続スタック蓄積。HP/攻撃/回復が上昇',type:'trigger',potMax:5,maxLv:20,lvBase:40,lvR:2.0,
+  st0:()=>({stacks:0,dHp:0,dDmg:0,dReg:0,baseHp:0}),
+  hooks:{ onKill:(S,c)=>{ const cap=8000+1000*(S.lv-1)+1000*S.pot,gain=1+(S.pot>=4?1:0); S.st.stacks=Math.min(cap,S.st.stacks+gain); },
+    onTickPre:(S,c)=>{ const g=c.game,per=Math.max(500,1000-100*S.pot),tiers=Math.floor(S.st.stacks/per),hpT=0.05+0.005*(S.lv-1),regT=100+10*(S.lv-1)+20*S.pot;
+      const r=g.maxhp>0?g.hp/g.maxhp:1; g.maxhp-=S.st.dHp; g.dmg-=S.st.dDmg; g.regen-=S.st.dReg;
+      S.st.dHp=g.maxhp*hpT*tiers; S.st.dDmg=g.dmg*hpT*tiers; S.st.dReg=regT*tiers;
+      g.maxhp+=S.st.dHp; g.dmg+=S.st.dDmg; g.regen+=S.st.dReg; g.hp=Math.min(g.maxhp,g.hp); } } },
+{id:'indexfund',color:'green',name:'インデックス投資',desc:'一定ウェーブごとに所持金が増える',type:'trigger',potMax:5,maxLv:15,lvBase:35,lvR:2.0,
+  hooks:{ onWaveStart:(S,c,w)=>{ const per=Math.max(5,20-(S.lv-1)-2*S.pot); if(w>0&&w%per===0){ c.game.cash*=1.10+0.01*(S.lv-1)+0.02*S.pot; if(RENDER) toast('インデックス投資 配当！'); } } } },
+{id:'windgrace',color:'green',name:'風の加護',desc:'加護を蓄積し、被弾を確率で無効化＋短時間無敵',type:'aura',potMax:5,maxLv:20,lvBase:45,lvR:2.0,
+  period:(l,p)=>Math.max(0.4,1.0-0.05*(l-1)-0.1*p), st0:()=>({stacks:0}),
+  hooks:{ onTimer:(S,c)=>{ const cap=50+10*(S.lv-1)+20*S.pot; S.st.stacks=Math.min(cap,S.st.stacks+1); },
+    onKill:(S,c)=>{ const cap=50+10*(S.lv-1)+20*S.pot; S.st.stacks=Math.min(cap,S.st.stacks+1); },
+    onTowerHurt:(S,c,dR)=>{ const g=c.game; if(g.invuln>0){ dR.d=0; return; } if(S.st.stacks>0){ S.st.stacks--; const nc=Math.min(0.6,0.03+0.005*(S.lv-1)+0.02*S.pot); if(g.rng.chance(nc)){ dR.d=0; g.invuln=0.3+0.05*(S.lv-1)+0.1*S.pot; } } } } },
+/* ===== 黄 ===== */
+{id:'accelerate',color:'yellow',name:'スキルアクセレレイト',desc:'他スキルのリチャージを定期的に進める',type:'timer',potMax:5,maxLv:10,lvBase:6,lvR:2.0,
+  period:(l,p)=>15*Math.pow(0.95,p),
+  hooks:{ onTimer:(S,c)=>{ const g=c.game,miss=1-g.hp/Math.max(1,g.maxhp),add=1+0.10*(S.lv-1)+miss*100/Math.max(4,10-S.pot)/10;
+    for(const O of g.skillRT){ if(O===S) continue; if(O.def.hooks.onTimer&&O.st.cd!==undefined) O.st.cd-=add; if(O.def.hooks.active) O.st.charge=(O.st.charge||0)+add; } g.skillCharge=Math.min(g.skillMax,g.skillCharge+add); } } },
+{id:'aristotle',color:'yellow',name:'アリストテレスゾーン',desc:'青い領域を展開。範囲の敵を弱体化',type:'timer',potMax:5,maxLv:10,lvBase:7,lvR:2.0,
+  period:(l,p)=>60*Math.pow(0.93,p),
+  hooks:{ onTimer:(S,c)=>{ const g=c.game,R=500+40*(S.lv-1)+60*S.pot,ang=g.rng.range(0,6.283),rad=g.rng.range(200,500); g.skillZones.push({x:Math.cos(ang)*rad,y:CORE.y,z:Math.sin(ang)*rad,r:R,dmgMul:1.20+0.02*(S.lv-1)+0.04*S.pot,atkMul:0.80,spdMul:0.90,life:15+1.5*(S.lv-1)+2*S.pot}); if(RENDER) burst(Math.cos(ang)*rad,CORE.y,Math.sin(ang)*rad,[.3,.6,1],80,2); },
+    onTickPre:(S,c)=>{ const g=c.game; if(g._zoneDecayedTick===g.tick) return; g._zoneDecayedTick=g.tick; for(let z=g.skillZones.length-1;z>=0;z--){ g.skillZones[z].life-=c.dt; if(g.skillZones[z].life<=0) g.skillZones.splice(z,1); } } } },
+{id:'waveskip',color:'yellow',name:'ウェーブスキップ',desc:'ウェーブ開始時 低確率で前報酬再取得＋1wave飛ばす',type:'trigger',potMax:5,maxLv:10,lvBase:8,lvR:2.0,
+  st0:()=>({prevEarned:0,lastEarned:0}),
+  hooks:{ onWaveStart:(S,c,w)=>{ const g=c.game,chance=Math.min(0.30,0.03+0.005*(S.lv-1)+0.02*S.pot),rew=1+0.10*S.pot,skips=1+(S.pot>=4?1:0);
+    const earnedThis=g.cashEarned-S.st.lastEarned; S.st.lastEarned=g.cashEarned;
+    if(!g.rng.chance(chance)) return; const bonus=Math.max(0,earnedThis)*rew; g.cash+=bonus; g.cashEarned+=bonus; g._waveBias+=skips; if(g.wave+skips>g.lastBossWave) g.lastBossWave=Math.max(g.lastBossWave,g.wave); if(RENDER) toast('ウェーブスキップ！ +$'+Math.round(bonus)); } } },
+/* ===== 紫 ===== */
+{id:'bloodthirst',color:'purple',name:'血の渇望',desc:'撃破で回復＋連射上昇、ただし毎秒HP減少（下限あり）',type:'passive',potMax:5,maxLv:10,lvBase:40,lvR:2.0,
+  st0:()=>({asStacks:0}),
+  hooks:{ onKill:(S,c)=>{ const g=c.game; g.hp=Math.min(g.maxhp,g.hp+g.maxhp*(0.0025+0.0005*(S.lv-1)+0.0005*S.pot)); S.st.asStacks=Math.min(4+(S.lv-1)+S.pot,S.st.asStacks+1); if(RENDER&&(g.tick&7)===0) emitP(CORE.x,CORE.y,CORE.z,0,.2,0,8,1,.2,.3,1.5); },
+    onTickPre:(S,c)=>{ const g=c.game,dec=Math.max(0.3,1.0-0.06*(S.lv-1)-0.05*S.pot); S.st.asStacks=Math.max(0,S.st.asStacks-dec*c.dt); g.skillBuffs.rofMul*=Math.pow(1.2,Math.min(S.st.asStacks,4+(S.lv-1)+S.pot)); const drain=g.maxhp*0.01*Math.max(0.4,1-0.05*(S.lv-1)-0.04*S.pot)*c.dt; g.hp=Math.max(g.maxhp*0.10,g.hp-drain); } } },
+{id:'originspark',color:'purple',name:'オリジンスパーク',desc:'定期的にHPを払い紫の大火を連射（撃破で回復）',type:'timer',potMax:5,maxLv:10,lvBase:55,lvR:2.0,
+  period:(l,p)=>35*Math.pow(0.95,p)*Math.pow(0.97,l-1), st0:()=>({killWindow:0}),
+  hooks:{ onTimer:(S,c)=>{ const g=c.game; if(g.phase==='boss') return; const costFrac=0.5*Math.max(0.5,1-0.04*(S.lv-1)-0.03*S.pot); g.hp=Math.max(g.maxhp*0.15,g.hp*(1-costFrac)); S.st.killWindow=3.0+0.3*(S.lv-1); const wc=4+Math.floor(S.pot/2),dm=1+0.10*(S.lv-1); for(let i=0;i<wc;i++) c.spawnWave(1250,900,70*g.skillPow*dm,0xB46BFF); if(RENDER) burst(WAVE_ORIGIN.x,WAVE_ORIGIN.y,WAVE_ORIGIN.z,[.7,.3,1],160,2.6); },
+    onTickPre:(S,c)=>{ if(S.st.killWindow>0) S.st.killWindow-=c.dt; },
+    onKill:(S,c)=>{ if(S.st.killWindow>0){ const g=c.game; g.hp=Math.min(g.maxhp,g.hp+g.maxhp*(0.004+0.0005*(S.lv-1)+0.0005*S.pot)); } } } },
+{id:'battlegong',color:'purple',name:'戦いのゴング',desc:'出現量・連射・収益が増える代わり敵も増速',type:'passive',potMax:5,maxLv:8,lvBase:60,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ const g=c.game,k=1.5+0.05*(S.lv-1)+0.05*S.pot; g.spawnMul*=k; g.fireRate*=k; g.cashMul*=k; g.harvestMul*=k; },
+    onTickPre:(S,c)=>{ const k=1.5+0.05*(S.lv-1)+0.05*S.pot; c.game.enemySpdMul*=k; } } },
+{id:'tenchi',color:'purple',name:'天地開明',desc:'4waveごとにHPを50%にリセット。増減で敵増or自強化',type:'trigger',potMax:5,maxLv:8,lvBase:96,lvR:2.0,
+  st0:()=>({windowUntilWave:0,mode:0,mag:0}),
+  hooks:{ modifyStats:(S,c)=>{ c.game.shieldDecayMul*=Math.max(0.5,0.85-0.03*(S.lv-1)-0.02*S.pot); },
+    onWaveStart:(S,c,w)=>{ if(w%4!==0) return; const g=c.game,scale=1+0.10*(S.lv-1)+0.10*S.pot,before=g.hp/g.maxhp; g.hp=g.maxhp*0.5; const delta=before-0.5; S.st.windowUntilWave=w+4; if(delta>0){S.st.mode=1;S.st.mag=delta*scale;} else if(delta<0){S.st.mode=2;S.st.mag=-delta*scale;} else {S.st.mode=0;} },
+    onTickPre:(S,c)=>{ const g=c.game; if(S.st.mode&&g.wave<S.st.windowUntilWave){ if(S.st.mode===1) g.spawnMul*=(1+S.st.mag); else { g.enemyAtkMul*=(1+S.st.mag); g.enemySpdMul*=(1+S.st.mag); } } else S.st.mode=0; } } },
+{id:'alldelete',color:'purple',name:'オールデリート',desc:'【手動】画面上の全敵を即死。自HP1＋10秒無敵（ゲーム中2回）',type:'active',autofire:false,potMax:5,maxLv:6,lvBase:120,lvR:2.0,
+  st0:(l,p)=>({uses:2+(p>=4?1:0),charge:0}),
+  hooks:{ active:(S,c)=>{ const g=c.game; if(S.st.uses<=0) return; S.st.uses--; for(let pass=0;pass<2;pass++){ for(let i=0;i<c.MAXE;i++){ const e=c.E[i]; if(!e.active||e.orbitDead) continue; if((pass===0)===!!e.boss) continue; if(e.barrierMax){e.barrier=0;} e.hp=0; onEnemyDeath(e); } } g.hp=Math.max(1,g.maxhp*0.02*(S.lv-1)); g.invuln=Math.max(g.invuln,10+1.0*(S.lv-1)+1.0*S.pot); if(RENDER){ const fl=document.getElementById('flash'); if(fl){fl.style.transition='opacity .08s';fl.style.opacity='.8';requestAnimationFrame(()=>{fl.style.transition='opacity 1.1s ease';fl.style.opacity='0';});} burst(CORE.x,CORE.y,CORE.z,[1,.4,1],500,4); } },
+    onTowerHurt:(S,c,dR)=>{ if(c.game.invuln>0) dR.d=0; } } },
+];   // 23スキル（決定論：乱数は g.rng、演出は RENDER ゲート、手動アクティブは acts ログ）
+const SKILL_BY_ID = Object.fromEntries(SKILLS.map(s=>[s.id,s]));
+const DUP_THRESH=[0,1,3,6,10,15];
+function potFromDup(dup,potMax){ let p=0; for(let i=1;i<DUP_THRESH.length;i++) if(dup>=DUP_THRESH[i]) p=i; return Math.min(p,potMax); }
+function skillCtx(dt){ return {game,srand,hurtEnemy,damageTower,spawnWave,summon,E,MAXE,CORE,DENS,eLvMul,dt,tick:game.tick}; }
+function dispatch(hook,dt,a,b){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks[hook]; if(fn) fn(S,ctx,a,b); } }
+function dispatchTimers(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],h=S.def.hooks; if(!h||!h.onTimer) continue; const per=S.def.period(S.lv,S.pot); if(S.st.cd===undefined)S.st.cd=per; S.st.cd-=dt; let g=0; while(S.st.cd<=0&&g++<10000){ S.st.cd+=per; h.onTimer(S,ctx); } } }
+function dispatchOnTickPre(dt){ game.skillBuffs.dmgMul=1; game.skillBuffs.rofMul=1; game.enemyAtkMul=1; game.enemySpdMul=1; if(game.skillStun>0)game.skillStun-=dt; if(game.invuln>0)game.invuln-=dt; const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.onTickPre; if(fn) fn(S,ctx); } }
+function dispatchModifyStats(){ const rt=game.skillRT,ctx=skillCtx(DT); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.modifyStats; if(fn) fn(S,ctx); } }
+function dispatchAutoActives(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],d=S.def; if(!d.hooks||!d.hooks.active||!d.cost) continue; const c=d.cost(S.lv,S.pot); S.st.charge=Math.min(c,(S.st.charge||0)+dt); if(d.autofire && S.st.charge>=c){ S.st.charge=0; d.hooks.active(S,ctx); } }   /* 手動アクティブも charge を貯める（capで保持・自動発火せずタップ待ち） */ }
+function snapshotSkills(){ game.skillRT=(meta.skillEquip||[]).filter(Boolean).map(id=>{ const o=meta.skillOwned[id],def=SKILL_BY_ID[id]; if(!o||!def)return null; const lv=o.level,pot=o.pot; return {def,lv,pot,st:Object.assign({charge:0,stacks:0},def.st0?def.st0(lv,pot):{})}; }).filter(Boolean).slice(0,3+resLv('extraSlot')); }
+function skillLevelCost(def,lv){ return Math.floor(def.lvBase*Math.pow(def.lvR||2, lv-1)); }
+function tryReviveSkill(){ const rt=game.skillRT,ctx=skillCtx(DT); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.onDeath; if(fn&&fn(S,ctx)===true&&game.hp>0) return true; } return false; }
+function _doActive(slot){ const S=game.skillRT[slot]; if(!S||!S.def.hooks.active) return; const c=S.def.cost?S.def.cost(S.lv,S.pot):0; if((S.st.charge||0)<c) return; S.st.charge=0; S.def.hooks.active(S,skillCtx(DT)); }
+function fireActiveSkill(slot){ const S=game.skillRT[slot]; if(!S||!S.def.hooks.active||S.def.autofire) return; game.acts.push({tick:game.tick,t:'sa',slot}); saveRun(); }   // 即時発火せず runStep 先頭の applyActsUpTo が FG/CU 同位置で適用
+function applyActsUpTo(tick){ const A=game.acts; while(game._aidx<A.length&&A[game._aidx].tick<=tick){ _doActive(A[game._aidx].slot); game._aidx++; } }
+function buildActiveButtons(){ const host=$('skillacts'); if(!host) return; host.textContent=''; game._actBtns=[];   // 手動アクティブ（alldelete等）のHUDボタン。演出のみ＝決定性に無関係
+  for(let i=0;i<game.skillRT.length;i++){ const S=game.skillRT[i],d=S.def; if(!d.hooks||!d.hooks.active||d.autofire) continue;
+    const btn=document.createElement('button'); btn.type='button'; btn.className='actbtn';
+    const al=document.createElement('span'); al.className='al'; al.textContent=d.name; const as=document.createElement('span'); as.className='as'; const chg=document.createElement('span'); chg.className='chg';
+    btn.appendChild(al); btn.appendChild(as); btn.appendChild(chg); const slot=i; btn.addEventListener('click',()=>fireActiveSkill(slot));
+    host.appendChild(btn); game._actBtns.push({btn,as,chg,S}); } }
+
 function fireSkill(){ if(game.state!=='playing' || !game.skillUnlocked || game.skillCharge < game.skillMax) return;
   game.skillCharge=0;
   if(RENDER){ const fl=document.getElementById('flash'); fl.style.transition='opacity .08s'; fl.style.opacity='.6'; requestAnimationFrame(()=>{ fl.style.transition='opacity .9s ease'; fl.style.opacity='0'; });
@@ -988,27 +1158,53 @@ function updateHUD(dt){
   const sb=$('skillbtn'), lbl=$('skilllbl');
   if(!game.skillUnlocked){ lbl.textContent='解放 $1000'; $('skillchg').style.width='0%'; sb.classList.remove('ready'); sb.disabled=game.cash<1000; }
   else { lbl.textContent='大火'; $('skillchg').style.width=clamp(game.skillCharge/game.skillMax*100,0,100)+'%'; sb.classList.toggle('ready', game.skillCharge>=game.skillMax); sb.disabled=game.skillCharge<game.skillMax; }
+  if(game._actBtns){ for(const ab of game._actBtns){ const S=ab.S,d=S.def,c=d.cost?d.cost(S.lv,S.pot):0; const ready=(S.st.charge||0)>=c; const uses=S.st.uses; const noUses=(uses!==undefined&&uses<=0);
+    ab.chg.style.width=clamp(c>0?(S.st.charge||0)/c*100:100,0,100)+'%'; ab.as.textContent=(uses!==undefined?('残'+uses):(ready?'READY':'充填中')); ab.btn.classList.toggle('ready',ready&&!noUses); ab.btn.disabled=!ready||noUses; } }
   if(toastT>0){ toastT-=dt; if(toastT<=0) $('toast').style.opacity='0'; }
 }
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
-const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{} };
+const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{}} };
 const PERM = [
-  {c:'red',   k:'p_dmg',   name:'初期火力',   cost:20, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
-  {c:'red',   k:'p_rof',   name:'初期連射',   cost:24, r:2.0, fn:(lv)=>{ game.fireRate*=1+0.08*lv; }, val:(lv)=>'+'+Math.round(8*lv)+'%'},
-  {c:'blue',  k:'p_hp',    name:'初期HP',     cost:20, r:2.0, fn:(lv)=>{ game.maxhp*=1+0.15*lv; game.hp=game.maxhp; }, val:(lv)=>'+'+Math.round(15*lv)+'%'},
-  {c:'blue',  k:'p_armor', name:'初期防御力', cost:22, r:2.0, fn:(lv)=>{ game.armor+=30*lv; }, val:(lv)=>'+'+(30*lv)},
-  {c:'green', k:'p_harv',  name:'採取効率',   cost:18, r:2.0, fn:(lv)=>{ game.harvestMul*=1+0.10*lv; }, val:(lv)=>'+'+Math.round(10*lv)+'%'},
-  {c:'green', k:'p_cash',  name:'初期資金',   cost:20, r:2.0, fn:(lv)=>{ game.cash+=60*lv; }, val:(lv)=>'+$'+(60*lv)},
-  {c:'yellow',k:'p_unlock',name:'大火 初期解放',cost:80, r:5,  fn:(lv)=>{ if(lv>0) game.skillUnlocked=true; }, cap:(lv)=>lv>=1, val:(lv)=>lv>0?'解放済':'—'},
-  {c:'yellow',k:'p_spow',  name:'スキル威力', cost:30, r:2.0, fn:(lv)=>{ game.skillPow*=1+0.15*lv; }, val:(lv)=>'×'+(1+0.15*lv).toFixed(2)},
-  {c:'purple',k:'p_vuln',  name:'初期脆弱化', cost:96, r:2.0, fn:(lv)=>{ game.vuln+=0.08*lv; }, val:(lv)=>'+'+Math.round(8*lv)+'%'},
-  {c:'purple',k:'p_slow',  name:'初期減速',   cost:88, r:2.0, fn:(lv)=>{ game.slowLv+=lv; }, val:(lv)=>'Lv'+lv},
+  // 既存項目（基礎コスト ×100）
+  {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
+  {c:'red',   k:'p_rof',   name:'初期連射',   cost:2400, r:2.0, fn:(lv)=>{ game.fireRate*=1+0.08*lv; }, val:(lv)=>'+'+Math.round(8*lv)+'%'},
+  {c:'red',   k:'p_crit',  name:'初期クリ率', cost:3000, r:2.0, fn:(lv)=>{ game.critChance=Math.min(1,game.critChance+0.04*lv); }, cap:(lv)=>lv>=8, val:(lv)=>'+'+Math.round(4*lv)+'%'},
+  {c:'red',   k:'p_multi', name:'初期多重弾', cost:6000, r:2.2, fn:(lv)=>{ game.multishot=Math.min(8,game.multishot+lv); }, cap:(lv)=>lv>=4, val:(lv)=>'+'+lv+'発'},
+  {c:'blue',  k:'p_hp',    name:'初期HP',     cost:2000, r:2.0, fn:(lv)=>{ game.maxhp*=1+0.15*lv; game.hp=game.maxhp; }, val:(lv)=>'+'+Math.round(15*lv)+'%'},
+  {c:'blue',  k:'p_armor', name:'初期防御力', cost:2200, r:2.0, fn:(lv)=>{ game.armor+=30*lv; }, val:(lv)=>'+'+(30*lv)},
+  {c:'blue',  k:'p_regen', name:'初期再生',   cost:2200, r:2.0, fn:(lv)=>{ game.regen+=5*lv; }, val:(lv)=>'+'+(5*lv)+'/s'},
+  {c:'blue',  k:'p_dr',    name:'初期防御率', cost:5000, r:2.0, fn:(lv)=>{ game.dr=Math.min(0.6,game.dr+0.03*lv); }, cap:(lv)=>lv>=8, val:(lv)=>'+'+Math.round(3*lv)+'%'},
+  {c:'blue',  k:'p_barr',  name:'初期バリア', cost:2400, r:2.0, fn:(lv)=>{ game.barrier+=120*lv; }, val:(lv)=>'+'+(120*lv)},
+  {c:'green', k:'p_harv',  name:'採取効率',   cost:1800, r:2.0, fn:(lv)=>{ game.harvestMul*=1+0.10*lv; }, val:(lv)=>'+'+Math.round(10*lv)+'%'},
+  {c:'green', k:'p_cash',  name:'初期資金',   cost:2000, r:2.0, fn:(lv)=>{ game.cash+=60*lv; }, val:(lv)=>'+$'+(60*lv)},
+  {c:'green', k:'p_cashmul',name:'$獲得倍率', cost:2500, r:2.0, fn:(lv)=>{ game.cashMul*=1+0.08*lv; }, val:(lv)=>'×'+(1+0.08*lv).toFixed(2)},
+  {c:'green', k:'p_range', name:'初期射程',   cost:1800, r:2.0, fn:(lv)=>{ game.range*=1+0.05*lv; }, val:(lv)=>'+'+Math.round(5*lv)+'%'},
+  {c:'yellow',k:'p_unlock',name:'大火 初期解放',cost:8000, r:5,  fn:(lv)=>{ if(lv>0) game.skillUnlocked=true; }, cap:(lv)=>lv>=1, val:(lv)=>lv>0?'解放済':'—'},
+  {c:'yellow',k:'p_spow',  name:'スキル威力', cost:3000, r:2.0, fn:(lv)=>{ game.skillPow*=1+0.15*lv; }, val:(lv)=>'×'+(1+0.15*lv).toFixed(2)},
+  {c:'yellow',k:'p_smax',  name:'チャージ短縮',cost:3000, r:2.0, fn:(lv)=>{ game.skillMax=Math.max(5,game.skillMax-0.6*lv); }, cap:(lv)=>game.skillMax!==undefined&&lv>=6, val:(lv)=>'-'+(0.6*lv).toFixed(1)+'s'},
+  {c:'purple',k:'p_vuln',  name:'初期脆弱化', cost:9600, r:2.0, fn:(lv)=>{ game.vuln+=0.08*lv; }, val:(lv)=>'+'+Math.round(8*lv)+'%'},
+  {c:'purple',k:'p_slow',  name:'初期減速',   cost:8800, r:2.0, fn:(lv)=>{ game.slowLv=Math.min(8,game.slowLv+lv); }, cap:(lv)=>lv>=8, val:(lv)=>'Lv'+lv},
+  {c:'purple',k:'p_spow2', name:'秘術増幅',   cost:6000, r:2.0, fn:(lv)=>{ game.skillPow*=1+0.10*lv; }, val:(lv)=>'×'+(1+0.10*lv).toFixed(2)},
 ];
 const permLv=(k)=>meta.perm[k]||0;
 function permCost(p){ return Math.floor(p.cost*Math.pow(p.r, permLv(p.k))); }
 function buyPerm(p){ if(p.cap && p.cap(permLv(p.k))) return; const cost=permCost(p); if(meta.bank[p.c]>=cost){ meta.bank[p.c]-=cost; meta.perm[p.k]=permLv(p.k)+1; saveMeta(); buildHome(); } }
 function applyMeta(){ for(const p of PERM){ const lv=permLv(p.k); if(lv>0) p.fn(lv); } }
+/* ===== 研究（歩行距離で進行・metaに統一） ===== */
+const resLv=(k)=>(meta.research&&meta.research.node&&meta.research.node[k])||0;
+const RESEARCH=[
+ {key:'r_vit',        c:'blue',  name:'探査体力', max:8, cost:(lv)=>Math.ceil(300*Math.pow(1.8,lv)), fn:(lv)=>{ game.maxhp*=1+0.06*lv; game.hp=game.maxhp; }, val:(lv)=>'HP +'+(6*lv)+'%'},
+ {key:'r_pow',        c:'red',   name:'探査火力', max:8, cost:(lv)=>Math.ceil(300*Math.pow(1.8,lv)), fn:(lv)=>{ game.dmg*=1+0.05*lv; },                 val:(lv)=>'火力 +'+(5*lv)+'%'},
+ {key:'r_harv',       c:'green', name:'踏査採取', max:8, cost:(lv)=>Math.ceil(200*Math.pow(1.7,lv)), fn:(lv)=>{ game.harvestMul*=1+0.08*lv; },          val:(lv)=>'採取 +'+(8*lv)+'%'},
+ {key:'gachaDiscount',c:'yellow',name:'魔力効率', max:5, cost:(lv)=>Math.ceil(600*Math.pow(2.0,lv)), fn:(lv)=>{ meta._rGachaDiscount=0.05*lv; },        val:(lv)=>'ガチャ -'+(5*lv)+'%'},
+ {key:'r_spark',      c:'purple',name:'残光収集', max:6, cost:(lv)=>Math.ceil(500*Math.pow(2.0,lv)), fn:(lv)=>{ meta._rSparkMul=1+0.07*lv; },           val:(lv)=>'SPARK ×'+(1+0.07*lv).toFixed(2)},
+ {key:'extraSlot',    c:'purple',name:'戦術スロット',max:1,cost:(lv)=>Math.ceil(8000*Math.pow(3,lv)), fn:(lv)=>{ meta._rExtraSlot=lv; },                 val:(lv)=>lv>0?'装備4枠':'装備3枠'},
+];
+const RESEARCH_BY_KEY=Object.fromEntries(RESEARCH.map(n=>[n.key,n]));
+function resCost(n){ return n.cost(resLv(n.key)); }
+function buyResearch(n){ if(n.max&&resLv(n.key)>=n.max) return; const c=resCost(n); if(meta.research.dist>=c){ meta.research.dist-=c; meta.research.node[n.key]=resLv(n.key)+1; saveMeta(); if(typeof buildSkills==='function')buildSkills(); } }
+function applyResearch(){ meta._rGachaDiscount=0; meta._rSparkMul=1; meta._rExtraSlot=0; for(const n of RESEARCH){ const lv=resLv(n.key); if(lv>0) n.fn(lv); } }
 let homeCat='red';
 function buildHome(){ try{
   $('hspark').textContent=Math.floor(meta.spark);
@@ -1037,7 +1233,55 @@ function buildHome(){ try{
   el.appendChild(grid);
   }catch(e){ const pl=document.getElementById('permlist'); if(pl) pl.textContent='buildHome ERR: '+(e&&e.message); console.log('buildHome error', e); }
 }
-function setTab(id){ ['mode-base','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); }
+function setTab(id){ ['mode-base','mode-skill','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); }
+/* ===== スキル画面（ガチャ/Lv上げ/装備） ===== */
+let skillCat='red', lastGacha=null, skResearchView=false;
+function gachaCost(){ return Math.max(200, Math.round(1000*(1-0.05*resLv('gachaDiscount')))); }
+function gachaPull(){ const cost=gachaCost(); if(meta.spark<cost){ lastGacha={err:'SPARK不足（'+cost+'必要）'}; buildSkills(); return; }
+  meta.spark-=cost; if(!meta.gachaSeed) meta.gachaSeed=(Date.now()>>>0)||1;
+  const r=makeRNG(meta.gachaSeed), roll=r.next(); meta.gachaSeed=r.getState();
+  const def=SKILLS[Math.min(SKILLS.length-1,(roll*SKILLS.length)|0)]; const o=meta.skillOwned[def.id]||(meta.skillOwned[def.id]={level:1,dup:0,pot:0});
+  const before=o.pot, isNew=(o.dup===0); o.dup++; o.pot=potFromDup(o.dup,def.potMax);
+  lastGacha={name:def.name,color:def.color,isNew,potUp:(o.pot>before),pot:o.pot};
+  skillCat=def.color; saveMeta(); buildSkills(); }
+function levelUpSkill(id){ const def=SKILL_BY_ID[id],o=meta.skillOwned[id]; if(!o||o.level>=def.maxLv) return; const cost=skillLevelCost(def,o.level); if(meta.bank[def.color]>=cost){ meta.bank[def.color]-=cost; o.level++; saveMeta(); buildSkills(); } }
+function equipSkill(id){ const i=meta.skillEquip.indexOf(id); const max=3+resLv('extraSlot');
+  if(i>=0){ meta.skillEquip[i]=null; } else { let s=meta.skillEquip.indexOf(null); if(s<0||s>=max) s=0; meta.skillEquip[s]=id; }
+  saveMeta(); buildSkills(); }
+function showSkills(){ game.state='skills'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill'); document.body.classList.add('state-skill'); controls.autoRotate=!REDUCED; setTab('mode-skill'); buildSkills(); }
+function buildSkills(){ try{
+  $('skspark').textContent=Math.floor(meta.spark);
+  const hb=$('skbank'); hb.textContent=''; for(const c of COLORS){ const s=document.createElement('span'); s.className='hb'; const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=Math.floor(meta.bank[c]); s.appendChild(i); s.appendChild(v); hb.appendChild(s); }
+  $('skdist').textContent=Math.floor(meta.research.dist);
+  $('skgacha').textContent='ガチャ （SPARK '+gachaCost()+'）';
+  const rv=$('skreveal'); if(lastGacha){ rv.textContent = lastGacha.err ? lastGacha.err : ('✦ '+lastGacha.name+(lastGacha.isNew?' 開放！':(lastGacha.potUp?(' 潜在★'+lastGacha.pot+'!'):' (被り→資源)'))); rv.style.color=lastGacha.err?'var(--red)':COLORHEX[lastGacha.color]; } else rv.textContent='';
+  const resOn=skResearchView, rbtn=$('skresbtn'); if(rbtn) rbtn.textContent=resOn?'← スキル一覧':'🔬 リサーチ';
+  $('skgacha').style.display=resOn?'none':''; rv.style.display=resOn?'none':'';
+  $('skslots').style.display=resOn?'none':'flex'; $('skcats').style.display=resOn?'none':'flex';
+  if(resOn){ const el0=$('sklist'); el0.textContent='';
+    for(const n of RESEARCH){ const lv=resLv(n.key), maxed=!!(n.max&&lv>=n.max), c=resCost(n);
+      const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=COLORHEX[n.c];
+      const left=document.createElement('div'); const nm=document.createElement('div'); nm.className='skn'; nm.textContent=n.name+' Lv'+lv+(n.max?('/'+n.max):''); left.appendChild(nm);
+      const ds=document.createElement('div'); ds.className='skd'; ds.textContent=n.val(lv)+(maxed?'':(' → '+n.val(lv+1))); left.appendChild(ds);
+      const btns=document.createElement('div'); btns.className='skbtns'; const b=document.createElement('button'); b.textContent=maxed?'MAX':(c+'m'); b.style.borderColor=COLORHEX[n.c]; if(maxed||meta.research.dist<c) b.disabled=true; b.addEventListener('click',()=>buyResearch(n)); btns.appendChild(b);
+      card.appendChild(left); card.appendChild(btns); el0.appendChild(card); }
+    return; }
+  const sl=$('skslots'); sl.textContent=''; const maxSlot=3+resLv('extraSlot');
+  for(let k=0;k<maxSlot;k++){ const id=meta.skillEquip[k]; const d=document.createElement('div'); d.className='skslot'+(id?' on':''); if(id){ const def=SKILL_BY_ID[id]; d.style.borderColor=COLORHEX[def.color]; d.textContent=def.name; } else d.textContent='＋ 空き枠'; d.addEventListener('click',()=>{ if(id){ meta.skillEquip[k]=null; saveMeta(); buildSkills(); } }); sl.appendChild(d); }
+  const ct=$('skcats'); ct.textContent=''; for(const c of COLORS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c===skillCat?' on':''); t.style.color=COLORHEX[c]; t.textContent=CATNAME[c]; if(c===skillCat)t.style.borderColor=COLORHEX[c]; t.addEventListener('click',()=>{skillCat=c;buildSkills();}); ct.appendChild(t); }
+  const el=$('sklist'); el.textContent='';
+  for(const def of SKILLS){ if(def.color!==skillCat) continue; const o=meta.skillOwned[def.id];
+    const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=o?COLORHEX[def.color]:'rgba(234,240,255,.1)'; if(!o)card.style.opacity='.55';
+    const left=document.createElement('div');
+    const nm=document.createElement('div'); nm.className='skn'; nm.textContent=def.name+(o?(' Lv'+o.level+'/'+def.maxLv):'（未開放）'); left.appendChild(nm);
+    const ds=document.createElement('div'); ds.className='skd'; ds.textContent=def.desc; left.appendChild(ds);
+    if(o){ const st=document.createElement('div'); st.className='skstars'; st.textContent='潜在 '+'★'.repeat(o.pot)+'☆'.repeat(def.potMax-o.pot); left.appendChild(st); }
+    const btns=document.createElement('div'); btns.className='skbtns';
+    if(o){ const lvb=document.createElement('button'); const c2=skillLevelCost(def,o.level); lvb.textContent=o.level>=def.maxLv?'MAX':('Lv↑ '+c2); lvb.style.borderColor=COLORHEX[def.color]; if(o.level>=def.maxLv||meta.bank[def.color]<c2) lvb.disabled=true; lvb.addEventListener('click',()=>levelUpSkill(def.id)); btns.appendChild(lvb);
+      const eq=meta.skillEquip.indexOf(def.id)>=0; const eqb=document.createElement('button'); eqb.textContent=eq?'装備中':'装備'; if(eq)eqb.className='eq'; eqb.addEventListener('click',()=>equipSkill(def.id)); btns.appendChild(eqb); }
+    card.appendChild(left); card.appendChild(btns); el.appendChild(card);
+  }
+}catch(e){ const el=$('sklist'); if(el) el.textContent='buildSkills ERR: '+(e&&e.message); console.log('buildSkills',e); } }
 
 /* ===== 位置情報マップ（出撃画面）：Leaflet＋GPS＋DEV移動＋セルoverlay＋ノーマップfallback ===== */
 let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null;
@@ -1047,6 +1291,9 @@ function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19, subdomains:'abcd'}).addTo(LMAP);
   LMAP.on('click', e=>{ if(devMode) setAvatar(e.latlng.lat, e.latlng.lng); });
   return LMAP; }
+let _lastFix=null;
+function haversine(la1,lo1,la2,lo2){ const R=6371000,d=Math.PI/180,dLa=(la2-la1)*d,dLo=(lo2-lo1)*d,a=la1*d,b=la2*d; const h=Math.sin(dLa/2)**2+Math.cos(a)*Math.cos(b)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.min(1,Math.sqrt(h))); }
+function accrueWalk(lat,lng){ if(_lastFix){ const m=haversine(_lastFix[0],_lastFix[1],lat,lng); if(m>1&&m<120){ meta.research.dist+=m; saveMeta(); if(game.state==='map') renderCellCard(); if(game.state==='skills') buildSkills(); } } _lastFix=[lat,lng]; }
 function setAvatar(lat,lng){ avatarLL=[lat,lng];
   if(LMAP){ if(!avatarMarker){ avatarMarker=L.circleMarker(avatarLL,{radius:7,color:'#3CF0FF',fillColor:'#3CF0FF',fillOpacity:.9,weight:2}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
@@ -1082,11 +1329,11 @@ function renderCellCard(){
 function startGPS(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで出撃可（矢印/クリックで移動）'); return; }   // VENUEは showMap が既に表示
   if(_gpsWatch!=null){ try{ navigator.geolocation.clearWatch(_gpsWatch); }catch(e){} _gpsWatch=null; }   // 二重監視を防ぐ
-  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,17); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
+  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,17); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
-function showMap(){ game.state='map'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy'); document.body.classList.add('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
+function showMap(){ game.state='map'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-skill'); document.body.classList.add('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('セルをタップ→「ここに出撃」 ／ 密度↑=報酬↑･難度↑ ／ ★=スイートスポット'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
   if(!avatarLL) setAvatar(VENUE.lat, VENUE.lng);   // 即・既定地点を表示（GPS/Leaflet失敗でも常に出撃可能）
@@ -1096,11 +1343,12 @@ function showMap(){ game.state='map'; document.body.classList.remove('state-titl
     if(e.key==='ArrowUp'){avatarLL[0]+=st;mv=true;} else if(e.key==='ArrowDown'){avatarLL[0]-=st;mv=true;} else if(e.key==='ArrowLeft'){avatarLL[1]-=st;mv=true;} else if(e.key==='ArrowRight'){avatarLL[1]+=st;mv=true;}
     if(mv){ devMode=true; setAvatar(avatarLL[0],avatarLL[1]); e.preventDefault(); } }); }
 }
-function showHome(){ game.state='home'; document.body.classList.remove('state-title','state-playing','state-result','state-deploy','state-map'); document.body.classList.add('state-home'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-base'); buildHome(); }
+function showHome(){ game.state='home'; document.body.classList.remove('state-title','state-playing','state-result','state-deploy','state-map','state-skill'); document.body.classList.add('state-home'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-base'); buildHome(); }
 
 /* ===== ラン進行 ===== */
 function runStep(dt){
   if(game.ended) return;                 // ラン終了後は前面/追いつき双方で確実に停止（端tick一致）
+  applyActsUpTo(game.tick);              // アクティブスキル入力をFG/CU同位置で適用（決定論）
   game.t = game.tick * DT;
   // 採取
   for(const c of ['red','blue','green','yellow','purple']) game.res[c] += DENS[c]*0.05*game.harvestMul*dt;
@@ -1109,22 +1357,25 @@ function runStep(dt){
     game.skillCharge = Math.min(game.skillMax, game.skillCharge + dt*(1 + DENS.yellow*0.01));
     if(game.skillCharge>=game.skillMax) fireSkill();   // 自動発火（手動と性能同一）
   }
+  dispatchAutoActives(dt);               // autofireスキル（充電→自動発火）
   // HP再生（青）
   game.hp = Math.min(game.maxhp, game.hp + game.regen*dt);
+  dispatchOnTickPre(dt); dispatchTimers(dt);   // スキル：毎tick前処理＋周期効果
   // 炎上（掃討機）：毎秒 最大HP1%。継続中はプレイヤーのバリア再生が止まる
   if(game.burn>0){ game.burn-=dt; game.hp-=game.maxhp*0.01*dt; if(game.hp<=0){ game.hp=0; finishRun(false); return; } }
   // バリア再生＋衝撃波（バリア値が威力＝超高速・狭範囲の大火／炎上中は再生停止）
-  if(game.barrier>0){ if(game.burn<=0) game.shield=Math.min(game.barrier, game.shield + game.barrier*0.08*dt);
+  if(game.barrier>0){ if(game.burn<=0) game.shield=Math.min(game.barrier, game.shield + game.barrier*0.08*dt*(2-(game.shieldDecayMul||1)));
     game.swCd-=dt; while(game.swCd<=0){ game.swCd+=game.swInterval; spawnWave(230, 2200, game.barrier*game.swPow*0.8, 0x3CA0FF); } }
   // 無限ウェーブ：時間でウェーブ進行。ただし未撃破のボスウェーブは越えられない（早期踏破防止）
   if(game.phase!=='boss'){
     const tWave = 1 + Math.floor(game.t/WAVE_SECONDS);
     const nextBoss = (Math.floor(game.lastBossWave/BOSS_EVERY)+1)*BOSS_EVERY;
     game.wave = Math.min(tWave, nextBoss, TARGET_WAVE);
+    if(game.wave>game._skillDispatchWave){ for(let w=game._skillDispatchWave+1; w<=game.wave; w++) dispatch('onWaveStart',dt,w); game._skillDispatchWave=game.wave; }
     if(game.wave===nextBoss && game.wave>game.lastBossWave){                    // ボスウェーブ到達→ボス出現・ウェーブ凍結
       game.lastBossWave = game.wave; game.phase='boss';
       game.bossPlan = (game.wave>=TARGET_WAVE && currentField && currentField.jackpot) ? 'all' : BOSS_KEYS[game.bossNo % BOSS_KEYS.length];
-      game.bossNo++; spawnBoss();
+      game.bossNo++; spawnBoss(); dispatch('onBossSpawn',dt,game.boss);
       toast(game.bossPlan==='all' ? '総攻撃！ 3体同時襲来' : ('BOSS '+(BOSSES.find(b=>b.key===game.bossPlan)||BOSSES[0]).name+' 出現 (W'+game.wave+')'));
     }
   }
@@ -1132,7 +1383,7 @@ function runStep(dt){
   // スポーン（ボス戦中は通常湧き停止）
   if(game.phase!=='boss'){
     game.spawnCd -= dt;
-    const spawnInt = Math.max(0.18, 0.95/diff);
+    const spawnInt = Math.max(0.18, 0.95/diff)/(game.spawnMul||1);
     while(game.spawnCd<=0){ game.spawnCd += spawnInt; spawnEnemy(); }
   }
   // 迎撃・弾・敵・衝撃波
@@ -1141,7 +1392,7 @@ function runStep(dt){
 }
 /* ラン終了：純粋精算（DOMなし・ヘッドレス/追いつき安全）。演出は showResult が担う。 */
 function finishRun(clear){ if(game.state!=='playing') return; game.state='result'; game.ended=true;
-  const sc=Math.round(8*Math.sqrt(Math.max(1,game.wave))) * (clear?1.5:1) * (1+0.12*(TOTAL/100));
+  const sc=Math.round(8*Math.sqrt(Math.max(1,game.wave))) * (clear?1.5:1) * (1+0.12*(TOTAL/100)) * (game.sparkMul||1) * (1+0.07*resLv('r_spark'));
   meta.spark += Math.round(sc); for(const c of COLORS) meta.bank[c]+=Math.floor(game.res[c]);   // 持ち帰り
   game.result = { clear, wave:game.wave, kills:game.kills, sc:Math.round(sc),
     haul:{red:Math.floor(game.res.red),blue:Math.floor(game.res.blue),green:Math.floor(game.res.green),yellow:Math.floor(game.res.yellow),purple:Math.floor(game.res.purple)} };
@@ -1158,13 +1409,20 @@ function showResult(){ if(!game.result || game.resultShown) return; game.resultS
   controls.autoRotate=!REDUCED;
   if(r.clear && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
 }
-function enterPlaying(){ game.resultShown=false; document.body.classList.remove('state-title','state-home','state-map','state-result','state-deploy'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE); }
+function enterPlaying(){ game.resultShown=false; document.body.classList.remove('state-title','state-home','state-map','state-result','state-deploy','state-skill'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE); }
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm})); }catch(e){} }
-function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(s){ const m=JSON.parse(s); meta.spark=m.spark||0; meta.bank=Object.assign({red:0,blue:0,green:0,yellow:0,purple:0},m.bank||{}); meta.perm=m.perm||{}; } }catch(e){} }
-function saveRun(){ try{ if(!game.seedInfo || game.state!=='playing') return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, wave:game.wave, hp:Math.round(game.hp) })); }catch(e){} }
+function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed})); }catch(e){} }
+function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(s){ const m=JSON.parse(s); meta.spark=m.spark||0; meta.bank=Object.assign({red:0,blue:0,green:0,yellow:0,purple:0},m.bank||{}); meta.perm=m.perm||{};
+  meta.skillOwned=m.skillOwned||{}; meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,3):[null,null,null]; while(meta.skillEquip.length<3)meta.skillEquip.push(null);
+  meta.research=Object.assign({dist:0,node:{}},m.research||{}); if(!(meta.research.dist>=0))meta.research.dist=0; meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1);
+  for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; o.level=Math.max(1,Math.min(def.maxLv,o.level|0)); o.dup=Math.max(0,o.dup|0); o.pot=potFromDup(o.dup,def.potMax); }
+  meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
+  if(!meta.research.node||typeof meta.research.node!=='object') meta.research.node={};
+  for(const k in meta.research.node){ const n=RESEARCH_BY_KEY[k]; if(!n){ delete meta.research.node[k]; } else { meta.research.node[k]=Math.max(0,Math.min(n.max||99, meta.research.node[k]|0)); } }
+  } }catch(e){ console.log('loadMeta',e); } }
+function saveRun(){ try{ if(!game.seedInfo || game.state!=='playing') return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), wave:game.wave, hp:Math.round(game.hp) })); }catch(e){} }
 function loadRun(){ try{ const s=localStorage.getItem(RUN_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
 function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
 
@@ -1199,10 +1457,13 @@ function restoreRun(sv){
   resetGame();
   game.seedInfo={deployTs:sv.deployTs, cellId:sv.cellId, runSeed:sv.runSeed||0};
   game.rngState=deriveRunSeed(sv.deployTs, sv.cellId, sv.runSeed||0); game.rng=makeRNG(game.rngState); game.tick=0;
-  applyMeta(); applyField(); buildRes();
+  applyMeta(); applyResearch(); applyField();
+  game.skillRT=(Array.isArray(sv.skills)?sv.skills:[]).map(s=>{ const def=SKILL_BY_ID[s.id]; if(!def)return null; return {def,lv:s.lv,pot:s.pot,st:Object.assign({charge:0,stacks:0},def.st0?def.st0(s.lv,s.pot):{})}; }).filter(Boolean);   // 保存ロードアウトから再構築（meta編集の影響を受けない＝再生一致）
+  dispatchModifyStats(); buildActiveButtons(); buildRes();
   game.purchases=Array.isArray(sv.purchases)?sv.purchases.slice():[]; game._pidx=0;
+  game.acts=Array.isArray(sv.acts)?sv.acts.slice():[]; game._aidx=0;
   game.state='playing'; game.ended=false;
-  document.body.classList.remove('state-title','state-result','state-deploy','state-home','state-map'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE);   // 追いつき中はモードバー非表示＝誤操作で再生破損を防ぐ
+  document.body.classList.remove('state-title','state-result','state-deploy','state-home','state-map','state-skill'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE);   // 追いつき中はモードバー非表示＝誤操作で再生破損を防ぐ
   startCatchUp(Math.floor(Math.max(0, Date.now()-sv.deployTs)/1000/DT));
 }
 
@@ -1236,7 +1497,7 @@ function startGame(opts){
   game.seedInfo = { deployTs, cellId: o.cellId||'', runSeed: o.runSeed||0 };
   game.rngState = deriveRunSeed(deployTs, game.seedInfo.cellId, game.seedInfo.runSeed);
   game.rng = makeRNG(game.rngState); game.tick = 0;
-  applyMeta(); buildRes(); document.body.classList.remove('state-title','state-result','state-home','state-deploy','state-map'); document.body.classList.add('state-playing');
+  applyMeta(); applyResearch(); snapshotSkills(); dispatchModifyStats(); buildActiveButtons(); buildRes(); document.body.classList.remove('state-title','state-result','state-home','state-deploy','state-map','state-skill'); document.body.classList.add('state-playing');
   controls.autoRotate=false; controls.target.copy(CORE); saveRun(); }
 // セル出撃：そのセルの手続きフィールドでランを開始（地図UIから呼ぶ）
 function deployFromCell(cellId){ if(!cellId) cellId=GeoCell.latLngToCell(VENUE.lat,VENUE.lng); const ts=Date.now(); const lng=GeoCell.cellToLatLng(cellId)[1]; currentField=fieldFromCell(cellId, todBucketAt(ts,lng), ts); startGame({cellId, deployTs:ts, runSeed:0}); }
@@ -1246,7 +1507,10 @@ $('retry').addEventListener('click', ()=>startGame());
 $('tohome').addEventListener('click', showHome);
 $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
-$('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
+$('mode-skill').addEventListener('click', showSkills);
+$('skgacha').addEventListener('click', gachaPull);
+$('skresbtn').addEventListener('click', ()=>{ skResearchView=!skResearchView; buildSkills(); });
+$('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
 $('speedbtn').addEventListener('click', ()=>{ timeScale = timeScale===1?5:1; $('speedbtn').textContent = timeScale===1?'▶▶ 5×':'■ 1×'; $('speedbtn').classList.toggle('on', timeScale!==1); });
 $('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); });
 
