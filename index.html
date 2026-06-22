@@ -133,6 +133,9 @@ body.state-skill #modebar{display:flex;}
 .skslots{display:flex;gap:.5rem;width:min(760px,94vw);}
 .skslot{flex:1;min-height:52px;border:2px dashed rgba(234,240,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:"DotGothic16",monospace;font-size:.8rem;color:var(--dim);cursor:pointer;pointer-events:auto;text-align:center;padding:.3rem;}
 .skslot.on{border-style:solid;color:var(--ink);}
+.rslot{flex:1;min-height:54px;position:relative;border:2px dashed rgba(234,240,255,.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;font-family:"DotGothic16",monospace;font-size:.72rem;color:var(--dim);cursor:pointer;pointer-events:auto;text-align:center;padding:.3rem;overflow:hidden;}
+.rslot.on{border-style:solid;color:var(--ink);}
+.rslot .rfill{position:absolute;left:0;bottom:0;height:3px;transition:width .25s;}
 #skcats{width:min(760px,94vw);display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
 #sklist{width:min(760px,94vw);display:flex;flex-direction:column;gap:.4rem;}
 .skcard{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.6rem .8rem;border:2px solid rgba(234,240,255,.14);border-radius:8px;background:rgba(13,18,38,.72);font-family:"DotGothic16",monospace;color:var(--ink);}
@@ -1164,7 +1167,7 @@ function updateHUD(dt){
 }
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
-const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{}} };
+const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]} };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -1202,8 +1205,19 @@ const RESEARCH=[
  {key:'extraSlot',    c:'purple',name:'戦術スロット',max:1,cost:(lv)=>Math.ceil(8000*Math.pow(3,lv)), fn:(lv)=>{ meta._rExtraSlot=lv; },                 val:(lv)=>lv>0?'装備4枠':'装備3枠'},
 ];
 const RESEARCH_BY_KEY=Object.fromEntries(RESEARCH.map(n=>[n.key,n]));
-function resCost(n){ return n.cost(resLv(n.key)); }
-function buyResearch(n){ if(n.max&&resLv(n.key)>=n.max) return; const c=resCost(n); if(meta.research.dist>=c){ meta.research.dist-=c; meta.research.node[n.key]=resLv(n.key)+1; saveMeta(); if(typeof buildSkills==='function')buildSkills(); } }
+const RESEARCH_SLOTS=3;
+function resCost(n){ return n.cost(resLv(n.key)); }                                  // 次レベルに必要な歩行距離(m)
+function resTarget(key){ const n=RESEARCH_BY_KEY[key]; return n?n.cost(resLv(key)):Infinity; }
+function resSlotProgress(sl){ return sl?Math.max(0, meta.research.dist - sl.start):0; }   // セット時点からの歩行距離差分
+function ensureSlots(){ const s=meta.research.slots; if(!Array.isArray(meta.research.slots)) meta.research.slots=[null,null,null]; while(meta.research.slots.length<RESEARCH_SLOTS) meta.research.slots.push(null); if(meta.research.slots.length>RESEARCH_SLOTS) meta.research.slots.length=RESEARCH_SLOTS; }
+function assignResearch(key){ ensureSlots(); const n=RESEARCH_BY_KEY[key]; if(!n) return; if(n.max&&resLv(key)>=n.max) return;   // MAX
+  if(meta.research.slots.some(s=>s&&s.key===key)) return;                            // 同一研究は1枠のみ
+  const i=meta.research.slots.indexOf(null); if(i<0){ toast('研究枠が空いていません'); return; }
+  meta.research.slots[i]={ key, start: meta.research.dist }; saveMeta(); buildSkills(); }
+function cancelResearchSlot(i){ ensureSlots(); if(meta.research.slots[i]){ meta.research.slots[i]=null; saveMeta(); buildSkills(); } }
+function checkResearchComplete(){ ensureSlots(); let changed=false; for(let i=0;i<RESEARCH_SLOTS;i++){ const sl=meta.research.slots[i]; if(!sl) continue; const n=RESEARCH_BY_KEY[sl.key]; if(!n){ meta.research.slots[i]=null; changed=true; continue; }
+    if(resSlotProgress(sl) >= resTarget(sl.key)){ const lv=resLv(sl.key); meta.research.node[sl.key]=Math.min(n.max||99, lv+1); meta.research.slots[i]=null; changed=true; if(RENDER) toast('🔬 研究完了: '+n.name+' Lv'+resLv(sl.key)); } }
+  if(changed){ saveMeta(); if(game.state==='skills') buildSkills(); } return changed; }
 function applyResearch(){ meta._rGachaDiscount=0; meta._rSparkMul=1; meta._rExtraSlot=0; for(const n of RESEARCH){ const lv=resLv(n.key); if(lv>0) n.fn(lv); } }
 let homeCat='red';
 function buildHome(){ try{
@@ -1260,15 +1274,30 @@ function buildSkills(){ try{
   const rv=$('skreveal'); if(lastGacha){ rv.textContent = lastGacha.err ? lastGacha.err : ('✦ '+lastGacha.name+(lastGacha.isNew?' 開放！':(lastGacha.potUp?(' 潜在★'+lastGacha.pot+'!'):' (被り→資源)'))); rv.style.color=lastGacha.err?'var(--red)':COLORHEX[lastGacha.color]; } else rv.textContent='';
   const resOn=skResearchView;
   $('sktitle').textContent=resOn?'リサーチ ／ RESEARCH':'スキル ／ SKILL';
-  $('sksub').textContent=resOn?'歩いた距離(m)で研究を購入 → 出撃が永続的に強化（GPS移動で加算）':'SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）';
+  $('sksub').textContent=resOn?'研究枠(3つ)にセット → 歩いた距離で進行 → 完了でLv↑（同時に最大3件・GPS移動で加算）':'SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）';
   $('skgacha').style.display=resOn?'none':''; rv.style.display=resOn?'none':'';
   $('skslots').style.display=resOn?'none':'flex'; $('skcats').style.display=resOn?'none':'flex';
-  if(resOn){ const el0=$('sklist'); el0.textContent='';
-    for(const n of RESEARCH){ const lv=resLv(n.key), maxed=!!(n.max&&lv>=n.max), c=resCost(n);
-      const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=COLORHEX[n.c];
+  if(resOn){ ensureSlots(); const el0=$('sklist'); el0.textContent='';
+    // 研究枠（3つ）：セット中の進捗バー。タップで中断
+    const row=document.createElement('div'); row.className='skslots'; row.style.marginBottom='.5rem';
+    for(let i=0;i<RESEARCH_SLOTS;i++){ const sl=meta.research.slots[i]; const d=document.createElement('div'); d.className='rslot'+(sl?' on':'');
+      if(sl){ const n=RESEARCH_BY_KEY[sl.key]; const prog=resSlotProgress(sl), tgt=resTarget(sl.key); d.style.borderColor=COLORHEX[n.c];
+        const t=document.createElement('div'); t.textContent=n.name+' →Lv'+(resLv(sl.key)+1);
+        const p=document.createElement('div'); p.style.color=COLORHEX[n.c]; p.style.fontSize='.62rem'; p.textContent=Math.floor(Math.min(prog,tgt))+' / '+tgt+' m';
+        const f=document.createElement('div'); f.className='rfill'; f.style.background=COLORHEX[n.c]; f.style.width=Math.min(100,prog/tgt*100)+'%';
+        d.appendChild(t); d.appendChild(p); d.appendChild(f); const idx=i; d.addEventListener('click',()=>cancelResearchSlot(idx));
+      } else { d.textContent='＋ 研究枠'; }
+      row.appendChild(d); }
+    el0.appendChild(row);
+    // ノード一覧：空き枠にセット
+    const freeSlot = meta.research.slots.indexOf(null)>=0;
+    for(const n of RESEARCH){ const lv=resLv(n.key), maxed=!!(n.max&&lv>=n.max), inSlot=meta.research.slots.some(s=>s&&s.key===n.key), c=resCost(n);
+      const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=COLORHEX[n.c]; if(maxed)card.style.opacity='.55';
       const left=document.createElement('div'); const nm=document.createElement('div'); nm.className='skn'; nm.textContent=n.name+' Lv'+lv+(n.max?('/'+n.max):''); left.appendChild(nm);
-      const ds=document.createElement('div'); ds.className='skd'; ds.textContent=n.val(lv)+(maxed?'':(' → '+n.val(lv+1))); left.appendChild(ds);
-      const btns=document.createElement('div'); btns.className='skbtns'; const b=document.createElement('button'); b.textContent=maxed?'MAX':(c+'m'); b.style.borderColor=COLORHEX[n.c]; if(maxed||meta.research.dist<c) b.disabled=true; b.addEventListener('click',()=>buyResearch(n)); btns.appendChild(b);
+      const ds=document.createElement('div'); ds.className='skd'; ds.textContent=n.val(lv)+(maxed?'':(' → '+n.val(lv+1)+' （'+c+'m）')); left.appendChild(ds);
+      const btns=document.createElement('div'); btns.className='skbtns'; const b=document.createElement('button'); b.style.borderColor=COLORHEX[n.c];
+      b.textContent = maxed?'MAX' : inSlot?'研究中' : freeSlot?'セット' : '枠なし';
+      if(inSlot) b.className='eq'; if(maxed||inSlot||!freeSlot) b.disabled=true; b.addEventListener('click',()=>assignResearch(n.key)); btns.appendChild(b);
       card.appendChild(left); card.appendChild(btns); el0.appendChild(card); }
     return; }
   const sl=$('skslots'); sl.textContent=''; const maxSlot=3+resLv('extraSlot'); while(meta.skillEquip.length<maxSlot) meta.skillEquip.push(null);
@@ -1298,7 +1327,7 @@ function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
   return LMAP; }
 let _lastFix=null;
 function haversine(la1,lo1,la2,lo2){ const R=6371000,d=Math.PI/180,dLa=(la2-la1)*d,dLo=(lo2-lo1)*d,a=la1*d,b=la2*d; const h=Math.sin(dLa/2)**2+Math.cos(a)*Math.cos(b)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.min(1,Math.sqrt(h))); }
-function accrueWalk(lat,lng){ if(_lastFix){ const m=haversine(_lastFix[0],_lastFix[1],lat,lng); if(m>1&&m<120){ meta.research.dist+=m; saveMeta(); if(game.state==='map') renderCellCard(); if(game.state==='skills') buildSkills(); } } _lastFix=[lat,lng]; }
+function accrueWalk(lat,lng){ if(_lastFix){ const m=haversine(_lastFix[0],_lastFix[1],lat,lng); if(m>1&&m<120){ meta.research.dist+=m; checkResearchComplete(); saveMeta(); if(game.state==='map') renderCellCard(); if(game.state==='skills') buildSkills(); } } _lastFix=[lat,lng]; }
 function setAvatar(lat,lng){ avatarLL=[lat,lng];
   if(LMAP){ if(!avatarMarker){ avatarMarker=L.circleMarker(avatarLL,{radius:7,color:'#3CF0FF',fillColor:'#3CF0FF',fillOpacity:.9,weight:2}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
@@ -1426,6 +1455,9 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.research=Object.assign({dist:0,node:{}},(m.research&&typeof m.research==='object')?m.research:{}); if(!(meta.research.dist>=0))meta.research.dist=0;
   if(!meta.research.node||typeof meta.research.node!=='object') meta.research.node={};
   for(const k in meta.research.node){ const n=RESEARCH_BY_KEY[k]; if(!n){ delete meta.research.node[k]; } else { meta.research.node[k]=Math.max(0,Math.min(n.max||99, meta.research.node[k]|0)); } }   // research.node は equip枠数計算より前にサニタイズ
+  { const raw=Array.isArray(meta.research.slots)?meta.research.slots:[]; const seen={}; meta.research.slots=[];   // 研究枠サニタイズ：不正/重複/MAX済みを除去
+    for(let i=0;i<RESEARCH_SLOTS;i++){ const sl=raw[i]; const n=sl&&typeof sl==='object'?RESEARCH_BY_KEY[sl.key]:null; const st=sl?Number(sl.start):NaN;
+      if(n && isFinite(st) && st>=0 && !(n.max&&(meta.research.node[sl.key]||0)>=n.max) && !seen[sl.key]){ seen[sl.key]=1; meta.research.slots.push({key:sl.key, start:Math.min(st, meta.research.dist)}); } else { meta.research.slots.push(null); } } }
   meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1);
   meta.skillOwned=(m.skillOwned&&typeof m.skillOwned==='object')?m.skillOwned:{};
   for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; if(!o||typeof o!=='object'){ delete meta.skillOwned[id]; continue; }   // null/プリミティブ値で TypeError→サニタイズ中断を防ぐ
