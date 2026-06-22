@@ -100,8 +100,8 @@ body.state-home #home{display:flex;}
 body.state-home .title, body.state-home .meta, body.state-home .hint{display:none;}
 .home-top{display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center; font-family:"DotGothic16",monospace; font-size:.78rem; color:var(--ink);}
 .home-top .hcur b{color:var(--gold);}
-#hbank .hb{display:inline-flex; align-items:center; gap:.25rem; margin-right:.6rem;}
-#hbank .hb i{width:10px; height:10px; border-radius:2px; display:inline-block;}
+#hbank .hb, #skbank .hb{display:inline-flex; align-items:center; gap:.25rem; margin-right:.6rem;}
+#hbank .hb i, #skbank .hb i{width:10px; height:10px; border-radius:2px; display:inline-block; flex:none;}
 .home-title{font-family:"Reggae One",sans-serif; font-size:clamp(1.3rem,4vw,2rem); color:#fff; text-shadow:0 0 16px rgba(60,240,255,.4);}
 .home-sub{font-size:.64rem; letter-spacing:.12em; color:var(--dim); margin-bottom:.3rem; text-align:center;}
 #cattabs{width:min(1200px,96vw); display:flex; gap:.4rem; margin:.3rem 0 .25rem; flex-wrap:wrap; justify-content:center;}
@@ -257,12 +257,11 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div id="permlist"></div>
 </div>
 <div id="skills">
-  <div class="home-top"><span class="hcur">SPARK <b id="skspark">0</b></span><span class="hcur" id="skbank"></span><span class="hcur">歩行 <b id="skdist">0</b>m</span></div>
-  <div class="home-title">スキル ／ SKILL</div>
-  <div class="home-sub">SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）</div>
+  <div class="home-top"><span class="hcur">SPARK <b id="skspark">0</b></span><span class="hcur">資源 <span id="skbank"></span></span><span class="hcur">歩行 <b id="skdist">0</b>m</span></div>
+  <div class="home-title" id="sktitle">スキル ／ SKILL</div>
+  <div class="home-sub" id="sksub">SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）</div>
   <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;justify-content:center;">
     <button class="skgacha" id="skgacha" type="button">ガチャ</button>
-    <button class="skgacha" id="skresbtn" type="button" style="background:linear-gradient(135deg,var(--cyan),var(--green));">🔬 リサーチ</button>
     <span class="skreveal" id="skreveal"></span>
   </div>
   <div class="skslots" id="skslots"></div>
@@ -272,6 +271,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 <nav id="modebar">
   <button class="mtab on" id="mode-base" type="button">強化</button>
   <button class="mtab" id="mode-skill" type="button">スキル</button>
+  <button class="mtab" id="mode-research" type="button">リサーチ</button>
   <button class="mtab" id="mode-map" type="button">🗺 出撃</button>
   <button class="mtab" id="mode-title" type="button">タイトル</button>
 </nav>
@@ -1233,7 +1233,7 @@ function buildHome(){ try{
   el.appendChild(grid);
   }catch(e){ const pl=document.getElementById('permlist'); if(pl) pl.textContent='buildHome ERR: '+(e&&e.message); console.log('buildHome error', e); }
 }
-function setTab(id){ ['mode-base','mode-skill','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); }
+function setTab(id){ ['mode-base','mode-skill','mode-research','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); }
 /* ===== スキル画面（ガチャ/Lv上げ/装備） ===== */
 let skillCat='red', lastGacha=null, skResearchView=false;
 function gachaCost(){ return Math.max(200, Math.round(1000*(1-0.05*resLv('gachaDiscount')))); }
@@ -1245,17 +1245,22 @@ function gachaPull(){ const cost=gachaCost(); if(meta.spark<cost){ lastGacha={er
   lastGacha={name:def.name,color:def.color,isNew,potUp:(o.pot>before),pot:o.pot};
   skillCat=def.color; saveMeta(); buildSkills(); }
 function levelUpSkill(id){ const def=SKILL_BY_ID[id],o=meta.skillOwned[id]; if(!o||o.level>=def.maxLv) return; const cost=skillLevelCost(def,o.level); if(meta.bank[def.color]>=cost){ meta.bank[def.color]-=cost; o.level++; saveMeta(); buildSkills(); } }
-function equipSkill(id){ const i=meta.skillEquip.indexOf(id); const max=3+resLv('extraSlot');
-  if(i>=0){ meta.skillEquip[i]=null; } else { let s=meta.skillEquip.indexOf(null); if(s<0||s>=max) s=0; meta.skillEquip[s]=id; }
+function equipSkill(id){ const max=3+resLv('extraSlot'); while(meta.skillEquip.length<max) meta.skillEquip.push(null);   // 枠数まで配列を伸長＝4枠目がスロット0を上書きしない
+  const i=meta.skillEquip.indexOf(id);
+  if(i>=0){ meta.skillEquip[i]=null; } else { let s=meta.skillEquip.indexOf(null); if(s<0) s=0; meta.skillEquip[s]=id; }
   saveMeta(); buildSkills(); }
-function showSkills(){ game.state='skills'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill'); document.body.classList.add('state-skill'); controls.autoRotate=!REDUCED; setTab('mode-skill'); buildSkills(); }
+function enterSkillPanel(research){ skResearchView=!!research; game.state='skills'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill'); document.body.classList.add('state-skill'); controls.autoRotate=!REDUCED; setTab(research?'mode-research':'mode-skill'); buildSkills(); }
+function showSkills(){ enterSkillPanel(false); }
+function showResearch(){ enterSkillPanel(true); }
 function buildSkills(){ try{
   $('skspark').textContent=Math.floor(meta.spark);
   const hb=$('skbank'); hb.textContent=''; for(const c of COLORS){ const s=document.createElement('span'); s.className='hb'; const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=Math.floor(meta.bank[c]); s.appendChild(i); s.appendChild(v); hb.appendChild(s); }
   $('skdist').textContent=Math.floor(meta.research.dist);
   $('skgacha').textContent='ガチャ （SPARK '+gachaCost()+'）';
   const rv=$('skreveal'); if(lastGacha){ rv.textContent = lastGacha.err ? lastGacha.err : ('✦ '+lastGacha.name+(lastGacha.isNew?' 開放！':(lastGacha.potUp?(' 潜在★'+lastGacha.pot+'!'):' (被り→資源)'))); rv.style.color=lastGacha.err?'var(--red)':COLORHEX[lastGacha.color]; } else rv.textContent='';
-  const resOn=skResearchView, rbtn=$('skresbtn'); if(rbtn) rbtn.textContent=resOn?'← スキル一覧':'🔬 リサーチ';
+  const resOn=skResearchView;
+  $('sktitle').textContent=resOn?'リサーチ ／ RESEARCH':'スキル ／ SKILL';
+  $('sksub').textContent=resOn?'歩いた距離(m)で研究を購入 → 出撃が永続的に強化（GPS移動で加算）':'SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）';
   $('skgacha').style.display=resOn?'none':''; rv.style.display=resOn?'none':'';
   $('skslots').style.display=resOn?'none':'flex'; $('skcats').style.display=resOn?'none':'flex';
   if(resOn){ const el0=$('sklist'); el0.textContent='';
@@ -1266,7 +1271,7 @@ function buildSkills(){ try{
       const btns=document.createElement('div'); btns.className='skbtns'; const b=document.createElement('button'); b.textContent=maxed?'MAX':(c+'m'); b.style.borderColor=COLORHEX[n.c]; if(maxed||meta.research.dist<c) b.disabled=true; b.addEventListener('click',()=>buyResearch(n)); btns.appendChild(b);
       card.appendChild(left); card.appendChild(btns); el0.appendChild(card); }
     return; }
-  const sl=$('skslots'); sl.textContent=''; const maxSlot=3+resLv('extraSlot');
+  const sl=$('skslots'); sl.textContent=''; const maxSlot=3+resLv('extraSlot'); while(meta.skillEquip.length<maxSlot) meta.skillEquip.push(null);
   for(let k=0;k<maxSlot;k++){ const id=meta.skillEquip[k]; const d=document.createElement('div'); d.className='skslot'+(id?' on':''); if(id){ const def=SKILL_BY_ID[id]; d.style.borderColor=COLORHEX[def.color]; d.textContent=def.name; } else d.textContent='＋ 空き枠'; d.addEventListener('click',()=>{ if(id){ meta.skillEquip[k]=null; saveMeta(); buildSkills(); } }); sl.appendChild(d); }
   const ct=$('skcats'); ct.textContent=''; for(const c of COLORS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c===skillCat?' on':''); t.style.color=COLORHEX[c]; t.textContent=CATNAME[c]; if(c===skillCat)t.style.borderColor=COLORHEX[c]; t.addEventListener('click',()=>{skillCat=c;buildSkills();}); ct.appendChild(t); }
   const el=$('sklist'); el.textContent='';
@@ -1275,7 +1280,7 @@ function buildSkills(){ try{
     const left=document.createElement('div');
     const nm=document.createElement('div'); nm.className='skn'; nm.textContent=def.name+(o?(' Lv'+o.level+'/'+def.maxLv):'（未開放）'); left.appendChild(nm);
     const ds=document.createElement('div'); ds.className='skd'; ds.textContent=def.desc; left.appendChild(ds);
-    if(o){ const st=document.createElement('div'); st.className='skstars'; st.textContent='潜在 '+'★'.repeat(o.pot)+'☆'.repeat(def.potMax-o.pot); left.appendChild(st); }
+    if(o){ const st=document.createElement('div'); st.className='skstars'; const pot=Math.max(0,Math.min(def.potMax,o.pot|0)); st.textContent='潜在 '+'★'.repeat(pot)+'☆'.repeat(Math.max(0,def.potMax-pot)); left.appendChild(st); }
     const btns=document.createElement('div'); btns.className='skbtns';
     if(o){ const lvb=document.createElement('button'); const c2=skillLevelCost(def,o.level); lvb.textContent=o.level>=def.maxLv?'MAX':('Lv↑ '+c2); lvb.style.borderColor=COLORHEX[def.color]; if(o.level>=def.maxLv||meta.bank[def.color]<c2) lvb.disabled=true; lvb.addEventListener('click',()=>levelUpSkill(def.id)); btns.appendChild(lvb);
       const eq=meta.skillEquip.indexOf(def.id)>=0; const eqb=document.createElement('button'); eqb.textContent=eq?'装備中':'装備'; if(eq)eqb.className='eq'; eqb.addEventListener('click',()=>equipSkill(def.id)); btns.appendChild(eqb); }
@@ -1401,7 +1406,7 @@ function finishRun(clear){ if(game.state!=='playing') return; game.state='result
 /* リザルト演出（前面のみ）。finishRun が積んだ game.result を描画。冪等。 */
 function showResult(){ if(!game.result || game.resultShown) return; game.resultShown=true; const r=game.result;
   hideBossMeshes(); hideFortressFx();
-  document.body.classList.remove('state-playing','state-map','state-home'); document.body.classList.add('state-result');
+  document.body.classList.remove('state-playing','state-map','state-home','state-skill','state-deploy'); document.body.classList.add('state-result');
   $('rtitle').textContent = r.clear?'踏破':'陥落'; $('rtitle').className = r.clear?'clear':'fall';
   $('rwave').textContent=r.wave; $('rkill').textContent=r.kills; $('rscore').textContent=r.kills;
   const h=r.haul; const haul='R'+h.red+' B'+h.blue+' G'+h.green+' Y'+h.yellow+' P'+h.purple;
@@ -1414,14 +1419,21 @@ function enterPlaying(){ game.resultShown=false; document.body.classList.remove(
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
 function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed})); }catch(e){} }
-function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(s){ const m=JSON.parse(s); meta.spark=m.spark||0; meta.bank=Object.assign({red:0,blue:0,green:0,yellow:0,purple:0},m.bank||{}); meta.perm=m.perm||{};
-  meta.skillOwned=m.skillOwned||{}; meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,3):[null,null,null]; while(meta.skillEquip.length<3)meta.skillEquip.push(null);
-  meta.research=Object.assign({dist:0,node:{}},m.research||{}); if(!(meta.research.dist>=0))meta.research.dist=0; meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1);
-  for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; o.level=Math.max(1,Math.min(def.maxLv,o.level|0)); o.dup=Math.max(0,o.dup|0); o.pot=potFromDup(o.dup,def.potMax); }
-  meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
+function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
+  meta.spark=Math.max(0, Number(m.spark)||0);
+  const mb=(m.bank&&typeof m.bank==='object')?m.bank:{}; meta.bank={red:0,blue:0,green:0,yellow:0,purple:0}; for(const c of COLORS) meta.bank[c]=Math.max(0, Number(mb[c])||0);   // 数値強制（壊れた保存でNaN通貨を防ぐ）
+  meta.perm=(m.perm&&typeof m.perm==='object')?m.perm:{}; for(const k in meta.perm) meta.perm[k]=Math.max(0, meta.perm[k]|0);
+  meta.research=Object.assign({dist:0,node:{}},(m.research&&typeof m.research==='object')?m.research:{}); if(!(meta.research.dist>=0))meta.research.dist=0;
   if(!meta.research.node||typeof meta.research.node!=='object') meta.research.node={};
-  for(const k in meta.research.node){ const n=RESEARCH_BY_KEY[k]; if(!n){ delete meta.research.node[k]; } else { meta.research.node[k]=Math.max(0,Math.min(n.max||99, meta.research.node[k]|0)); } }
-  } }catch(e){ console.log('loadMeta',e); } }
+  for(const k in meta.research.node){ const n=RESEARCH_BY_KEY[k]; if(!n){ delete meta.research.node[k]; } else { meta.research.node[k]=Math.max(0,Math.min(n.max||99, meta.research.node[k]|0)); } }   // research.node は equip枠数計算より前にサニタイズ
+  meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1);
+  meta.skillOwned=(m.skillOwned&&typeof m.skillOwned==='object')?m.skillOwned:{};
+  for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; if(!o||typeof o!=='object'){ delete meta.skillOwned[id]; continue; }   // null/プリミティブ値で TypeError→サニタイズ中断を防ぐ
+    o.level=Math.max(1,Math.min(def.maxLv,o.level|0)); o.dup=Math.max(0,o.dup|0); o.pot=potFromDup(o.dup,def.potMax); }
+  const N=3+(meta.research.node.extraSlot||0);   // 研究で解放した装備枠数（3 or 4）で切り詰め・パディング＝4枠目を失わない
+  meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,N):[]; while(meta.skillEquip.length<N)meta.skillEquip.push(null);
+  meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
+  }catch(e){ console.log('loadMeta',e); } }
 function saveRun(){ try{ if(!game.seedInfo || game.state!=='playing') return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), wave:game.wave, hp:Math.round(game.hp) })); }catch(e){} }
 function loadRun(){ try{ const s=localStorage.getItem(RUN_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
 function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
@@ -1508,11 +1520,11 @@ $('tohome').addEventListener('click', showHome);
 $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
 $('mode-skill').addEventListener('click', showSkills);
+$('mode-research').addEventListener('click', showResearch);
 $('skgacha').addEventListener('click', gachaPull);
-$('skresbtn').addEventListener('click', ()=>{ skResearchView=!skResearchView; buildSkills(); });
 $('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
 $('speedbtn').addEventListener('click', ()=>{ timeScale = timeScale===1?5:1; $('speedbtn').textContent = timeScale===1?'▶▶ 5×':'■ 1×'; $('speedbtn').classList.toggle('on', timeScale!==1); });
-$('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); });
+$('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result','state-home','state-map','state-deploy','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); });
 
 renderer.render(scene,camera);
 if(!REDUCED) for(let i=0;i<4;i++) spawnShell();
