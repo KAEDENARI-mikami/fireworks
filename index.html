@@ -1197,12 +1197,33 @@ function applyMeta(){ for(const p of PERM){ const lv=permLv(p.k); if(lv>0) p.fn(
 /* ===== 研究（歩行距離で進行・metaに統一） ===== */
 const resLv=(k)=>(meta.research&&meta.research.node&&meta.research.node[k])||0;
 const RESEARCH=[
- {key:'r_vit',        c:'blue',  name:'探査体力', max:8, cost:(lv)=>Math.ceil(300*Math.pow(1.8,lv)), fn:(lv)=>{ game.maxhp*=1+0.06*lv; game.hp=game.maxhp; }, val:(lv)=>'HP +'+(6*lv)+'%'},
- {key:'r_pow',        c:'red',   name:'探査火力', max:8, cost:(lv)=>Math.ceil(300*Math.pow(1.8,lv)), fn:(lv)=>{ game.dmg*=1+0.05*lv; },                 val:(lv)=>'火力 +'+(5*lv)+'%'},
- {key:'r_harv',       c:'green', name:'踏査採取', max:8, cost:(lv)=>Math.ceil(200*Math.pow(1.7,lv)), fn:(lv)=>{ game.harvestMul*=1+0.08*lv; },          val:(lv)=>'採取 +'+(8*lv)+'%'},
- {key:'gachaDiscount',c:'yellow',name:'魔力効率', max:5, cost:(lv)=>Math.ceil(600*Math.pow(2.0,lv)), fn:(lv)=>{ meta._rGachaDiscount=0.05*lv; },        val:(lv)=>'ガチャ -'+(5*lv)+'%'},
- {key:'r_spark',      c:'purple',name:'残光収集', max:6, cost:(lv)=>Math.ceil(500*Math.pow(2.0,lv)), fn:(lv)=>{ meta._rSparkMul=1+0.07*lv; },           val:(lv)=>'SPARK ×'+(1+0.07*lv).toFixed(2)},
- {key:'extraSlot',    c:'purple',name:'戦術スロット',max:1,cost:(lv)=>Math.ceil(8000*Math.pow(3,lv)), fn:(lv)=>{ meta._rExtraSlot=lv; },                 val:(lv)=>lv>0?'装備4枠':'装備3枠'},
+ // 赤：火力系
+ {key:'r_pow',   c:'red',   name:'探査火力',   max:10, cost:(lv)=>Math.ceil(300*Math.pow(1.7,lv)), fn:(lv)=>{ game.dmg*=1+0.05*lv; },                                  val:(lv)=>'火力 +'+(5*lv)+'%'},
+ {key:'r_rof',   c:'red',   name:'探査連射',   max:10, cost:(lv)=>Math.ceil(320*Math.pow(1.7,lv)), fn:(lv)=>{ game.fireRate*=1+0.04*lv; },                              val:(lv)=>'連射 +'+(4*lv)+'%'},
+ {key:'r_crit',  c:'red',   name:'探査クリ率', max:8,  cost:(lv)=>Math.ceil(400*Math.pow(1.7,lv)), fn:(lv)=>{ game.critChance=Math.min(1,game.critChance+0.03*lv); },   val:(lv)=>'クリ率 +'+(3*lv)+'%'},
+ {key:'r_critp', c:'red',   name:'探査クリ倍率',max:8, cost:(lv)=>Math.ceil(380*Math.pow(1.7,lv)), fn:(lv)=>{ game.critPower+=0.2*lv; },                                val:(lv)=>'クリ倍率 +'+(0.2*lv).toFixed(1)},
+ {key:'r_rng',   c:'red',   name:'探査射程',   max:8,  cost:(lv)=>Math.ceil(260*Math.pow(1.6,lv)), fn:(lv)=>{ game.range*=1+0.05*lv; },                                 val:(lv)=>'射程 +'+(5*lv)+'%'},
+ {key:'r_multi', c:'red',   name:'探査多重弾', max:4,  cost:(lv)=>Math.ceil(900*Math.pow(2.0,lv)), fn:(lv)=>{ game.multishot=Math.min(8,game.multishot+lv); },          val:(lv)=>'多重弾 +'+lv},
+ // 青：防御系
+ {key:'r_vit',   c:'blue',  name:'探査体力',   max:10, cost:(lv)=>Math.ceil(300*Math.pow(1.7,lv)), fn:(lv)=>{ game.maxhp*=1+0.06*lv; game.hp=game.maxhp; },             val:(lv)=>'HP +'+(6*lv)+'%'},
+ {key:'r_regen', c:'blue',  name:'探査再生',   max:10, cost:(lv)=>Math.ceil(300*Math.pow(1.7,lv)), fn:(lv)=>{ game.regen+=4*lv; },                                     val:(lv)=>'再生 +'+(4*lv)+'/s'},
+ {key:'r_armor', c:'blue',  name:'探査防御',   max:10, cost:(lv)=>Math.ceil(320*Math.pow(1.7,lv)), fn:(lv)=>{ game.armor+=25*lv; },                                    val:(lv)=>'防御 +'+(25*lv)},
+ {key:'r_dr',    c:'blue',  name:'探査軽減',   max:8,  cost:(lv)=>Math.ceil(500*Math.pow(1.8,lv)), fn:(lv)=>{ game.dr=Math.min(0.6,game.dr+0.03*lv); },                 val:(lv)=>'軽減 +'+(3*lv)+'%'},
+ {key:'r_barr',  c:'blue',  name:'探査障壁',   max:8,  cost:(lv)=>Math.ceil(340*Math.pow(1.7,lv)), fn:(lv)=>{ game.barrier+=120*lv; },                                 val:(lv)=>'障壁 +'+(120*lv)},
+ {key:'r_swpow', c:'blue',  name:'探査衝撃波', max:6,  cost:(lv)=>Math.ceil(360*Math.pow(1.7,lv)), fn:(lv)=>{ game.swPow+=0.4*lv; },                                    val:(lv)=>'衝撃波 +'+(0.4*lv).toFixed(1)},
+ // 緑：経済系
+ {key:'r_harv',  c:'green', name:'踏査採取',   max:10, cost:(lv)=>Math.ceil(200*Math.pow(1.6,lv)), fn:(lv)=>{ game.harvestMul*=1+0.08*lv; },                            val:(lv)=>'採取 +'+(8*lv)+'%'},
+ {key:'r_cash',  c:'green', name:'踏査資金',   max:10, cost:(lv)=>Math.ceil(240*Math.pow(1.6,lv)), fn:(lv)=>{ game.cashMul*=1+0.06*lv; },                               val:(lv)=>'$獲得 +'+(6*lv)+'%'},
+ {key:'r_scash', c:'green', name:'踏査初期資金',max:8, cost:(lv)=>Math.ceil(220*Math.pow(1.6,lv)), fn:(lv)=>{ game.cash+=80*lv; },                                      val:(lv)=>'初期$ +'+(80*lv)},
+ // 黄：スキル/魔力系
+ {key:'r_spow',  c:'yellow',name:'探査スキル威力',max:8,cost:(lv)=>Math.ceil(380*Math.pow(1.7,lv)),fn:(lv)=>{ game.skillPow*=1+0.10*lv; },                              val:(lv)=>'スキル威力 +'+(10*lv)+'%'},
+ {key:'r_schg',  c:'yellow',name:'大火チャージ',max:6,  cost:(lv)=>Math.ceil(420*Math.pow(1.8,lv)), fn:(lv)=>{ game.skillMax=Math.max(5,game.skillMax-0.5*lv); },       val:(lv)=>'CT -'+(0.5*lv).toFixed(1)+'s'},
+ {key:'gachaDiscount',c:'yellow',name:'魔力効率', max:5, cost:(lv)=>Math.ceil(600*Math.pow(2.0,lv)), fn:(lv)=>{ meta._rGachaDiscount=0.05*lv; },                       val:(lv)=>'ガチャ -'+(5*lv)+'%'},
+ // 紫：弱体/魔系
+ {key:'r_slow',  c:'purple',name:'探査減速',   max:8,  cost:(lv)=>Math.ceil(420*Math.pow(1.7,lv)), fn:(lv)=>{ game.slowLv=Math.min(8,game.slowLv+lv); },                val:(lv)=>'減速 Lv+'+lv},
+ {key:'r_vuln',  c:'purple',name:'探査脆弱',   max:8,  cost:(lv)=>Math.ceil(460*Math.pow(1.7,lv)), fn:(lv)=>{ game.vuln+=0.06*lv; },                                   val:(lv)=>'脆弱 +'+(6*lv)+'%'},
+ {key:'r_spark', c:'purple',name:'残光収集',   max:8,  cost:(lv)=>Math.ceil(500*Math.pow(1.9,lv)), fn:(lv)=>{ meta._rSparkMul=1+0.07*lv; },                            val:(lv)=>'SPARK ×'+(1+0.07*lv).toFixed(2)},
+ {key:'extraSlot',c:'purple',name:'戦術スロット',max:1, cost:(lv)=>Math.ceil(8000*Math.pow(3,lv)),  fn:(lv)=>{ meta._rExtraSlot=lv; },                                 val:(lv)=>lv>0?'装備4枠':'装備3枠'},
 ];
 const RESEARCH_BY_KEY=Object.fromEntries(RESEARCH.map(n=>[n.key,n]));
 const RESEARCH_SLOTS=3;
@@ -1276,22 +1297,23 @@ function buildSkills(){ try{
   $('sktitle').textContent=resOn?'リサーチ ／ RESEARCH':'スキル ／ SKILL';
   $('sksub').textContent=resOn?'研究枠(3つ)にセット → 歩いた距離で進行 → 完了でLv↑（同時に最大3件・GPS移動で加算）':'SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）';
   $('skgacha').style.display=resOn?'none':''; rv.style.display=resOn?'none':'';
-  $('skslots').style.display=resOn?'none':'flex'; $('skcats').style.display=resOn?'none':'flex';
-  if(resOn){ ensureSlots(); const el0=$('sklist'); el0.textContent='';
-    // 研究枠（3つ）：セット中の進捗バー。タップで中断
-    const row=document.createElement('div'); row.className='skslots'; row.style.marginBottom='.5rem';
-    for(let i=0;i<RESEARCH_SLOTS;i++){ const sl=meta.research.slots[i]; const d=document.createElement('div'); d.className='rslot'+(sl?' on':'');
-      if(sl){ const n=RESEARCH_BY_KEY[sl.key]; const prog=resSlotProgress(sl), tgt=resTarget(sl.key); d.style.borderColor=COLORHEX[n.c];
-        const t=document.createElement('div'); t.textContent=n.name+' →Lv'+(resLv(sl.key)+1);
+  $('skslots').style.display='flex'; $('skcats').style.display='flex';
+  // 色タブ（スキル/リサーチ共通。skillCat で一覧を絞り込み）
+  const ct=$('skcats'); ct.textContent=''; for(const c of COLORS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c===skillCat?' on':''); t.style.color=COLORHEX[c]; t.textContent=CATNAME[c]; if(c===skillCat)t.style.borderColor=COLORHEX[c]; t.addEventListener('click',()=>{skillCat=c;buildSkills();}); ct.appendChild(t); }
+  if(resOn){ ensureSlots();
+    // 研究枠（3つ）を上部に：進捗バー、タップで中断
+    const sl=$('skslots'); sl.textContent='';
+    for(let i=0;i<RESEARCH_SLOTS;i++){ const slot=meta.research.slots[i]; const d=document.createElement('div'); d.className='rslot'+(slot?' on':'');
+      if(slot){ const n=RESEARCH_BY_KEY[slot.key]; const prog=resSlotProgress(slot), tgt=resTarget(slot.key); d.style.borderColor=COLORHEX[n.c];
+        const t=document.createElement('div'); t.textContent=n.name+' →Lv'+(resLv(slot.key)+1);
         const p=document.createElement('div'); p.style.color=COLORHEX[n.c]; p.style.fontSize='.62rem'; p.textContent=Math.floor(Math.min(prog,tgt))+' / '+tgt+' m';
         const f=document.createElement('div'); f.className='rfill'; f.style.background=COLORHEX[n.c]; f.style.width=Math.min(100,prog/tgt*100)+'%';
         d.appendChild(t); d.appendChild(p); d.appendChild(f); const idx=i; d.addEventListener('click',()=>cancelResearchSlot(idx));
       } else { d.textContent='＋ 研究枠'; }
-      row.appendChild(d); }
-    el0.appendChild(row);
-    // ノード一覧：空き枠にセット
-    const freeSlot = meta.research.slots.indexOf(null)>=0;
-    for(const n of RESEARCH){ const lv=resLv(n.key), maxed=!!(n.max&&lv>=n.max), inSlot=meta.research.slots.some(s=>s&&s.key===n.key), c=resCost(n);
+      sl.appendChild(d); }
+    // ノード一覧（選択色で絞り込み）：空き枠にセット
+    const el0=$('sklist'); el0.textContent=''; const freeSlot = meta.research.slots.indexOf(null)>=0;
+    for(const n of RESEARCH){ if(n.c!==skillCat) continue; const lv=resLv(n.key), maxed=!!(n.max&&lv>=n.max), inSlot=meta.research.slots.some(s=>s&&s.key===n.key), c=resCost(n);
       const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=COLORHEX[n.c]; if(maxed)card.style.opacity='.55';
       const left=document.createElement('div'); const nm=document.createElement('div'); nm.className='skn'; nm.textContent=n.name+' Lv'+lv+(n.max?('/'+n.max):''); left.appendChild(nm);
       const ds=document.createElement('div'); ds.className='skd'; ds.textContent=n.val(lv)+(maxed?'':(' → '+n.val(lv+1)+' （'+c+'m）')); left.appendChild(ds);
@@ -1302,7 +1324,6 @@ function buildSkills(){ try{
     return; }
   const sl=$('skslots'); sl.textContent=''; const maxSlot=3+resLv('extraSlot'); while(meta.skillEquip.length<maxSlot) meta.skillEquip.push(null);
   for(let k=0;k<maxSlot;k++){ const id=meta.skillEquip[k]; const d=document.createElement('div'); d.className='skslot'+(id?' on':''); if(id){ const def=SKILL_BY_ID[id]; d.style.borderColor=COLORHEX[def.color]; d.textContent=def.name; } else d.textContent='＋ 空き枠'; d.addEventListener('click',()=>{ if(id){ meta.skillEquip[k]=null; saveMeta(); buildSkills(); } }); sl.appendChild(d); }
-  const ct=$('skcats'); ct.textContent=''; for(const c of COLORS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c===skillCat?' on':''); t.style.color=COLORHEX[c]; t.textContent=CATNAME[c]; if(c===skillCat)t.style.borderColor=COLORHEX[c]; t.addEventListener('click',()=>{skillCat=c;buildSkills();}); ct.appendChild(t); }
   const el=$('sklist'); el.textContent='';
   for(const def of SKILLS){ if(def.color!==skillCat) continue; const o=meta.skillOwned[def.id];
     const card=document.createElement('div'); card.className='skcard'; card.style.borderColor=o?COLORHEX[def.color]:'rgba(234,240,255,.1)'; if(!o)card.style.opacity='.55';
