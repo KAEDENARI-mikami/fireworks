@@ -1547,7 +1547,17 @@ function buildSkills(){ try{
 }catch(e){ const el=$('sklist'); if(el) el.textContent='buildSkills ERR: '+(e&&e.message); console.log('buildSkills',e); } }
 
 /* ===== 位置情報マップ（出撃画面）：Leaflet＋GPS＋DEV移動＋セルoverlay＋ノーマップfallback ===== */
-let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], _sweetCenterCell=null;
+let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0;
+let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
+function classifyMode(sp, hist){   // sp: m/s
+  if(sp<0.6) return 'stop';
+  if(sp<2.2) return 'walk';        // 〜約8km/h
+  if(sp<5.5) return 'bike';        // 〜約20km/h
+  if(hist&&hist.length>=4){ const fh=hist.filter(x=>x>5.0); if(fh.length>=3){ const mn=fh.reduce((a,b)=>a+b,0)/fh.length, sd=Math.sqrt(fh.reduce((a,b)=>a+(b-mn)*(b-mn),0)/fh.length); return (sd/mn<0.18)?'train':'car'; } }   // 安定高速＝電車推定/変動＝車推定（表示のみ）
+  return 'car';
+}
+function modeFast(){ return moveMode==='car'||moveMode==='train'; }
+function modeLabel(){ return ({stop:'🛑 停止',walk:'🚶 徒歩',bike:'🚲 自転車',car:'🚗 車(推定)',train:'🚆 電車(推定)'})[moveMode]||'🛑 停止'; }
 function leafletReady(){ return !window.__leafletFailed && typeof L!=='undefined'; }
 function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
   LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],16);
@@ -1556,18 +1566,26 @@ function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
   return LMAP; }
 let _lastFix=null;
 function haversine(la1,lo1,la2,lo2){ const R=6371000,d=Math.PI/180,dLa=(la2-la1)*d,dLo=(lo2-lo1)*d,a=la1*d,b=la2*d; const h=Math.sin(dLa/2)**2+Math.cos(a)*Math.cos(b)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.min(1,Math.sqrt(h))); }
-function accrueWalk(lat,lng){ if(_lastFix){ const m=haversine(_lastFix[0],_lastFix[1],lat,lng); if(m>1&&m<120){ meta.research.dist+=m; checkResearchComplete(); saveMeta(); if(game.state==='map') renderCellCard(); if(game.state==='skills') buildSkills(); } } _lastFix=[lat,lng]; }
+function accrueWalk(lat,lng,gpsSpeed){ const now=performance.now();
+  if(_lastFix){ const m=haversine(_lastFix[0],_lastFix[1],lat,lng); const dt=Math.max(0.3,(now-_lastFix[2])/1000);
+    moveSpeed=(typeof gpsSpeed==='number'&&gpsSpeed>=0)?gpsSpeed:(m/dt);   // m/s（端末speed優先、無ければ距離/時間）
+    _speedHist.push(moveSpeed); if(_speedHist.length>6)_speedHist.shift(); moveMode=classifyMode(moveSpeed,_speedHist);
+    if(m>1 && m<500 && moveMode==='walk'){ meta.research.dist+=m; checkResearchComplete(); saveMeta(); }   // 研究は徒歩のみ加算（自転車/車/電車は0）
+    if(game.state==='map') renderCellCard(); if(game.state==='skills') buildSkills();
+  } _lastFix=[lat,lng,now]; }
 function setAvatar(lat,lng){ avatarLL=[lat,lng];
   if(LMAP){ if(!avatarMarker){ avatarMarker=L.circleMarker(avatarLL,{radius:7,color:'#3CF0FF',fillColor:'#3CF0FF',fillOpacity:.9,weight:2}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
 function drawCells(){
   selCell = avatarLL ? GeoCell.latLngToCell(avatarLL[0],avatarLL[1]) : GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
-  // 現在地はアバター点のみ（ヘックス枠は表示しない）。近傍のスイートスポットだけを金色の点で表示
-  if(LMAP && avatarLL && selCell!==_sweetCenterCell){
-    _sweetCenterCell=selCell;
+  // 現在地はアバター点のみ。近傍のスイートスポットを金色の点で表示（高速移動中は探索半径を拡大）
+  const wantK = modeFast()?40:13;   // 徒歩 約1km / 車・電車 約3km
+  const _now=performance.now();
+  if(LMAP && avatarLL && (selCell!==_sweetCenterCell || wantK!==_sweetK) && _now-_sweetT>1000){   // セル/モード変化時のみ・最大1秒に1回（高速移動の再計算暴走を防ぐ）
+    _sweetCenterCell=selCell; _sweetK=wantK; _sweetT=_now;
     sweetMarkers.forEach(m=>LMAP.removeLayer(m)); sweetMarkers=[];
     const jpOf=(cid)=>{ const a=GeoCell.cellToAxial(cid); return fieldNoise(a[0],a[1],999); };   // 豊穣度ノイズ
-    for(const cid of GeoCell.gridDisk(selCell, 13)){          // 約1km圏内
+    for(const cid of GeoCell.gridDisk(selCell, wantK)){
       const jp=jpOf(cid); if(jp<=JP_THRESH) continue;         // スイートスポット域のみ
       let peak=true; for(const nb of GeoCell.neighbors(cid)){ if(jpOf(nb) > jp){ peak=false; break; } }   // 塊の頂点(局所最大)＝1点だけ表示
       if(!peak) continue;
@@ -1596,13 +1614,16 @@ function renderCellCard(){
   card.appendChild(bars);
   const go=document.createElement('button'); go.className='mapgo'; go.type='button'; go.textContent=hellOn?'シブヤ地獄へ出撃':'ここに出撃';
   go.addEventListener('click', ()=>deployFromCell(cell)); card.appendChild(go);
-  const hint=document.createElement('div'); hint.className='maphint'; hint.textContent= hellOn ? '⚠ シブヤテレポート発動：全鉱石密度100・敵HP/攻撃×5・敵量×2（資源は最大）' : (devMode ? 'DEVモード：地図クリック / 矢印キーで移動（濃度はなめらかに変化）' : 'GPS現在地（歩くと濃度がなめらかに変化）');
+  const hint=document.createElement('div'); hint.className='maphint';
+  hint.textContent = hellOn ? '⚠ シブヤテレポート発動：全鉱石密度100・敵HP/攻撃×5・敵量×2（資源は最大）'
+    : devMode ? 'DEVモード：地図クリック / 矢印キーで移動'
+    : (modeLabel()+'  '+(moveMode==='walk'?'▶ 研究 加算中':modeFast()?'▶ 探索範囲 拡大中（研究は徒歩のみ）':'研究は徒歩のみ加算'));
   card.appendChild(hint);
 }
 function startGPS(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで出撃可（矢印/クリックで移動）'); return; }   // VENUEは showMap が既に表示
   if(_gpsWatch!=null){ try{ navigator.geolocation.clearWatch(_gpsWatch); }catch(e){} _gpsWatch=null; }   // 二重監視を防ぐ
-  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,17); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
+  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,17); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
