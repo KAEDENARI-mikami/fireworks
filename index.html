@@ -1582,19 +1582,21 @@ function renderCellCard(){
   const card=$('mapcard'); if(!card) return; card.textContent='';
   const cell=selCell||GeoCell.latLngToCell(VENUE.lat,VENUE.lng), lng=avatarLL?avatarLL[1]:VENUE.lng;
   const f=fieldFromCell(cell, todBucketAt(Date.now(),lng), Date.now());
+  const hellOn=!!meta.armedShibuya;                                  // シブヤ装備中はこのカードに地獄の値をプレビュー
+  const dTotal=hellOn?500:f.TOTAL, dELv=hellOn?(1+500/300)*5:f.eLvMul, dDens=c=>hellOn?100:f.DENS[c];
   const top=document.createElement('div'); top.className='mc-top';
-  const left=document.createElement('span'); left.textContent=(f.jackpot?'★ スイートスポット':'現在地')+'　総密度 '+f.TOTAL;
-  const right=document.createElement('span'); right.textContent='敵Lv '; const bb=document.createElement('b'); bb.textContent='×'+f.eLvMul.toFixed(2); right.appendChild(bb);
+  const left=document.createElement('span'); left.textContent=(hellOn?'🌀 シブヤ地獄（敵量×2）':(f.jackpot?'★ スイートスポット':'現在地'))+'　総密度 '+dTotal; if(hellOn) left.style.color='#FF6BB0';
+  const right=document.createElement('span'); right.textContent='敵Lv '; const bb=document.createElement('b'); bb.textContent='×'+dELv.toFixed(2); if(hellOn) bb.style.color='#FF6BB0'; right.appendChild(bb);
   top.appendChild(left); top.appendChild(right); card.appendChild(top);
   const bars=document.createElement('div'); bars.className='mapbars';
   for(const c of COLORS){ const col=document.createElement('div'); col.className='mb';
-    const num=document.createElement('div'); num.className='mb-num'; num.style.color=COLORHEX[c]; num.textContent=f.DENS[c];
-    const track=document.createElement('div'); track.className='mb-track'; const fl=document.createElement('i'); fl.style.background=COLORHEX[c]; fl.style.height=f.DENS[c]+'%'; track.appendChild(fl);
+    const num=document.createElement('div'); num.className='mb-num'; num.style.color=COLORHEX[c]; num.textContent=dDens(c);
+    const track=document.createElement('div'); track.className='mb-track'; const fl=document.createElement('i'); fl.style.background=COLORHEX[c]; fl.style.height=dDens(c)+'%'; track.appendChild(fl);
     col.appendChild(num); col.appendChild(track); bars.appendChild(col); }
   card.appendChild(bars);
-  const go=document.createElement('button'); go.className='mapgo'; go.type='button'; go.textContent='ここに出撃';
+  const go=document.createElement('button'); go.className='mapgo'; go.type='button'; go.textContent=hellOn?'シブヤ地獄へ出撃':'ここに出撃';
   go.addEventListener('click', ()=>deployFromCell(cell)); card.appendChild(go);
-  const hint=document.createElement('div'); hint.className='maphint'; hint.textContent= devMode ? 'DEVモード：地図クリック / 矢印キーで移動（濃度はなめらかに変化）' : 'GPS現在地（歩くと濃度がなめらかに変化）';
+  const hint=document.createElement('div'); hint.className='maphint'; hint.textContent= hellOn ? '⚠ シブヤテレポート発動：全鉱石密度100・敵HP/攻撃×5・敵量×2（資源は最大）' : (devMode ? 'DEVモード：地図クリック / 矢印キーで移動（濃度はなめらかに変化）' : 'GPS現在地（歩くと濃度がなめらかに変化）');
   card.appendChild(hint);
 }
 function startGPS(){
