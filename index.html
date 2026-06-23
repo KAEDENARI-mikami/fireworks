@@ -647,13 +647,13 @@ plasmaMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.Icosahed
 plasmaMesh.visible=false; plasmaMesh.frustumCulled=false; scene.add(plasmaMesh);
 const BOSSES = [
   { key:'tank', name:'重戦車',   col:0xFF3A2A, colArr:[1,.35,.3],
-    baseHp:3750, baseAtk:120, orbSpd:0.32, shootInt:2.0, shootMul:0.75, laserDmg:0.08, laserDur:1.0, laserCd:[3,5], sCount:1.0, summon:[0.7,0.3],
+    baseHp:3750, baseAtk:96, orbSpd:0.32, shootInt:2.0, shootMul:0.75, laserDmg:0.08, laserDur:1.0, laserCd:[3,5], sCount:1.0, summon:[0.7,0.3],
     desc:'標準型。レーザーと増援召喚を備えた万能ボス。' },
   { key:'inter', name:'掃討機',  col:0x3CF0FF, colArr:[.4,.95,1],
-    baseHp:3000, baseAtk:126, orbSpd:0.5, barrier:250,
+    baseHp:3000, baseAtk:100.8, orbSpd:0.5, barrier:250,
     desc:'常時バリア＋拡散ショットガン。突進で炎上を付与し、半壊後は破壊可能な火の玉を撒く軽量級。' },
   { key:'fort', name:'機動要塞', col:0xB36BFF, colArr:[.72,.45,1],
-    baseHp:10000, baseAtk:270, orbSpd:0.18,
+    baseHp:10000, baseAtk:216, orbSpd:0.18,
     desc:'3基のオービット（赤レーザー/青ダメ半減/緑回復）を従える超重量級。HP半減で第二形態＝常時増援＋大技プラズマ球。' },
 ];
 function spawnBoss(){
@@ -1009,7 +1009,7 @@ const game = {
 };
 function resetGame(){
   eLvMul = 1 + TOTAL/300;
-  Object.assign(game,{ state:'playing', t:0, fireCd:0, hp:1600, maxhp:1600, regen:6,
+  Object.assign(game,{ state:'playing', t:0, fireCd:0, hp:1600, maxhp:1600, regen:18,
     dmg:16, fireRate:2.4, range:520, multishot:1, critChance:0.05, critPower:1.8, harvestMul:1, skillPow:1, slowLv:0, cash:0, dr:0, cashMul:1, vuln:1,
     armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
     res:{red:0,blue:0,green:0,yellow:0,purple:0}, mining:{red:0,blue:0,green:0,yellow:0,purple:0}, lv:{},
