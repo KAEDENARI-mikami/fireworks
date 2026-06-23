@@ -94,6 +94,9 @@ body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monos
 .speedbtn{position:absolute; right:1.2rem; top:52px; z-index:7; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.7rem; letter-spacing:.1em; padding:.4rem .7rem; color:var(--cyan); background:rgba(60,240,255,.05); border:1px solid var(--cyan); border-radius:2px;}
 .speedbtn:hover{background:rgba(60,240,255,.12);}
 .speedbtn.on{color:var(--void); background:var(--cyan); box-shadow:0 0 16px rgba(60,240,255,.55);}
+.retreatbtn{position:absolute; right:1.2rem; top:90px; z-index:7; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.7rem; letter-spacing:.1em; padding:.4rem .7rem; color:var(--gold); background:rgba(255,214,107,.06); border:1px solid var(--gold); border-radius:2px;}
+.retreatbtn:hover{background:rgba(255,214,107,.14);}
+.retreatbtn.arm{color:var(--void); background:var(--gold); box-shadow:0 0 16px rgba(255,214,107,.6);}
 /* 拠点 */
 #home{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
 body.state-home #home{display:flex;}
@@ -313,6 +316,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div id="bosshp"><div class="bl">BOSS</div><div class="bbar"><i id="bossfill"></i></div></div>
   <div class="res" id="res"></div>
   <button class="speedbtn" id="speedbtn" type="button">▶▶ 5×</button>
+  <button class="retreatbtn" id="retreatbtn" type="button">■ 切り上げ</button>
   <div class="toast" id="toast"></div>
   <div class="hpwrap"><div class="lab"><span>TOWER HP</span><span id="hptext">1000</span></div><div class="hpbar"><i id="hpfill"></i></div></div>
   <div id="skillacts"></div>
@@ -1592,10 +1596,10 @@ function runStep(dt){
   // 勝敗：BOSS撃破＝踏破 / HP0＝陥落（時間切れでは終わらない）
 }
 /* ラン終了：純粋精算（DOMなし・ヘッドレス/追いつき安全）。演出は showResult が担う。 */
-function finishRun(clear){ if(game.state!=='playing') return; game.state='result'; game.ended=true;
+function finishRun(clear, retreat){ if(game.state!=='playing') return; game.state='result'; game.ended=true;
   const sc=Math.round(8*Math.sqrt(Math.max(1,game.wave))) * (clear?1.5:1) * (1+0.12*(TOTAL/100)) * (game.sparkMul||1) * (1+0.07*resLv('r_spark'));
-  meta.spark += Math.round(sc); for(const c of COLORS) meta.bank[c]+=Math.floor(game.res[c]);   // 持ち帰り
-  game.result = { clear, wave:game.wave, kills:game.kills, sc:Math.round(sc),
+  meta.spark += Math.round(sc); for(const c of COLORS) meta.bank[c]+=Math.floor(game.res[c]);   // 持ち帰り（撤退でも全額キープ）
+  game.result = { clear, retreat:!!retreat, wave:game.wave, kills:game.kills, sc:Math.round(sc),
     haul:{red:Math.floor(game.res.red),blue:Math.floor(game.res.blue),green:Math.floor(game.res.green),yellow:Math.floor(game.res.yellow),purple:Math.floor(game.res.purple)} };
   saveMeta(); clearRun();
 }
@@ -1603,12 +1607,12 @@ function finishRun(clear){ if(game.state!=='playing') return; game.state='result
 function showResult(){ if(!game.result || game.resultShown) return; game.resultShown=true; const r=game.result;
   hideBossMeshes(); hideFortressFx();
   document.body.classList.remove('state-playing','state-map','state-home','state-skill','state-deploy'); document.body.classList.add('state-result');
-  $('rtitle').textContent = r.clear?'踏破':'陥落'; $('rtitle').className = r.clear?'clear':'fall';
+  $('rtitle').textContent = r.retreat?'撤退':(r.clear?'踏破':'陥落'); $('rtitle').className = (r.clear||r.retreat)?'clear':'fall';
   $('rwave').textContent=r.wave; $('rkill').textContent=fmt(r.kills); $('rscore').textContent=fmt(r.kills);
   const h=r.haul; const haul='R'+fmt(h.red)+' B'+fmt(h.blue)+' G'+fmt(h.green)+' Y'+fmt(h.yellow)+' P'+fmt(h.purple);
-  $('rspark').textContent='精算 Spark '+fmt(r.sc)+'（踏破×'+(r.clear?'1.5':'1')+'） ／ 恒常資源 '+haul;
+  $('rspark').textContent='精算 Spark '+fmt(r.sc)+'（報酬×'+(r.clear?'1.5':'1')+'） ／ 恒常資源 '+haul;
   controls.autoRotate=!REDUCED;
-  if(r.clear && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
+  if((r.clear||r.retreat) && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
 }
 function enterPlaying(){ game.resultShown=false; document.body.classList.remove('state-title','state-home','state-map','state-result','state-deploy','state-skill'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE); }
 
@@ -1724,6 +1728,12 @@ $('sdclose').addEventListener('click', closeDetail);
 $('skdetail').addEventListener('click', (e)=>{ if(e.target===$('skdetail')) closeDetail(); });
 $('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
 $('speedbtn').addEventListener('click', ()=>{ timeScale = timeScale===1?5:1; $('speedbtn').textContent = timeScale===1?'▶▶ 5×':'■ 1×'; $('speedbtn').classList.toggle('on', timeScale!==1); });
+let _retreatArm=false, _retreatT=null;
+function retreatTap(){ if(game.state!=='playing') return; const btn=$('retreatbtn');
+  if(_retreatArm){ _retreatArm=false; if(_retreatT)clearTimeout(_retreatT); if(btn){btn.classList.remove('arm'); btn.textContent='■ 切り上げ';} finishRun(false, true); if(typeof showResult==='function') showResult(); return; }
+  _retreatArm=true; if(btn){ btn.classList.add('arm'); btn.textContent='■ 確定?'; } toast('もう一度タップで切り上げ（報酬は全額持ち帰り）');
+  _retreatT=setTimeout(()=>{ _retreatArm=false; if(btn){ btn.classList.remove('arm'); btn.textContent='■ 切り上げ'; } }, 3000); }
+$('retreatbtn').addEventListener('click', retreatTap);
 $('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result','state-home','state-map','state-deploy','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); });
 
 renderer.render(scene,camera);
