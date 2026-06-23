@@ -134,6 +134,12 @@ body.state-home #modebar{display:flex;}
 body.state-skill #skills{display:flex;}
 body.state-skill .title, body.state-skill .meta, body.state-skill .hint, body.state-skill #hud{display:none;}
 body.state-skill #modebar{display:flex;}
+/* ショップ画面（スキル画面と同構造） */
+#shop{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
+body.state-shop #shop{display:flex;}
+body.state-shop .title, body.state-shop .meta, body.state-shop .hint, body.state-shop #hud{display:none;}
+body.state-shop #modebar{display:flex;}
+#shoplist{width:min(760px,94vw); display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:.55rem;}
 .skgacha{pointer-events:auto;cursor:pointer;font-family:"Reggae One",sans-serif;font-size:1rem;letter-spacing:.04em;padding:.6rem 1.6rem;color:var(--void);background:linear-gradient(135deg,var(--purple),var(--gold));border:none;border-radius:7px;box-shadow:0 0 22px rgba(180,107,255,.5);}
 .skreveal{font-family:"DotGothic16",monospace;font-size:.82rem;color:var(--cyan);min-height:1.2em;}
 .skslots{display:flex;gap:.5rem;width:min(760px,94vw);}
@@ -373,10 +379,17 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div class="sddesc" id="sddesc"></div>
   <div class="sdbtns" id="sdbtns"></div>
 </div></div>
+<div id="shop">
+  <div class="home-top"><span class="hcur">SPARK <b id="shopspark">0</b></span></div>
+  <div class="home-title">ショップ ／ SHOP</div>
+  <div class="home-sub" id="shopsub">SPARKでアイテム購入 →「使用」で次の戦闘に効果（消費型）</div>
+  <div id="shoplist"></div>
+</div>
 <nav id="modebar">
   <button class="mtab on" id="mode-base" type="button">強化</button>
   <button class="mtab" id="mode-skill" type="button">スキル</button>
   <button class="mtab" id="mode-research" type="button">リサーチ</button>
+  <button class="mtab" id="mode-shop" type="button">ショップ</button>
   <button class="mtab" id="mode-map" type="button">🗺 出撃</button>
   <button class="mtab" id="mode-title" type="button">タイトル</button>
 </nav>
@@ -1015,7 +1028,7 @@ const game = {
   phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[],
   rng:null, rngState:0, tick:0, seedInfo:null,
   result:null, resultShown:false, purchases:[], _pidx:0, ended:false,
-  skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[],
+  skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemyCountMul:1, hell:false, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[],
 };
 function resetGame(){
   eLvMul = 1 + TOTAL/300;
@@ -1026,7 +1039,7 @@ function resetGame(){
     skillUnlocked:false, skillCharge:0, skillMax:18, kills:0, score:0, wave:1, spawnCd:0,
     phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[], tick:0,
     result:null, resultShown:false, purchases:[], _pidx:0, ended:false,
-    skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[] });
+    skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemyCountMul:1, hell:false, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[] });
   for(let i=0;i<MAXE;i++) E[i].active=false;
   tracers.length=0;
   waves.length=0; for(const m of waveMeshes){ m.visible=false; m.material.opacity=0; }
@@ -1313,7 +1326,7 @@ function updateHUD(dt){
 }
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
-const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false };
+const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -1413,7 +1426,7 @@ function buildHome(){ try{
   el.appendChild(grid);
   }catch(e){ const pl=document.getElementById('permlist'); if(pl) pl.textContent='buildHome ERR: '+(e&&e.message); console.log('buildHome error', e); }
 }
-function setTab(id){ if(typeof closeDetail==='function') closeDetail(); ['mode-base','mode-skill','mode-research','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); }
+function setTab(id){ if(typeof closeDetail==='function') closeDetail(); ['mode-base','mode-skill','mode-research','mode-shop','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); }
 /* ===== スキル画面（ガチャ/Lv上げ/装備） ===== */
 let skillCat='red', lastGacha=null, skResearchView=false;
 function gachaCost(){ return Math.max(200, Math.round(1000*(1-0.05*resLv('gachaDiscount')))); }
@@ -1434,9 +1447,31 @@ function equipSkill(id){ const max=3+resLv('extraSlot'); while(meta.skillEquip.l
   const i=meta.skillEquip.indexOf(id);
   if(i>=0){ meta.skillEquip[i]=null; } else { let s=meta.skillEquip.indexOf(null); if(s<0) s=0; meta.skillEquip[s]=id; }
   saveMeta(); buildSkills(); }
-function enterSkillPanel(research){ skResearchView=!!research; game.state='skills'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill'); document.body.classList.add('state-skill'); controls.autoRotate=!REDUCED; setTab(research?'mode-research':'mode-skill'); buildSkills(); }
+function enterSkillPanel(research){ skResearchView=!!research; game.state='skills'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-skill'); controls.autoRotate=!REDUCED; setTab(research?'mode-research':'mode-skill'); buildSkills(); }
 function showSkills(){ enterSkillPanel(false); }
 function showResearch(){ enterSkillPanel(true); }
+/* ===== アイテムショップ ===== */
+const ITEMS=[ {id:'shibuya', name:'シブヤテレポート', cost:600,
+  desc:'使用すると消費。次の戦闘が「全鉱石密度100」の地獄に変化：敵HP/攻撃 ×5・敵の量 常時×2。代わりに資源採取は最大密度（持ち帰り資源が激増）。'} ];
+const ITEM_BY_ID=Object.fromEntries(ITEMS.map(x=>[x.id,x]));
+function itemCount(id){ return (meta.items&&meta.items[id])||0; }
+function buyItem(it){ if(meta.spark<it.cost) return; meta.spark-=it.cost; meta.items[it.id]=itemCount(it.id)+1; saveMeta(); buildShop(); }
+function useItem(it){ if(itemCount(it.id)<=0) return; meta.items[it.id]=itemCount(it.id)-1; if(it.id==='shibuya') meta.armedShibuya=true; saveMeta(); toast(it.name+' 使用：次の戦いに適用'); buildShop(); }
+function showShop(){ game.state='shop'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-shop'); controls.autoRotate=!REDUCED; setTab('mode-shop'); buildShop(); }
+function buildShop(){ try{
+  $('shopspark').textContent=fmt(meta.spark);
+  $('shopsub').textContent = meta.armedShibuya ? '⚠ 次の戦い：シブヤ（地獄）発動待ち' : 'SPARKでアイテム購入 →「使用」で次の戦闘に効果（消費型）';
+  const el=$('shoplist'); el.textContent='';
+  for(const it of ITEMS){ const cnt=itemCount(it.id);
+    const card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac', COLORHEX.purple);
+    const hd=document.createElement('div'); hd.className='skhd'; const nm=document.createElement('div'); nm.className='skn'; nm.textContent=it.name;
+    const bd=document.createElement('span'); bd.className='skbadge'; bd.textContent='所持 '+cnt; hd.appendChild(nm); hd.appendChild(bd);
+    const ds=document.createElement('div'); ds.className='skd'; ds.textContent=it.desc; card.appendChild(hd); card.appendChild(ds);
+    const btns=document.createElement('div'); btns.className='skbtns';
+    const buy=document.createElement('button'); buy.textContent='購入  SPARK'+fmt(it.cost); if(meta.spark<it.cost) buy.disabled=true; buy.addEventListener('click',()=>buyItem(it)); btns.appendChild(buy);
+    const use=document.createElement('button'); use.textContent='使用'; if(cnt<=0) use.disabled=true; if(cnt>0)use.className='eq'; use.addEventListener('click',()=>useItem(it)); btns.appendChild(use);
+    card.appendChild(btns); el.appendChild(card); }
+}catch(e){ const el=$('shoplist'); if(el) el.textContent='buildShop ERR: '+(e&&e.message); console.log('buildShop',e); } }
 function starSpan(filled,total){ const w=document.createElement('div'); w.className='ststars'; const b=document.createElement('b'); b.textContent='★'.repeat(Math.max(0,filled|0)); const i=document.createElement('i'); i.textContent='☆'.repeat(Math.max(0,(total|0)-(filled|0))); w.appendChild(b); w.appendChild(i); return w; }
 function setStars(el,filled,total){ el.textContent=''; const b=document.createElement('b'); b.textContent='★'.repeat(Math.max(0,filled|0)); const i=document.createElement('i'); i.textContent='☆'.repeat(Math.max(0,(total|0)-(filled|0))); el.appendChild(b); el.appendChild(i); }
 function closeDetail(){ const d=document.getElementById('skdetail'); if(d) d.classList.remove('on'); }
@@ -1569,7 +1604,7 @@ function startGPS(){
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
-function showMap(){ game.state='map'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-skill'); document.body.classList.add('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
+function showMap(){ game.state='map'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-skill','state-shop'); document.body.classList.add('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('セルをタップ→「ここに出撃」 ／ 密度↑=報酬↑･難度↑ ／ ★=スイートスポット'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
   if(!avatarLL) setAvatar(VENUE.lat, VENUE.lng);   // 即・既定地点を表示（GPS/Leaflet失敗でも常に出撃可能）
@@ -1579,7 +1614,7 @@ function showMap(){ game.state='map'; document.body.classList.remove('state-titl
     if(e.key==='ArrowUp'){avatarLL[0]+=st;mv=true;} else if(e.key==='ArrowDown'){avatarLL[0]-=st;mv=true;} else if(e.key==='ArrowLeft'){avatarLL[1]-=st;mv=true;} else if(e.key==='ArrowRight'){avatarLL[1]+=st;mv=true;}
     if(mv){ devMode=true; setAvatar(avatarLL[0],avatarLL[1]); e.preventDefault(); } }); }
 }
-function showHome(){ game.state='home'; document.body.classList.remove('state-title','state-playing','state-result','state-deploy','state-map','state-skill'); document.body.classList.add('state-home'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-base'); buildHome(); }
+function showHome(){ game.state='home'; document.body.classList.remove('state-title','state-playing','state-result','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-home'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-base'); buildHome(); }
 
 /* ===== ラン進行 ===== */
 function runStep(dt){
@@ -1619,7 +1654,7 @@ function runStep(dt){
   // スポーン（ボス戦中は通常湧き停止）
   if(game.phase!=='boss'){
     game.spawnCd -= dt;
-    const spawnInt = Math.max(0.18, 0.95/diff)/(game.spawnMul||1);
+    const spawnInt = Math.max(0.18, 0.95/diff)/(game.spawnMul||1)/(game.enemyCountMul||1);   // 敵量補正（シブヤ＝×2）
     while(game.spawnCd<=0){ game.spawnCd += spawnInt; spawnEnemy(); }
   }
   // 迎撃・弾・敵・衝撃波
@@ -1645,11 +1680,11 @@ function showResult(){ if(!game.result || game.resultShown) return; game.resultS
   controls.autoRotate=!REDUCED;
   if((r.clear||r.retreat) && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
 }
-function enterPlaying(){ game.resultShown=false; document.body.classList.remove('state-title','state-home','state-map','state-result','state-deploy','state-skill'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE); }
+function enterPlaying(){ game.resultShown=false; document.body.classList.remove('state-title','state-home','state-map','state-result','state-deploy','state-skill','state-shop'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE); }
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done})); }catch(e){} }
+function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya})); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
   const mb=(m.bank&&typeof m.bank==='object')?m.bank:{}; meta.bank={red:0,blue:0,green:0,yellow:0,purple:0}; for(const c of COLORS) meta.bank[c]=Math.max(0, Number(mb[c])||0);   // 数値強制（壊れた保存でNaN通貨を防ぐ）
@@ -1661,6 +1696,7 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
     for(let i=0;i<RESEARCH_SLOTS;i++){ const sl=raw[i]; const n=sl&&typeof sl==='object'?RESEARCH_BY_KEY[sl.key]:null; const st=sl?Number(sl.start):NaN;
       if(n && isFinite(st) && st>=0 && !(n.max&&(meta.research.node[sl.key]||0)>=n.max) && !seen[sl.key]){ seen[sl.key]=1; meta.research.slots.push({key:sl.key, start:Math.min(st, meta.research.dist)}); } else { meta.research.slots.push(null); } } }
   meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1); meta.free10Done=!!m.free10Done;
+  meta.items=(m.items&&typeof m.items==='object')?m.items:{}; meta.armedShibuya=!!m.armedShibuya;
   meta.skillOwned=(m.skillOwned&&typeof m.skillOwned==='object')?m.skillOwned:{};
   for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; if(!o||typeof o!=='object'){ delete meta.skillOwned[id]; continue; }   // null/プリミティブ値で TypeError→サニタイズ中断を防ぐ
     o.level=Math.max(1,Math.min(def.maxLv,o.level|0)); o.dup=Math.max(0,o.dup|0); o.pot=potFromDup(o.dup,def.potMax); }
@@ -1668,7 +1704,7 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,N):[]; while(meta.skillEquip.length<N)meta.skillEquip.push(null);
   meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
   }catch(e){ console.log('loadMeta',e); } }
-function saveRun(){ try{ if(!game.seedInfo || game.state!=='playing') return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), wave:game.wave, hp:Math.round(game.hp) })); }catch(e){} }
+function saveRun(){ try{ if(!game.seedInfo || game.state!=='playing') return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell })); }catch(e){} }
 function loadRun(){ try{ const s=localStorage.getItem(RUN_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
 function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
 
@@ -1704,12 +1740,13 @@ function restoreRun(sv){
   game.seedInfo={deployTs:sv.deployTs, cellId:sv.cellId, runSeed:sv.runSeed||0};
   game.rngState=deriveRunSeed(sv.deployTs, sv.cellId, sv.runSeed||0); game.rng=makeRNG(game.rngState); game.tick=0;
   applyMeta(); applyResearch(); applyField();
+  if(sv.hell){ game.hell=true; applyHell(); }   // 追いつき再生でも地獄補正を再現
   game.skillRT=(Array.isArray(sv.skills)?sv.skills:[]).map(s=>{ const def=SKILL_BY_ID[s.id]; if(!def)return null; return {def,lv:s.lv,pot:s.pot,st:Object.assign({charge:0,stacks:0},def.st0?def.st0(s.lv,s.pot):{})}; }).filter(Boolean);   // 保存ロードアウトから再構築（meta編集の影響を受けない＝再生一致）
   dispatchModifyStats(); buildActiveButtons(); buildRes();
   game.purchases=Array.isArray(sv.purchases)?sv.purchases.slice():[]; game._pidx=0;
   game.acts=Array.isArray(sv.acts)?sv.acts.slice():[]; game._aidx=0;
   game.state='playing'; game.ended=false;
-  document.body.classList.remove('state-title','state-result','state-deploy','state-home','state-map','state-skill'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE);   // 追いつき中はモードバー非表示＝誤操作で再生破損を防ぐ
+  document.body.classList.remove('state-title','state-result','state-deploy','state-home','state-map','state-skill','state-shop'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE);   // 追いつき中はモードバー非表示＝誤操作で再生破損を防ぐ
   startCatchUp(Math.floor(Math.max(0, Date.now()-sv.deployTs)/1000/DT));
 }
 
@@ -1739,15 +1776,18 @@ function resize(){ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2)
   camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.render(scene,camera); }
 window.addEventListener('resize',(function(){let to; return ()=>{ clearTimeout(to); to=setTimeout(resize,180); };})());
 
+function applyHell(){ for(const c of COLORS) DENS[c]=100; TOTAL=500; eLvMul=(1+TOTAL/300)*5; game.enemyCountMul=2; game.hell=true; }   // シブヤ：全鉱石密度100＋敵×5(eLvMul)＋敵量×2
 function startGame(opts){
   catchup.token++; catchup.active=false; RENDER=true; showCatchup(false);   // 進行中の放置追いつきを必ずキャンセル（単一フライト）
   applyField(); resetGame();
+  if(meta.armedShibuya){ game.hell=true; meta.armedShibuya=false; saveMeta(); }   // 使用済みシブヤを次戦に適用→消費
+  if(game.hell) applyHell();
   const o = (opts && typeof opts==='object' && !opts.isTrusted) ? opts : {};   // クリックイベントは無視
   const deployTs = o.deployTs || Date.now();                                   // 出撃時刻（プレイヤー操作の瞬間。runStep内では読まない）
   game.seedInfo = { deployTs, cellId: o.cellId||'', runSeed: o.runSeed||0 };
   game.rngState = deriveRunSeed(deployTs, game.seedInfo.cellId, game.seedInfo.runSeed);
   game.rng = makeRNG(game.rngState); game.tick = 0;
-  applyMeta(); applyResearch(); snapshotSkills(); dispatchModifyStats(); buildActiveButtons(); buildRes(); document.body.classList.remove('state-title','state-result','state-home','state-deploy','state-map','state-skill'); document.body.classList.add('state-playing');
+  applyMeta(); applyResearch(); snapshotSkills(); dispatchModifyStats(); buildActiveButtons(); buildRes(); document.body.classList.remove('state-title','state-result','state-home','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-playing');
   controls.autoRotate=false; controls.target.copy(CORE); saveRun(); }
 // セル出撃：そのセルの手続きフィールドでランを開始（地図UIから呼ぶ）
 function deployFromCell(cellId){ if(!cellId) cellId=GeoCell.latLngToCell(VENUE.lat,VENUE.lng); const ts=Date.now(); const lng=GeoCell.cellToLatLng(cellId)[1]; currentField=fieldFromCell(cellId, todBucketAt(ts,lng), ts); startGame({cellId, deployTs:ts, runSeed:0}); }
@@ -1758,11 +1798,12 @@ $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
 $('mode-skill').addEventListener('click', showSkills);
 $('mode-research').addEventListener('click', showResearch);
+$('mode-shop').addEventListener('click', showShop);
 $('skgacha').addEventListener('click', gachaPull);
 $('skfree10').addEventListener('click', gachaFree10);
 $('sdclose').addEventListener('click', closeDetail);
 $('skdetail').addEventListener('click', (e)=>{ if(e.target===$('skdetail')) closeDetail(); });
-$('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
+$('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
 $('speedbtn').addEventListener('click', ()=>{ timeScale = timeScale===1?5:1; $('speedbtn').textContent = timeScale===1?'▶▶ 5×':'■ 1×'; $('speedbtn').classList.toggle('on', timeScale!==1); });
 let _retreatArm=false, _retreatT=null;
 function retreatTap(){ if(game.state!=='playing') return; const btn=$('retreatbtn');
@@ -1770,7 +1811,7 @@ function retreatTap(){ if(game.state!=='playing') return; const btn=$('retreatbt
   _retreatArm=true; if(btn){ btn.classList.add('arm'); btn.textContent='■ 確定?'; } toast('もう一度タップで切り上げ（報酬は全額持ち帰り）');
   _retreatT=setTimeout(()=>{ _retreatArm=false; if(btn){ btn.classList.remove('arm'); btn.textContent='■ 切り上げ'; } }, 3000); }
 $('retreatbtn').addEventListener('click', retreatTap);
-$('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result','state-home','state-map','state-deploy','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); });
+$('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result','state-home','state-map','state-deploy','state-skill','state-shop'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); });
 
 renderer.render(scene,camera);
 if(!REDUCED) for(let i=0;i<4;i++) spawnShell();
