@@ -97,6 +97,9 @@ body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monos
 .retreatbtn{position:absolute; right:1.2rem; top:90px; z-index:7; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.7rem; letter-spacing:.1em; padding:.4rem .7rem; color:var(--gold); background:rgba(255,214,107,.06); border:1px solid var(--gold); border-radius:2px;}
 .retreatbtn:hover{background:rgba(255,214,107,.14);}
 .retreatbtn.arm{color:var(--void); background:var(--gold); box-shadow:0 0 16px rgba(255,214,107,.6);}
+#castlayer{position:absolute; left:0; right:0; top:34%; z-index:6; pointer-events:none; display:flex; flex-direction:column-reverse; align-items:center; gap:.15rem;}
+.castmsg{font-family:"Reggae One",sans-serif; font-size:1.05rem; letter-spacing:.04em; white-space:nowrap; text-shadow:0 0 10px currentColor, 0 1px 3px #000; animation:castrise 1.1s ease-out forwards;}
+@keyframes castrise{ 0%{opacity:0; transform:translateY(12px) scale(.82);} 14%{opacity:1; transform:translateY(0) scale(1.06);} 65%{opacity:1; transform:translateY(-4px) scale(1);} 100%{opacity:0; transform:translateY(-30px) scale(1);} }
 /* 拠点 */
 #home{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
 body.state-home #home{display:flex;}
@@ -318,6 +321,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <button class="speedbtn" id="speedbtn" type="button">▶▶ 5×</button>
   <button class="retreatbtn" id="retreatbtn" type="button">■ 切り上げ</button>
   <div class="toast" id="toast"></div>
+  <div id="castlayer" aria-hidden="true"></div>
   <div class="hpwrap"><div class="lab"><span>TOWER HP</span><span id="hptext">1000</span></div><div class="hpbar"><i id="hpfill"></i></div></div>
   <div id="skillacts"></div>
 </div>
@@ -1197,14 +1201,19 @@ const DUP_THRESH=[0,1,3,6,10,15];
 function potFromDup(dup,potMax){ let p=0; for(let i=1;i<DUP_THRESH.length;i++) if(dup>=DUP_THRESH[i]) p=i; return Math.min(p,potMax); }
 function skillCtx(dt){ return {game,srand,hurtEnemy,damageTower,spawnWave,summon,E,MAXE,CORE,DENS,eLvMul,dt,tick:game.tick}; }
 function dispatch(hook,dt,a,b){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks[hook]; if(fn) fn(S,ctx,a,b); } }
-function dispatchTimers(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],h=S.def.hooks; if(!h||!h.onTimer) continue; const per=S.def.period(S.lv,S.pot); if(S.st.cd===undefined)S.st.cd=per; S.st.cd-=dt; let g=0; while(S.st.cd<=0&&g++<10000){ S.st.cd+=per; h.onTimer(S,ctx); } } }
+let _castSeen={};
+function castFx(def){ if(!RENDER||!def) return; const t=performance.now(); if(_castSeen[def.id] && t-_castSeen[def.id]<1000) return; _castSeen[def.id]=t;   // スキル発動キャスト表示（演出のみ・RENDER限定／real-timeスロットルでラン跨ぎ安全）
+  const layer=document.getElementById('castlayer'); if(!layer) return;
+  const el=document.createElement('div'); el.className='castmsg'; el.textContent='✦ '+def.name; el.style.color=COLORHEX[def.color]||'#EAF0FF';
+  layer.appendChild(el); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 1100); }
+function dispatchTimers(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],h=S.def.hooks; if(!h||!h.onTimer) continue; const per=S.def.period(S.lv,S.pot); if(S.st.cd===undefined)S.st.cd=per; S.st.cd-=dt; let g=0; while(S.st.cd<=0&&g++<10000){ S.st.cd+=per; h.onTimer(S,ctx); castFx(S.def); } } }
 function dispatchOnTickPre(dt){ game.skillBuffs.dmgMul=1; game.skillBuffs.rofMul=1; game.enemyAtkMul=1; game.enemySpdMul=1; if(game.skillStun>0)game.skillStun-=dt; if(game.invuln>0)game.invuln-=dt; const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.onTickPre; if(fn) fn(S,ctx); } }
 function dispatchModifyStats(){ const rt=game.skillRT,ctx=skillCtx(DT); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.modifyStats; if(fn) fn(S,ctx); } }
-function dispatchAutoActives(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],d=S.def; if(!d.hooks||!d.hooks.active||!d.cost) continue; const c=d.cost(S.lv,S.pot); S.st.charge=Math.min(c,(S.st.charge||0)+dt); if(d.autofire && S.st.charge>=c){ S.st.charge=0; d.hooks.active(S,ctx); } }   /* 手動アクティブも charge を貯める（capで保持・自動発火せずタップ待ち） */ }
+function dispatchAutoActives(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],d=S.def; if(!d.hooks||!d.hooks.active||!d.cost) continue; const c=d.cost(S.lv,S.pot); S.st.charge=Math.min(c,(S.st.charge||0)+dt); if(d.autofire && S.st.charge>=c){ S.st.charge=0; d.hooks.active(S,ctx); castFx(d); } }   /* 手動アクティブも charge を貯める（capで保持・自動発火せずタップ待ち） */ }
 function snapshotSkills(){ game.skillRT=(meta.skillEquip||[]).filter(Boolean).map(id=>{ const o=meta.skillOwned[id],def=SKILL_BY_ID[id]; if(!o||!def)return null; const lv=o.level,pot=o.pot; return {def,lv,pot,st:Object.assign({charge:0,stacks:0},def.st0?def.st0(lv,pot):{})}; }).filter(Boolean).slice(0,3+resLv('extraSlot')); }
 function skillLevelCost(def,lv){ return Math.floor(def.lvBase*Math.pow(def.lvR||2, lv-1)); }
 function tryReviveSkill(){ const rt=game.skillRT,ctx=skillCtx(DT); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.onDeath; if(fn&&fn(S,ctx)===true&&game.hp>0) return true; } return false; }
-function _doActive(slot){ const S=game.skillRT[slot]; if(!S||!S.def.hooks.active) return; const c=S.def.cost?S.def.cost(S.lv,S.pot):0; if((S.st.charge||0)<c) return; S.st.charge=0; S.def.hooks.active(S,skillCtx(DT)); }
+function _doActive(slot){ const S=game.skillRT[slot]; if(!S||!S.def.hooks.active) return; const c=S.def.cost?S.def.cost(S.lv,S.pot):0; if((S.st.charge||0)<c) return; S.st.charge=0; S.def.hooks.active(S,skillCtx(DT)); castFx(S.def); }
 function fireActiveSkill(slot){ const S=game.skillRT[slot]; if(!S||!S.def.hooks.active||S.def.autofire) return; game.acts.push({tick:game.tick,t:'sa',slot}); saveRun(); }   // 即時発火せず runStep 先頭の applyActsUpTo が FG/CU 同位置で適用
 function applyActsUpTo(tick){ const A=game.acts; while(game._aidx<A.length&&A[game._aidx].tick<=tick){ _doActive(A[game._aidx].slot); game._aidx++; } }
 function buildActiveButtons(){ const host=$('skillacts'); if(!host) return; host.textContent=''; game._actBtns=[];   // 手動アクティブ（alldelete等）のHUDボタン。演出のみ＝決定性に無関係
