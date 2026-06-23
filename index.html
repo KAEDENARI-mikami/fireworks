@@ -1043,7 +1043,7 @@ const STATS = [
   {c:'red',   k:'critc',name:'クリ率',     cost:60, r:1.60, fn(){ game.critChance=Math.min(1.0,game.critChance+0.05); }, cap:()=>game.critChance>=1.0, val:()=>Math.round(game.critChance*100)+'%'},
   {c:'red',   k:'critp',name:'クリ倍率',   cost:66, r:1.64, fn(){ game.critPower+=0.25; }, val:()=>'×'+game.critPower.toFixed(2)},
   {c:'blue',  k:'hp',   name:'最大HP',     cost:40, r:1.44, fn(){ const r=game.hp/game.maxhp; game.maxhp*=1.20; game.hp=game.maxhp*Math.min(1,r+0.1); }, val:()=>Math.round(game.maxhp)},
-  {c:'blue',  k:'regen',name:'HP再生',     cost:38, r:1.40, fn(){ game.regen+=3; }, val:()=>Math.round(game.regen)+'/s'},
+  {c:'blue',  k:'regen',name:'HP再生',     cost:38, r:1.40, fn(){ game.regen+=9; }, val:()=>Math.round(game.regen)+'/s'},
   {c:'blue',  k:'armor',name:'防御力',     cost:48, r:1.52, fn(){ game.armor+=40; }, val:()=>Math.round(game.armor)+' ×'+Math.max(0,1-recentHits()/100).toFixed(2)},
   {c:'blue',  k:'dr',   name:'防御率',     cost:72, r:1.80, fn(){ game.dr=Math.min(0.6,game.dr+0.05); }, cap:()=>game.dr>=0.6, val:()=>Math.round(game.dr*100)+'%'},
   {c:'blue',  k:'barr', name:'バリア',     cost:55, r:1.60, fn(){ game.barrier+=150; }, val:()=>Math.round(game.barrier)},
@@ -1253,12 +1253,19 @@ function buildRes(){ const el=$('res'); el.innerHTML='';
       btn.addEventListener('click',()=>tryUpgrade(s));
       row.appendChild(sw); row.appendChild(nm); row.appendChild(btn); body.appendChild(row); });
     el.appendChild(body); });
-  const h2=document.createElement('div'); h2.className='sec'; h2.textContent='採掘機（$で購入→その色を採取・1台ごと×100）'; el.appendChild(h2);
+  const mhead=document.createElement('button'); mhead.type='button'; mhead.className='cathead'; mhead.style.marginTop='.4rem';
+  const mlab=document.createElement('span'); mlab.textContent='⛏ 採掘機（その色を採取・1台ごと×100）';
+  const marw=document.createElement('span'); marw.className='arw'; marw.textContent='▾';
+  mhead.appendChild(mlab); mhead.appendChild(marw);
+  const mbody=document.createElement('div'); mbody.className='catbody open';   // 既定は開（折りたたみ可）
+  mhead.addEventListener('click',()=>{ const open=mbody.classList.toggle('open'); marw.textContent=open?'▾':'▸'; });
+  el.appendChild(mhead);
   ['red','blue','green','yellow','purple'].forEach(c=>{ const row=document.createElement('div'); row.className='rrow';
     const sw=document.createElement('span'); sw.className='sw'; sw.style.background=COLORHEX[c];
     const v=document.createElement('span'); v.className='amt'; v.id='amt-'+c; v.textContent='0';
     const btn=document.createElement('button'); btn.className='up'; btn.id='mine-'+c; btn.textContent='採掘 $'+fmt(2000); btn.addEventListener('click',()=>buyMining(c));
-    row.appendChild(sw); row.appendChild(v); row.appendChild(btn); el.appendChild(row); }); }
+    row.appendChild(sw); row.appendChild(v); row.appendChild(btn); mbody.appendChild(row); });
+  el.appendChild(mbody); }
 let toastT=0;
 function toast(s){ if(!RENDER) return; const el=$('toast'); el.textContent=s; el.style.opacity='1'; toastT=1.2; }
 function setBossLabel(t){ if(!RENDER) return; const bl=document.querySelector('#bosshp .bl'); if(bl) bl.textContent=t; }
@@ -1286,7 +1293,7 @@ const PERM = [
   {c:'red',   k:'p_multi', name:'初期多重弾', cost:6000, r:2.2, fn:(lv)=>{ game.multishot=Math.min(8,game.multishot+lv); }, cap:(lv)=>lv>=4, val:(lv)=>'+'+lv+'発'},
   {c:'blue',  k:'p_hp',    name:'初期HP',     cost:2000, r:2.0, fn:(lv)=>{ game.maxhp*=1+0.15*lv; game.hp=game.maxhp; }, val:(lv)=>'+'+Math.round(15*lv)+'%'},
   {c:'blue',  k:'p_armor', name:'初期防御力', cost:2200, r:2.0, fn:(lv)=>{ game.armor+=30*lv; }, val:(lv)=>'+'+(30*lv)},
-  {c:'blue',  k:'p_regen', name:'初期再生',   cost:2200, r:2.0, fn:(lv)=>{ game.regen+=5*lv; }, val:(lv)=>'+'+(5*lv)+'/s'},
+  {c:'blue',  k:'p_regen', name:'初期再生',   cost:2200, r:2.0, fn:(lv)=>{ game.regen+=15*lv; }, val:(lv)=>'+'+(15*lv)+'/s'},
   {c:'blue',  k:'p_dr',    name:'初期防御率', cost:5000, r:2.0, fn:(lv)=>{ game.dr=Math.min(0.6,game.dr+0.03*lv); }, cap:(lv)=>lv>=8, val:(lv)=>'+'+Math.round(3*lv)+'%'},
   {c:'blue',  k:'p_barr',  name:'初期バリア', cost:2400, r:2.0, fn:(lv)=>{ game.barrier+=120*lv; }, val:(lv)=>'+'+(120*lv)},
   {c:'green', k:'p_harv',  name:'採取効率',   cost:1800, r:2.0, fn:(lv)=>{ game.harvestMul*=1+0.10*lv; }, val:(lv)=>'+'+Math.round(10*lv)+'%'},
@@ -1315,7 +1322,7 @@ const RESEARCH=[
  {key:'r_multi', c:'red',   name:'探査多重弾', max:4,  cost:(lv)=>Math.ceil(900*Math.pow(2.0,lv)), fn:(lv)=>{ game.multishot=Math.min(8,game.multishot+lv); },          val:(lv)=>'多重弾 +'+lv},
  // 青：防御系
  {key:'r_vit',   c:'blue',  name:'探査体力',   max:10, cost:(lv)=>Math.ceil(300*Math.pow(1.7,lv)), fn:(lv)=>{ game.maxhp*=1+0.06*lv; game.hp=game.maxhp; },             val:(lv)=>'HP +'+(6*lv)+'%'},
- {key:'r_regen', c:'blue',  name:'探査再生',   max:10, cost:(lv)=>Math.ceil(300*Math.pow(1.7,lv)), fn:(lv)=>{ game.regen+=4*lv; },                                     val:(lv)=>'再生 +'+(4*lv)+'/s'},
+ {key:'r_regen', c:'blue',  name:'探査再生',   max:10, cost:(lv)=>Math.ceil(300*Math.pow(1.7,lv)), fn:(lv)=>{ game.regen+=12*lv; },                                    val:(lv)=>'再生 +'+(12*lv)+'/s'},
  {key:'r_armor', c:'blue',  name:'探査防御',   max:10, cost:(lv)=>Math.ceil(320*Math.pow(1.7,lv)), fn:(lv)=>{ game.armor+=25*lv; },                                    val:(lv)=>'防御 +'+(25*lv)},
  {key:'r_dr',    c:'blue',  name:'探査軽減',   max:8,  cost:(lv)=>Math.ceil(500*Math.pow(1.8,lv)), fn:(lv)=>{ game.dr=Math.min(0.6,game.dr+0.03*lv); },                 val:(lv)=>'軽減 +'+(3*lv)+'%'},
  {key:'r_barr',  c:'blue',  name:'探査障壁',   max:8,  cost:(lv)=>Math.ceil(340*Math.pow(1.7,lv)), fn:(lv)=>{ game.barrier+=120*lv; },                                 val:(lv)=>'障壁 +'+(120*lv)},
