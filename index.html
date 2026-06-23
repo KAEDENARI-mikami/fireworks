@@ -1451,7 +1451,7 @@ function enterSkillPanel(research){ skResearchView=!!research; game.state='skill
 function showSkills(){ enterSkillPanel(false); }
 function showResearch(){ enterSkillPanel(true); }
 /* ===== アイテムショップ ===== */
-const ITEMS=[ {id:'shibuya', name:'シブヤテレポート', cost:600,
+const ITEMS=[ {id:'shibuya', name:'シブヤテレポート', cost:10,
   desc:'使用すると消費。次の戦闘が「全鉱石密度100」の地獄に変化：敵HP/攻撃 ×5・敵の量 常時×2。代わりに資源採取は最大密度（持ち帰り資源が激増）。'} ];
 const ITEM_BY_ID=Object.fromEntries(ITEMS.map(x=>[x.id,x]));
 function itemCount(id){ return (meta.items&&meta.items[id])||0; }
