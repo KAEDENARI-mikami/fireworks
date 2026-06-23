@@ -1225,6 +1225,12 @@ function updateWaves(dt){
 
 /* ===== HUD ===== */
 const $=(id)=>document.getElementById(id);
+// 桁表示：万/億/兆まで日本語単位、兆より上（京〜）は指数（例 6.4e20）
+function fmt(n){ n=+n; if(!isFinite(n)) return '0'; const neg=n<0; n=Math.abs(n); let s;
+  if(n<1e4){ s=Math.floor(n).toString(); }
+  else if(n<1e16){ const U=[[1e12,'兆'],[1e8,'億'],[1e4,'万']]; let u=1e4,suf='万'; for(const a of U){ if(n>=a[0]){ u=a[0]; suf=a[1]; break; } } const m=n/u; s=(m>=100?Math.round(m).toString():m.toFixed(m>=10?1:2).replace(/\.?0+$/,''))+suf; }
+  else { s=n.toExponential(2).replace('e+','e').replace(/\.?0+e/,'e'); }
+  return neg?('-'+s):s; }
 function buildRes(){ const el=$('res'); el.innerHTML='';
   const h1=document.createElement('div'); h1.className='sec'; h1.textContent='ラン強化（$＝撃破で獲得）'; el.appendChild(h1);
   ['red','blue','green','yellow','purple'].forEach(c=>{
@@ -1238,7 +1244,7 @@ function buildRes(){ const el=$('res'); el.innerHTML='';
     STATS.filter(s=>s.c===c).forEach(s=>{ const row=document.createElement('div'); row.className='rrow';
       const sw=document.createElement('span'); sw.className='sw'; sw.style.background=COLORHEX[c];
       const nm=document.createElement('span'); nm.className='amt'; nm.id='nm-'+s.k; nm.textContent=s.name+' '+s.val();
-      const btn=document.createElement('button'); btn.className='up'; btn.id='up-'+s.k; btn.textContent='$'+costOf(s);
+      const btn=document.createElement('button'); btn.className='up'; btn.id='up-'+s.k; btn.textContent='$'+fmt(costOf(s));
       btn.addEventListener('click',()=>tryUpgrade(s));
       row.appendChild(sw); row.appendChild(nm); row.appendChild(btn); body.appendChild(row); });
     el.appendChild(body); });
@@ -1254,12 +1260,12 @@ function setBossLabel(t){ if(!RENDER) return; const bl=document.querySelector('#
 function updateHUD(dt){
   $('time').textContent = game.phase==='boss' ? 'BOSS戦' : '交戦中';
   const bh=$('bosshp'); if(bh){ if(game.phase==='boss' && game.bosses.length){ bh.style.display='block'; let hp=0,mh=0; for(const b of game.bosses){ hp+=Math.max(0,b.hp); mh+=b.maxhp; } $('bossfill').style.width=clamp(hp/mh*100,0,100)+'%'; if(game.bosses.length>1){ const bl=document.querySelector('#bosshp .bl'); if(bl) bl.textContent='総攻撃 — 残り'+game.bosses.length+'体'; } } else bh.style.display='none'; }
-  $('wavev').textContent=game.wave+'/'+TARGET_WAVE; $('scorev').textContent=game.score;
-  $('hpfill').style.width=clamp(game.hp/game.maxhp*100,0,100)+'%'; $('hptext').textContent=Math.ceil(game.hp)+(game.shield>0?(' ⛨'+Math.ceil(game.shield)):'');
-  $('cashv').textContent=Math.floor(game.cash);
+  $('wavev').textContent=game.wave+'/'+TARGET_WAVE; $('scorev').textContent=fmt(game.score);
+  $('hpfill').style.width=clamp(game.hp/game.maxhp*100,0,100)+'%'; $('hptext').textContent=fmt(Math.ceil(game.hp))+(game.shield>0?(' ⛨'+fmt(Math.ceil(game.shield))):'');
+  $('cashv').textContent=fmt(game.cash);
   for(const s of STATS){ const nm=$('nm-'+s.k); if(nm) nm.textContent=s.name+' '+s.val();
-    const b=$('up-'+s.k); if(b){ if(s.cap && s.cap()){ b.textContent='MAX'; b.disabled=true; } else { const cost=costOf(s); b.textContent='$'+cost; b.disabled=game.cash<cost; } } }
-  ['red','blue','green','yellow','purple'].forEach(c=>{ const a=$('amt-'+c); if(a) a.textContent=Math.floor(game.res[c]); });
+    const b=$('up-'+s.k); if(b){ if(s.cap && s.cap()){ b.textContent='MAX'; b.disabled=true; } else { const cost=costOf(s); b.textContent='$'+fmt(cost); b.disabled=game.cash<cost; } } }
+  ['red','blue','green','yellow','purple'].forEach(c=>{ const a=$('amt-'+c); if(a) a.textContent=fmt(game.res[c]); });
   if(game._actBtns){ for(const ab of game._actBtns){ const S=ab.S,d=S.def,c=d.cost?d.cost(S.lv,S.pot):0; const ready=(S.st.charge||0)>=c; const uses=S.st.uses; const noUses=(uses!==undefined&&uses<=0);
     ab.chg.style.width=clamp(c>0?(S.st.charge||0)/c*100:100,0,100)+'%'; ab.as.textContent=(uses!==undefined?('残'+uses):(ready?'READY':'充填中')); ab.btn.classList.toggle('ready',ready&&!noUses); ab.btn.disabled=!ready||noUses; } }
   if(toastT>0){ toastT-=dt; if(toastT<=0) $('toast').style.opacity='0'; }
@@ -1341,10 +1347,10 @@ function checkResearchComplete(){ ensureSlots(); let changed=false; for(let i=0;
 function applyResearch(){ meta._rGachaDiscount=0; meta._rSparkMul=1; meta._rExtraSlot=0; for(const n of RESEARCH){ const lv=resLv(n.key); if(lv>0) n.fn(lv); } }
 let homeCat='red';
 function buildHome(){ try{
-  $('hspark').textContent=Math.floor(meta.spark);
+  $('hspark').textContent=fmt(meta.spark);
   const hb=$('hbank'); hb.innerHTML='';
   ['red','blue','green','yellow','purple'].forEach(c=>{ const s=document.createElement('span'); s.className='hb';
-    const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=Math.floor(meta.bank[c]);
+    const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=fmt(meta.bank[c]);
     s.appendChild(i); s.appendChild(v); hb.appendChild(s); });
   const ct=$('cattabs'); ct.textContent='';
   ['red','blue','green','yellow','purple'].forEach(c=>{ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c===homeCat?' on':''); t.style.color=COLORHEX[c]; t.textContent=CATNAME[c];
@@ -1359,7 +1365,7 @@ function buildHome(){ try{
     const nm=document.createElement('span'); nm.className='pc-name'; nm.textContent=p.name;
     const rt=document.createElement('span'); rt.className='pc-rt';
     const val=document.createElement('span'); val.className='pc-val'; val.style.color=COLORHEX[homeCat]; val.textContent=p.val(lv);
-    const cs=document.createElement('span'); cs.className='pc-cost'; cs.textContent=capped?'最大':('▲ '+cost);
+    const cs=document.createElement('span'); cs.className='pc-cost'; cs.textContent=capped?'最大':('▲ '+fmt(cost));
     rt.appendChild(val); rt.appendChild(cs); card.appendChild(nm); card.appendChild(rt);
     if(capped) card.disabled=true; else card.addEventListener('click',()=>buyPerm(p));
     grid.appendChild(card);
@@ -1395,7 +1401,7 @@ function openSkillDetail(id){ const def=SKILL_BY_ID[id]; if(!def) return; const 
   setStars($('sdstars'), o?Math.min(def.potMax,o.pot|0):0, def.potMax);
   $('sddesc').textContent=def.desc;
   const bt=$('sdbtns'); bt.textContent='';
-  if(o){ const lvb=document.createElement('button'); const c2=skillLevelCost(def,o.level); lvb.textContent=o.level>=def.maxLv?'MAX':('Lv↑  '+c2); if(o.level>=def.maxLv||meta.bank[def.color]<c2) lvb.disabled=true; lvb.addEventListener('click',()=>{ levelUpSkill(id); openSkillDetail(id); }); bt.appendChild(lvb);
+  if(o){ const lvb=document.createElement('button'); const c2=skillLevelCost(def,o.level); lvb.textContent=o.level>=def.maxLv?'MAX':('Lv↑  '+fmt(c2)); if(o.level>=def.maxLv||meta.bank[def.color]<c2) lvb.disabled=true; lvb.addEventListener('click',()=>{ levelUpSkill(id); openSkillDetail(id); }); bt.appendChild(lvb);
     const eq=meta.skillEquip.indexOf(id)>=0; const eqb=document.createElement('button'); eqb.textContent=eq?'装備を外す':'装備する'; if(eq)eqb.className='eq'; eqb.addEventListener('click',()=>{ equipSkill(id); openSkillDetail(id); }); bt.appendChild(eqb);
   } else { const g=document.createElement('button'); g.textContent='🔒 ガチャで入手'; g.disabled=true; bt.appendChild(g); }
   $('skdetail').classList.add('on'); }
@@ -1405,13 +1411,13 @@ function openResearchDetail(key){ const n=RESEARCH_BY_KEY[key]; if(!n) return; e
   setStars($('sdstars'), Math.round(lv/(n.max||1)*5), 5);
   $('sddesc').textContent = n.val(lv)+(maxed?'　（最大）':(' → '+n.val(lv+1)+'\n必要歩行距離 '+c+' m'));
   const bt=$('sdbtns'); bt.textContent='';
-  if(inSlot){ const slot=meta.research.slots.find(s=>s&&s.key===key); const b=document.createElement('button'); b.textContent='中断（進捗 '+Math.floor(resSlotProgress(slot))+'m）'; b.addEventListener('click',()=>{ const i=meta.research.slots.findIndex(s=>s&&s.key===key); cancelResearchSlot(i); openResearchDetail(key); }); bt.appendChild(b); }
-  else { const b=document.createElement('button'); b.textContent= maxed?'MAX':(freeSlot?('セット  '+c+'m'):'研究枠なし'); if(maxed||!freeSlot) b.disabled=true; b.addEventListener('click',()=>{ assignResearch(key); openResearchDetail(key); }); bt.appendChild(b); }
+  if(inSlot){ const slot=meta.research.slots.find(s=>s&&s.key===key); const b=document.createElement('button'); b.textContent='中断（進捗 '+fmt(resSlotProgress(slot))+'m）'; b.addEventListener('click',()=>{ const i=meta.research.slots.findIndex(s=>s&&s.key===key); cancelResearchSlot(i); openResearchDetail(key); }); bt.appendChild(b); }
+  else { const b=document.createElement('button'); b.textContent= maxed?'MAX':(freeSlot?('セット  '+fmt(c)+'m'):'研究枠なし'); if(maxed||!freeSlot) b.disabled=true; b.addEventListener('click',()=>{ assignResearch(key); openResearchDetail(key); }); bt.appendChild(b); }
   $('skdetail').classList.add('on'); }
 function buildSkills(){ try{
-  $('skspark').textContent=Math.floor(meta.spark);
-  const hb=$('skbank'); hb.textContent=''; for(const c of COLORS){ const s=document.createElement('span'); s.className='hb'; const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=Math.floor(meta.bank[c]); s.appendChild(i); s.appendChild(v); hb.appendChild(s); }
-  $('skdist').textContent=Math.floor(meta.research.dist);
+  $('skspark').textContent=fmt(meta.spark);
+  const hb=$('skbank'); hb.textContent=''; for(const c of COLORS){ const s=document.createElement('span'); s.className='hb'; const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=fmt(meta.bank[c]); s.appendChild(i); s.appendChild(v); hb.appendChild(s); }
+  $('skdist').textContent=fmt(meta.research.dist);
   $('skgacha').textContent='ガチャ （SPARK '+gachaCost()+'）';
   const rv=$('skreveal'); if(lastGacha){ rv.textContent = lastGacha.err ? lastGacha.err : ('✦ '+lastGacha.name+(lastGacha.isNew?' 開放！':(lastGacha.potUp?(' 潜在★'+lastGacha.pot+'!'):' (被り→資源)'))); rv.style.color=lastGacha.err?'var(--red)':COLORHEX[lastGacha.color]; } else rv.textContent='';
   const resOn=skResearchView;
@@ -1428,7 +1434,7 @@ function buildSkills(){ try{
     for(let i=0;i<RESEARCH_SLOTS;i++){ const slot=meta.research.slots[i]; const d=document.createElement('div'); d.className='rslot'+(slot?' on':'');
       if(slot){ const n=RESEARCH_BY_KEY[slot.key]; const prog=resSlotProgress(slot), tgt=resTarget(slot.key); d.style.borderColor=COLORHEX[n.c];
         const t=document.createElement('div'); t.textContent=n.name+' →Lv'+(resLv(slot.key)+1);
-        const p=document.createElement('div'); p.style.color=COLORHEX[n.c]; p.style.fontSize='.62rem'; p.textContent=Math.floor(Math.min(prog,tgt))+' / '+tgt+' m';
+        const p=document.createElement('div'); p.style.color=COLORHEX[n.c]; p.style.fontSize='.62rem'; p.textContent=fmt(Math.min(prog,tgt))+' / '+fmt(tgt)+' m';
         const f=document.createElement('div'); f.className='rfill'; f.style.background=COLORHEX[n.c]; f.style.width=Math.min(100,prog/tgt*100)+'%';
         d.appendChild(t); d.appendChild(p); d.appendChild(f); const idx=i; d.addEventListener('click',()=>cancelResearchSlot(idx));
       } else { d.textContent='＋ 研究枠'; }
@@ -1441,7 +1447,7 @@ function buildSkills(){ try{
       const bd=document.createElement('span'); bd.className='skbadge'; bd.textContent='Lv '+lv+(n.max?('/'+n.max):''); hd.appendChild(nm); hd.appendChild(bd);
       const ds=document.createElement('div'); ds.className='skd'; ds.textContent=n.val(lv)+(maxed?'':(' → '+n.val(lv+1))); card.appendChild(hd); card.appendChild(ds);
       const btns=document.createElement('div'); btns.className='skbtns'; const b=document.createElement('button');
-      b.textContent = maxed?'MAX' : inSlot?'研究中…' : freeSlot?('セット  '+c+'m') : '枠なし';
+      b.textContent = maxed?'MAX' : inSlot?'研究中…' : freeSlot?('セット  '+fmt(c)+'m') : '枠なし';
       if(inSlot) b.className='eq'; if(maxed||inSlot||!freeSlot) b.disabled=true; b.addEventListener('click',()=>assignResearch(n.key)); btns.appendChild(b);
       card.appendChild(btns); el0.appendChild(card); }
     return; }
@@ -1587,9 +1593,9 @@ function showResult(){ if(!game.result || game.resultShown) return; game.resultS
   hideBossMeshes(); hideFortressFx();
   document.body.classList.remove('state-playing','state-map','state-home','state-skill','state-deploy'); document.body.classList.add('state-result');
   $('rtitle').textContent = r.clear?'踏破':'陥落'; $('rtitle').className = r.clear?'clear':'fall';
-  $('rwave').textContent=r.wave; $('rkill').textContent=r.kills; $('rscore').textContent=r.kills;
-  const h=r.haul; const haul='R'+h.red+' B'+h.blue+' G'+h.green+' Y'+h.yellow+' P'+h.purple;
-  $('rspark').textContent='精算 Spark '+r.sc+'（踏破×'+(r.clear?'1.5':'1')+'） ／ 恒常資源 '+haul;
+  $('rwave').textContent=r.wave; $('rkill').textContent=fmt(r.kills); $('rscore').textContent=fmt(r.kills);
+  const h=r.haul; const haul='R'+fmt(h.red)+' B'+fmt(h.blue)+' G'+fmt(h.green)+' Y'+fmt(h.yellow)+' P'+fmt(h.purple);
+  $('rspark').textContent='精算 Spark '+fmt(r.sc)+'（踏破×'+(r.clear?'1.5':'1')+'） ／ 恒常資源 '+haul;
   controls.autoRotate=!REDUCED;
   if(r.clear && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
 }
