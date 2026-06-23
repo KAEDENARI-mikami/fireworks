@@ -450,7 +450,7 @@ const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
 const H = 300, CORE = new THREE.Vector3(0,150,0);   // 塔の高さ / 迎撃中心
 const WAVE_SECONDS = 20;            // 1ウェーブの実時間（規定ウェーブまでの放置ペース・調整可）
 let   TARGET_WAVE  = 15000;         // 規定ウェーブ（踏破条件）
-const BOSS_EVERY   = 10;            // ボスウェーブ間隔（最初のボスを早めに見せる：wave10≈3分）
+const BOSS_EVERY   = 25;            // ボスウェーブ間隔（25waveごと：wave25/50/75…）
 const BOSS_KEYS    = ['tank','inter','fort'];
 const SCALE_PER_WAVE = 1.0032;     // 敵HP/攻撃の wave毎スケール（約217wave で2倍 / W15000≈×6.4e20）。決定論：waveは整数クロックなので純粋関数
 function waveMul(w){ return Math.pow(SCALE_PER_WAVE, Math.max(0, (w|0)-1)); }
