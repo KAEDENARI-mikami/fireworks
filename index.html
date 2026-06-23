@@ -647,13 +647,13 @@ plasmaMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.Icosahed
 plasmaMesh.visible=false; plasmaMesh.frustumCulled=false; scene.add(plasmaMesh);
 const BOSSES = [
   { key:'tank', name:'重戦車',   col:0xFF3A2A, colArr:[1,.35,.3],
-    baseHp:7500, baseAtk:240, orbSpd:0.32, shootInt:2.0, shootMul:0.75, laserDmg:0.08, laserDur:1.0, laserCd:[3,5], sCount:1.0, summon:[0.7,0.3],
+    baseHp:3750, baseAtk:120, orbSpd:0.32, shootInt:2.0, shootMul:0.75, laserDmg:0.08, laserDur:1.0, laserCd:[3,5], sCount:1.0, summon:[0.7,0.3],
     desc:'標準型。レーザーと増援召喚を備えた万能ボス。' },
   { key:'inter', name:'掃討機',  col:0x3CF0FF, colArr:[.4,.95,1],
-    baseHp:6000, baseAtk:252, orbSpd:0.5, barrier:500,
+    baseHp:3000, baseAtk:126, orbSpd:0.5, barrier:250,
     desc:'常時バリア＋拡散ショットガン。突進で炎上を付与し、半壊後は破壊可能な火の玉を撒く軽量級。' },
   { key:'fort', name:'機動要塞', col:0xB36BFF, colArr:[.72,.45,1],
-    baseHp:20000, baseAtk:540, orbSpd:0.18,
+    baseHp:10000, baseAtk:270, orbSpd:0.18,
     desc:'3基のオービット（赤レーザー/青ダメ半減/緑回復）を従える超重量級。HP半減で第二形態＝常時増援＋大技プラズマ球。' },
 ];
 function spawnBoss(){
@@ -768,7 +768,7 @@ function spawnFortressOrbits(boss){
     const e=E[idx];
     e.active=true; e.id=++enemyId; e.boss=false; e.fireball=false; e.plasma=false; e.barrierMax=0;
     e.orbit=true; e.orbitParent=boss; e.orbitType=tp; e.orbitBaseAng=k*2.0944; e.orbitDead=false; e.reviveAt=0;
-    e.maxhp=2000*eLvMul*waveMul(game.wave); e.hp=e.maxhp; e.size=17; e.spin=0; e.phase=0;
+    e.maxhp=1000*eLvMul*waveMul(game.wave); e.hp=e.maxhp; e.size=17; e.spin=0; e.phase=0;
     e.col = tp==='red'?[1,.35,.3] : tp==='blue'?[.4,.7,1] : [.45,1,.45];
     e.orbitCd = tp==='red'?5 : tp==='green'?srand(10,15) : 0; e.laserT=0; e.laserAcc=0;
     e.x=boss.x; e.y=boss.y; e.z=boss.z;
@@ -1293,7 +1293,6 @@ const PERM = [
   {c:'green', k:'p_cash',  name:'初期資金',   cost:2000, r:2.0, fn:(lv)=>{ game.cash+=60*lv; }, val:(lv)=>'+$'+(60*lv)},
   {c:'green', k:'p_cashmul',name:'$獲得倍率', cost:2500, r:2.0, fn:(lv)=>{ game.cashMul*=1+0.08*lv; }, val:(lv)=>'×'+(1+0.08*lv).toFixed(2)},
   {c:'green', k:'p_range', name:'初期射程',   cost:1800, r:2.0, fn:(lv)=>{ game.range*=1+0.05*lv; }, val:(lv)=>'+'+Math.round(5*lv)+'%'},
-  {c:'yellow',k:'p_unlock',name:'大火 初期解放',cost:8000, r:5,  fn:(lv)=>{ if(lv>0) game.skillUnlocked=true; }, cap:(lv)=>lv>=1, val:(lv)=>lv>0?'解放済':'—'},
   {c:'yellow',k:'p_spow',  name:'スキル威力', cost:3000, r:2.0, fn:(lv)=>{ game.skillPow*=1+0.15*lv; }, val:(lv)=>'×'+(1+0.15*lv).toFixed(2)},
   {c:'yellow',k:'p_smax',  name:'チャージ短縮',cost:3000, r:2.0, fn:(lv)=>{ game.skillMax=Math.max(5,game.skillMax-0.6*lv); }, cap:(lv)=>game.skillMax!==undefined&&lv>=6, val:(lv)=>'-'+(0.6*lv).toFixed(1)+'s'},
   {c:'purple',k:'p_vuln',  name:'初期脆弱化', cost:9600, r:2.0, fn:(lv)=>{ game.vuln+=0.08*lv; }, val:(lv)=>'+'+Math.round(8*lv)+'%'},
