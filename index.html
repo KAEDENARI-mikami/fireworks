@@ -999,6 +999,7 @@ const game = {
   harvestMul:1, skillPow:1, slowLv:0, slow:0, cash:0, dr:0, cashMul:1, vuln:1,
   armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
   res:{red:0,blue:0,green:0,yellow:0,purple:0},
+  mining:{red:0,blue:0,green:0,yellow:0,purple:0},
   lv:{},
   skillUnlocked:false, skillCharge:0, skillMax:18, kills:0, score:0, wave:1, spawnCd:0,
   phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[],
@@ -1011,7 +1012,7 @@ function resetGame(){
   Object.assign(game,{ state:'playing', t:0, fireCd:0, hp:1600, maxhp:1600, regen:6,
     dmg:16, fireRate:2.4, range:520, multishot:1, critChance:0.05, critPower:1.8, harvestMul:1, skillPow:1, slowLv:0, cash:0, dr:0, cashMul:1, vuln:1,
     armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
-    res:{red:0,blue:0,green:0,yellow:0,purple:0}, lv:{},
+    res:{red:0,blue:0,green:0,yellow:0,purple:0}, mining:{red:0,blue:0,green:0,yellow:0,purple:0}, lv:{},
     skillUnlocked:false, skillCharge:0, skillMax:18, kills:0, score:0, wave:1, spawnCd:0,
     phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[], tick:0,
     result:null, resultShown:false, purchases:[], _pidx:0, ended:false,
@@ -1059,7 +1060,11 @@ const lvOf=(k)=>game.lv[k]||0;
 function costOf(s){ return Math.floor(s.cost * Math.pow(s.r, lvOf(s.k))); }
 function applyStat(s){ if(s.cap && s.cap()) return false; const cost=costOf(s); if(game.cash<cost) return false; game.cash-=cost; game.lv[s.k]=lvOf(s.k)+1; s.fn(); return true; }
 function tryUpgrade(s){ if(applyStat(s)){ toast(s.name+' '+s.val()); game.purchases.push({tick:game.tick, k:s.k}); saveRun(); } }   // ラン内購入はtick付きログ→放置再生で同一適用
-function applyPurchasesUpTo(tick){ const P=game.purchases; while(game._pidx<P.length && P[game._pidx].tick<=tick){ const e=P[game._pidx]; const s=STATS.find(x=>x.k===e.k); if(s) applyStat(s); game._pidx++; } }
+const CRES={red:'赤',blue:'青',green:'緑',yellow:'黄',purple:'紫'};
+function miningCost(c){ return 2000*Math.pow(100, (game.mining&&game.mining[c])||0); }   // 1台目$2000、以降×100
+function applyMining(c){ const cost=miningCost(c); if(game.cash<cost) return false; game.cash-=cost; game.mining[c]=((game.mining[c]||0)+1); return true; }
+function buyMining(c){ if(applyMining(c)){ toast(CRES[c]+'採掘機 設置 ×'+game.mining[c]); game.purchases.push({tick:game.tick, m:c}); saveRun(); } }
+function applyPurchasesUpTo(tick){ const P=game.purchases; while(game._pidx<P.length && P[game._pidx].tick<=tick){ const e=P[game._pidx]; if(e.m){ applyMining(e.m); } else { const s=STATS.find(x=>x.k===e.k); if(s) applyStat(s); } game._pidx++; } }
 
 function recentHits(){ const cut=game.t-10, L=game.hitLog; while(L.length && L[0]<cut) L.shift(); return L.length; }
 function damageTower(d){ if(game.state!=='playing') return;
@@ -1248,12 +1253,12 @@ function buildRes(){ const el=$('res'); el.innerHTML='';
       btn.addEventListener('click',()=>tryUpgrade(s));
       row.appendChild(sw); row.appendChild(nm); row.appendChild(btn); body.appendChild(row); });
     el.appendChild(body); });
-  const h2=document.createElement('div'); h2.className='sec'; h2.textContent='採取＝恒常強化資源（持ち帰り）'; el.appendChild(h2);
-  const hr=document.createElement('div'); hr.className='haulrow';
-  ['red','blue','green','yellow','purple'].forEach(c=>{ const h=document.createElement('span'); h.className='h';
+  const h2=document.createElement('div'); h2.className='sec'; h2.textContent='採掘機（$で購入→その色を採取・1台ごと×100）'; el.appendChild(h2);
+  ['red','blue','green','yellow','purple'].forEach(c=>{ const row=document.createElement('div'); row.className='rrow';
     const sw=document.createElement('span'); sw.className='sw'; sw.style.background=COLORHEX[c];
-    const v=document.createElement('span'); v.id='amt-'+c; v.textContent='0';
-    h.appendChild(sw); h.appendChild(v); hr.appendChild(h); }); el.appendChild(hr); }
+    const v=document.createElement('span'); v.className='amt'; v.id='amt-'+c; v.textContent='0';
+    const btn=document.createElement('button'); btn.className='up'; btn.id='mine-'+c; btn.textContent='採掘 $'+fmt(2000); btn.addEventListener('click',()=>buyMining(c));
+    row.appendChild(sw); row.appendChild(v); row.appendChild(btn); el.appendChild(row); }); }
 let toastT=0;
 function toast(s){ if(!RENDER) return; const el=$('toast'); el.textContent=s; el.style.opacity='1'; toastT=1.2; }
 function setBossLabel(t){ if(!RENDER) return; const bl=document.querySelector('#bosshp .bl'); if(bl) bl.textContent=t; }
@@ -1265,7 +1270,7 @@ function updateHUD(dt){
   $('cashv').textContent=fmt(game.cash);
   for(const s of STATS){ const nm=$('nm-'+s.k); if(nm) nm.textContent=s.name+' '+s.val();
     const b=$('up-'+s.k); if(b){ if(s.cap && s.cap()){ b.textContent='MAX'; b.disabled=true; } else { const cost=costOf(s); b.textContent='$'+fmt(cost); b.disabled=game.cash<cost; } } }
-  ['red','blue','green','yellow','purple'].forEach(c=>{ const a=$('amt-'+c); if(a) a.textContent=fmt(game.res[c]); });
+  ['red','blue','green','yellow','purple'].forEach(c=>{ const a=$('amt-'+c); if(a) a.textContent=fmt(game.res[c]); const mb=$('mine-'+c); if(mb){ const cost=miningCost(c); mb.textContent=(game.mining[c]?('採掘×'+game.mining[c]+' '):'採掘 ')+'$'+fmt(cost); mb.disabled=game.cash<cost; } });
   if(game._actBtns){ for(const ab of game._actBtns){ const S=ab.S,d=S.def,c=d.cost?d.cost(S.lv,S.pot):0; const ready=(S.st.charge||0)>=c; const uses=S.st.uses; const noUses=(uses!==undefined&&uses<=0);
     ab.chg.style.width=clamp(c>0?(S.st.charge||0)/c*100:100,0,100)+'%'; ab.as.textContent=(uses!==undefined?('残'+uses):(ready?'READY':'充填中')); ab.btn.classList.toggle('ready',ready&&!noUses); ab.btn.disabled=!ready||noUses; } }
   if(toastT>0){ toastT-=dt; if(toastT<=0) $('toast').style.opacity='0'; }
@@ -1541,7 +1546,7 @@ function runStep(dt){
   applyActsUpTo(game.tick);              // アクティブスキル入力をFG/CU同位置で適用（決定論）
   game.t = game.tick * DT;
   // 採取
-  for(const c of ['red','blue','green','yellow','purple']) game.res[c] += DENS[c]*0.05*game.harvestMul*dt;
+  for(const c of ['red','blue','green','yellow','purple']) game.res[c] += DENS[c]*0.025*game.harvestMul*dt*(game.mining[c]||0);   // 採掘＝半減した基礎量×採掘機台数（採掘機0なら採取なし）
   // スキルチャージ（黄＋時間／アンロック後のみ）
   if(game.skillUnlocked){
     game.skillCharge = Math.min(game.skillMax, game.skillCharge + dt*(1 + DENS.yellow*0.01));
