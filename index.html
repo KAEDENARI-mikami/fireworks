@@ -351,6 +351,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div class="home-title" id="sktitle">スキル ／ SKILL</div>
   <div class="home-sub" id="sksub">SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）</div>
   <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+    <button class="skgacha" id="skfree10" type="button" style="display:none;background:linear-gradient(135deg,var(--gold),var(--red));">🎁 無料10連</button>
     <button class="skgacha" id="skgacha" type="button">ガチャ</button>
     <span class="skreveal" id="skreveal"></span>
   </div>
@@ -1288,7 +1289,7 @@ function updateHUD(dt){
 }
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
-const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]} };
+const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -1392,13 +1393,18 @@ function setTab(id){ if(typeof closeDetail==='function') closeDetail(); ['mode-b
 /* ===== スキル画面（ガチャ/Lv上げ/装備） ===== */
 let skillCat='red', lastGacha=null, skResearchView=false;
 function gachaCost(){ return Math.max(200, Math.round(1000*(1-0.05*resLv('gachaDiscount')))); }
-function gachaPull(){ const cost=gachaCost(); if(meta.spark<cost){ lastGacha={err:'SPARK不足（'+cost+'必要）'}; buildSkills(); return; }
-  meta.spark-=cost; if(!meta.gachaSeed) meta.gachaSeed=(Date.now()>>>0)||1;
+function gachaRollOne(){ if(!meta.gachaSeed) meta.gachaSeed=(Date.now()>>>0)||1;
   const r=makeRNG(meta.gachaSeed), roll=r.next(); meta.gachaSeed=r.getState();
   const def=SKILLS[Math.min(SKILLS.length-1,(roll*SKILLS.length)|0)]; const o=meta.skillOwned[def.id]||(meta.skillOwned[def.id]={level:1,dup:0,pot:0});
   const before=o.pot, isNew=(o.dup===0); o.dup++; o.pot=potFromDup(o.dup,def.potMax);
-  lastGacha={name:def.name,color:def.color,isNew,potUp:(o.pot>before),pot:o.pot};
-  skillCat=def.color; saveMeta(); buildSkills(); }
+  return {def,isNew,potUp:(o.pot>before),pot:o.pot}; }
+function gachaPull(){ const cost=gachaCost(); if(meta.spark<cost){ lastGacha={err:'SPARK不足（'+cost+'必要）'}; buildSkills(); return; }
+  meta.spark-=cost; const res=gachaRollOne();
+  lastGacha={name:res.def.name,color:res.def.color,isNew:res.isNew,potUp:res.potUp,pot:res.pot};
+  skillCat=res.def.color; saveMeta(); buildSkills(); }
+function gachaFree10(){ if(meta.free10Done) return; meta.free10Done=true; let news=0,lastDef=null;
+  for(let i=0;i<10;i++){ const res=gachaRollOne(); if(res.isNew)news++; lastDef=res.def; }
+  lastGacha={multi:true, n:10, news}; if(lastDef) skillCat=lastDef.color; saveMeta(); buildSkills(); }
 function levelUpSkill(id){ const def=SKILL_BY_ID[id],o=meta.skillOwned[id]; if(!o||o.level>=def.maxLv) return; const cost=skillLevelCost(def,o.level); if(meta.bank[def.color]>=cost){ meta.bank[def.color]-=cost; o.level++; saveMeta(); buildSkills(); } }
 function equipSkill(id){ const max=3+resLv('extraSlot'); while(meta.skillEquip.length<max) meta.skillEquip.push(null);   // 枠数まで配列を伸長＝4枠目がスロット0を上書きしない
   const i=meta.skillEquip.indexOf(id);
@@ -1434,7 +1440,8 @@ function buildSkills(){ try{
   const hb=$('skbank'); hb.textContent=''; for(const c of COLORS){ const s=document.createElement('span'); s.className='hb'; const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=fmt(meta.bank[c]); s.appendChild(i); s.appendChild(v); hb.appendChild(s); }
   $('skdist').textContent=fmt(meta.research.dist);
   $('skgacha').textContent='ガチャ （SPARK '+gachaCost()+'）';
-  const rv=$('skreveal'); if(lastGacha){ rv.textContent = lastGacha.err ? lastGacha.err : ('✦ '+lastGacha.name+(lastGacha.isNew?' 開放！':(lastGacha.potUp?(' 潜在★'+lastGacha.pot+'!'):' (被り→資源)'))); rv.style.color=lastGacha.err?'var(--red)':COLORHEX[lastGacha.color]; } else rv.textContent='';
+  const rv=$('skreveal'); if(lastGacha){ rv.textContent = lastGacha.multi ? ('🎉 無料10連！ 新規開放 '+lastGacha.news+'種') : (lastGacha.err ? lastGacha.err : ('✦ '+lastGacha.name+(lastGacha.isNew?' 開放！':(lastGacha.potUp?(' 潜在★'+lastGacha.pot+'!'):' (被り→資源)')))); rv.style.color=lastGacha.multi?'var(--gold)':(lastGacha.err?'var(--red)':COLORHEX[lastGacha.color]); } else rv.textContent='';
+  { const f10=$('skfree10'); if(f10) f10.style.display = (skResearchView||meta.free10Done) ? 'none' : ''; }
   const resOn=skResearchView;
   $('sktitle').textContent=resOn?'リサーチ ／ RESEARCH':'スキル ／ SKILL';
   $('sksub').textContent=resOn?'研究枠(3つ)にセット → 歩いた距離で進行 → 完了でLv↑（同時に最大3件・GPS移動で加算）':'SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）';
@@ -1618,7 +1625,7 @@ function enterPlaying(){ game.resultShown=false; document.body.classList.remove(
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed})); }catch(e){} }
+function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done})); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
   const mb=(m.bank&&typeof m.bank==='object')?m.bank:{}; meta.bank={red:0,blue:0,green:0,yellow:0,purple:0}; for(const c of COLORS) meta.bank[c]=Math.max(0, Number(mb[c])||0);   // 数値強制（壊れた保存でNaN通貨を防ぐ）
@@ -1629,7 +1636,7 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   { const raw=Array.isArray(meta.research.slots)?meta.research.slots:[]; const seen={}; meta.research.slots=[];   // 研究枠サニタイズ：不正/重複/MAX済みを除去
     for(let i=0;i<RESEARCH_SLOTS;i++){ const sl=raw[i]; const n=sl&&typeof sl==='object'?RESEARCH_BY_KEY[sl.key]:null; const st=sl?Number(sl.start):NaN;
       if(n && isFinite(st) && st>=0 && !(n.max&&(meta.research.node[sl.key]||0)>=n.max) && !seen[sl.key]){ seen[sl.key]=1; meta.research.slots.push({key:sl.key, start:Math.min(st, meta.research.dist)}); } else { meta.research.slots.push(null); } } }
-  meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1);
+  meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1); meta.free10Done=!!m.free10Done;
   meta.skillOwned=(m.skillOwned&&typeof m.skillOwned==='object')?m.skillOwned:{};
   for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; if(!o||typeof o!=='object'){ delete meta.skillOwned[id]; continue; }   // null/プリミティブ値で TypeError→サニタイズ中断を防ぐ
     o.level=Math.max(1,Math.min(def.maxLv,o.level|0)); o.dup=Math.max(0,o.dup|0); o.pot=potFromDup(o.dup,def.potMax); }
@@ -1724,6 +1731,7 @@ $('mode-map').addEventListener('click', showMap);
 $('mode-skill').addEventListener('click', showSkills);
 $('mode-research').addEventListener('click', showResearch);
 $('skgacha').addEventListener('click', gachaPull);
+$('skfree10').addEventListener('click', gachaFree10);
 $('sdclose').addEventListener('click', closeDetail);
 $('skdetail').addEventListener('click', (e)=>{ if(e.target===$('skdetail')) closeDetail(); });
 $('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map','state-skill'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
