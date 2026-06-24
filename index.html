@@ -250,6 +250,9 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 .mapbars .mb-track i{display:block; width:100%; transition:height .25s;}
 .mapgo{width:100%; cursor:pointer; font-family:"Reggae One",sans-serif; font-size:1.05rem; letter-spacing:.05em; padding:.6rem; color:var(--void); background:linear-gradient(135deg,var(--cyan),var(--gold)); border:none; border-radius:7px; box-shadow:0 0 20px rgba(60,240,255,.35); margin-top:.45rem;}
 .mapgo:disabled{opacity:.4; cursor:default;}
+.mapbtns{display:flex; gap:.35rem; margin-top:.45rem;}
+.mapbtns button{flex:1; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.72rem; padding:.52rem .3rem; border-radius:7px; color:var(--ink); border:1px solid color-mix(in srgb, var(--cyan) 45%, rgba(234,240,255,.24)); background:rgba(60,240,255,.08); transition:.15s;}
+.mapbtns button:hover:not(:disabled){background:color-mix(in srgb,var(--cyan) 30%, transparent);}
 .modline{display:flex; flex-wrap:wrap; gap:.25rem; margin:.45rem 0 .1rem; font-family:"DotGothic16",monospace;}
 .modchip{font-size:.55rem; line-height:1.2; padding:.12rem .35rem; border-radius:999px; color:var(--ink); background:rgba(234,240,255,.08); border:1px solid rgba(234,240,255,.18);}
 .modchip.head{color:var(--gold); border-color:rgba(255,214,107,.45); background:rgba(255,214,107,.12);}
@@ -468,7 +471,7 @@ function vnoise(x,y,off){ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-y
   const a=_latv(xi,yi,off),b=_latv(xi+1,yi,off),c=_latv(xi,yi+1,off),d=_latv(xi+1,yi+1,off);
   return (a+(b-a)*u)*(1-v)+(c+(d-c)*u)*v; }
 function fieldNoise(q,r,off){ let n=0,amp=1,fr=1/FIELD_WL,tot=0; for(let o=0;o<3;o++){ n+=amp*vnoise(q*fr,r*fr,off+o*97); tot+=amp; amp*=0.5; fr*=2; } return n/tot; }   // 0..1（多オクターブ）
-const JP_THRESH=0.74;   // 豊穣度ノイズの上位＝スイートスポット（数%）
+const JP_THRESH=0.66;   // 豊穣度ノイズの上位＝スイートスポット（徒歩圏で数件見える密度）
 function baseField(cellId){ const ax=GeoCell.cellToAxial(cellId), q=ax[0], r=ax[1], base={};
   const jp=fieldNoise(q,r,999);                              // 専用の滑らかな"豊穣度"場
   const jackpot = jp>JP_THRESH;                              // 滑らかな高密度域（自然に稀）
@@ -1908,7 +1911,7 @@ function sweetSpotPopupHtml(cellId){
 function drawCells(){
   selCell = avatarLL ? GeoCell.latLngToCell(avatarLL[0],avatarLL[1]) : GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
   // 現在地はアバター点のみ。近傍のスイートスポットを金色の点で表示（高速移動中は探索半径を拡大）
-  const wantK = modeFast()?40:13;   // 徒歩 約1km / 車・電車 約3km
+  const wantK = modeFast()?48:16;   // 徒歩 約1.2km / 車・電車 約3.6km
   const _now=performance.now();
   if(LMAP && avatarLL && (selCell!==_sweetCenterCell || wantK!==_sweetK) && _now-_sweetT>1000){   // セル/モード変化時のみ・最大1秒に1回（高速移動の再計算暴走を防ぐ）
     _sweetCenterCell=selCell; _sweetK=wantK; _sweetT=_now;
@@ -1922,7 +1925,7 @@ function drawCells(){
       const popup=sweetSpotPopupHtml(cid);
       const halo=L.circleMarker(ll,{radius:16, weight:0, fillColor:'#FFD66B', fillOpacity:.16, interactive:false});
       const dot =L.circleMarker(ll,{radius:7, color:'#FFE9A8', weight:2, fillColor:'#FFD66B', fillOpacity:.95, bubblingMouseEvents:false});
-      const touch=L.circleMarker(ll,{radius:28, weight:0, fillColor:'#FFD66B', fillOpacity:.001, opacity:0, interactive:true, bubblingMouseEvents:false});
+      const touch=L.circleMarker(ll,{radius:36, weight:0, fillColor:'#FFD66B', fillOpacity:.001, opacity:0, interactive:true, bubblingMouseEvents:false});
       dot.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
       touch.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
       dot.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); dot.openPopup(); });
@@ -1931,6 +1934,23 @@ function drawCells(){
     }
   }
   renderCellCard(); }
+function refreshCurrentPosition(){
+  if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで移動してください'); return; }
+  navigator.geolocation.getCurrentPosition(p=>{
+    gpsLocked=true;
+    devMode=false;
+    accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed);
+    setAvatar(p.coords.latitude,p.coords.longitude);
+    if(LMAP) try{ LMAP.setView(avatarLL, Math.max(16, LMAP.getZoom()||16), { animate:true }); }catch(e){}
+    toast('📍 現在地を更新しました');
+  }, ()=>{ toast('📍 現在地の再取得に失敗しました'); }, { enableHighAccuracy:true, maximumAge:0, timeout:12000 });
+}
+function refreshSweetSpotCoords(){
+  _sweetCenterCell = null;
+  _sweetT = 0;
+  drawCells();
+  toast('⭐ スイートスポット座標を再計算しました');
+}
 function renderCellCard(){
   const card=$('mapcard'); if(!card) return; card.textContent='';
   const cell=selCell||GeoCell.latLngToCell(VENUE.lat,VENUE.lng), lng=avatarLL?avatarLL[1]:VENUE.lng;
@@ -1955,6 +1975,12 @@ function renderCellCard(){
   }
   const go=document.createElement('button'); go.className='mapgo'; go.type='button'; go.textContent=hellOn?'シブヤ地獄へ出撃':'ここに出撃';
   go.addEventListener('click', ()=>deployFromCell(cell)); card.appendChild(go);
+  const ctrls=document.createElement('div'); ctrls.className='mapbtns';
+  const updatePos=document.createElement('button'); updatePos.type='button'; updatePos.textContent='📍 位置更新';
+  updatePos.addEventListener('click', refreshCurrentPosition);
+  const updateSpots=document.createElement('button'); updateSpots.type='button'; updateSpots.textContent='⭐ スポット再計算';
+  updateSpots.addEventListener('click', refreshSweetSpotCoords);
+  ctrls.appendChild(updatePos); ctrls.appendChild(updateSpots); card.appendChild(ctrls);
   const hint=document.createElement('div'); hint.className='maphint';
   hint.textContent = hellOn ? '⚠ シブヤテレポート発動：全鉱石密度100・敵HP/攻撃×5・敵量×2（資源は最大）'
     : devMode ? 'DEVモード：地図クリック / 矢印キーで移動'
