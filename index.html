@@ -567,7 +567,7 @@ function rebalanceSweetSpotDensities(baseDens, targetTotal, profile, dominantFam
     weights.push([c,w]);
   }
   const totalW = weights.reduce((a,x)=>a+x[1],0) || 1;
-  const out = {}, parts = [], floorSum = 0;
+  const out = {}, parts = []; let floorSum = 0;
   for(const [c,w] of weights){ const exact = targetTotal * w / totalW; const n = Math.max(0, Math.floor(exact)); out[c]=n; floorSum += n; parts.push([c, exact-n]); }
   parts.sort((a,b)=>b[1]-a[1]);
   let remain = Math.max(0, targetTotal - floorSum);
