@@ -254,6 +254,16 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 .modchip{font-size:.55rem; line-height:1.2; padding:.12rem .35rem; border-radius:999px; color:var(--ink); background:rgba(234,240,255,.08); border:1px solid rgba(234,240,255,.18);}
 .modchip.head{color:var(--gold); border-color:rgba(255,214,107,.45); background:rgba(255,214,107,.12);}
 .maphint{font-size:.58rem; color:var(--dim); text-align:center; margin-top:.35rem;}
+.sweet-popup .leaflet-popup-content-wrapper{background:rgba(5,6,14,.94); border:1px solid rgba(255,214,107,.62); border-radius:8px; box-shadow:0 0 24px rgba(255,214,107,.25); color:var(--ink);}
+.sweet-popup .leaflet-popup-tip{background:rgba(5,6,14,.94); border:1px solid rgba(255,214,107,.45);}
+.sweet-pop{font-family:"DotGothic16",monospace; min-width:210px;}
+.sweet-pop-title{display:flex; justify-content:space-between; gap:.6rem; align-items:baseline; color:var(--gold); font-size:.82rem; margin-bottom:.35rem;}
+.sweet-pop-row{display:flex; justify-content:space-between; gap:.6rem; font-size:.68rem; color:var(--dim); margin:.14rem 0;}
+.sweet-pop-row b{color:var(--ink); font-weight:700;}
+.sweet-pop-mods{display:flex; flex-direction:column; gap:.22rem; margin-top:.45rem;}
+.sweet-pop-mod{font-size:.62rem; line-height:1.25; padding:.25rem .35rem; border:1px solid rgba(234,240,255,.16); border-radius:5px; background:rgba(234,240,255,.06);}
+.sweet-pop-mod b{color:var(--ink);}
+.sweet-pop-mod span{color:var(--dim);}
 .leaflet-container{background:#05060E;}
 /* 放置追いつきオーバーレイ */
 #catchup{display:none; position:fixed; left:50%; bottom:78px; transform:translateX(-50%); z-index:30; pointer-events:none;}
@@ -1881,6 +1891,20 @@ function accrueWalk(lat,lng,gpsSpeed){ const now=performance.now();
 function setAvatar(lat,lng){ avatarLL=[lat,lng];
   if(LMAP){ if(!avatarMarker){ avatarMarker=L.circleMarker(avatarLL,{radius:7,color:'#3CF0FF',fillColor:'#3CF0FF',fillOpacity:.9,weight:2}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
+function htmlEsc(s){ return String(s).replace(/[&<>"']/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch])); }
+function sweetSpotPopupHtml(cellId){
+  const ll=GeoCell.cellToLatLng(cellId), f=fieldFromCell(cellId, todBucketAt(Date.now(),ll[1]), Date.now());
+  const mods=(f.modules||[]).map(m=>'<div class="sweet-pop-mod" style="border-color:'+(MODULE_THEME[m.family]||'rgba(234,240,255,.16)')+'"><b>'+htmlEsc(m.name)+'</b><br><span>'+htmlEsc(m.desc)+'</span></div>').join('');
+  return '<div class="sweet-pop">'
+    + '<div class="sweet-pop-title"><b>'+htmlEsc(f.rarityLabel||'レア')+'</b><span>'+htmlEsc(f.moduleProfileLabel||'均等')+'</span></div>'
+    + '<div class="sweet-pop-row"><span>総密度</span><b>'+fmt(f.TOTAL)+'</b></div>'
+    + '<div class="sweet-pop-row"><span>敵Lv</span><b>×'+f.eLvMul.toFixed(2)+'</b></div>'
+    + '<div class="sweet-pop-row"><span>コスト</span><b>'+fmt(f.moduleCost||0)+'/'+fmt(f.moduleBudget||0)+'</b></div>'
+    + '<div class="sweet-pop-row"><span>報酬</span><b>×'+(f.rewardMul||1).toFixed(1)+'</b></div>'
+    + '<div class="sweet-pop-row"><span>密度</span><b>R'+fmt(f.DENS.red)+' B'+fmt(f.DENS.blue)+' G'+fmt(f.DENS.green)+' Y'+fmt(f.DENS.yellow)+' P'+fmt(f.DENS.purple)+'</b></div>'
+    + (mods?'<div class="sweet-pop-mods">'+mods+'</div>':'')
+    + '</div>';
+}
 function drawCells(){
   selCell = avatarLL ? GeoCell.latLngToCell(avatarLL[0],avatarLL[1]) : GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
   // 現在地はアバター点のみ。近傍のスイートスポットを金色の点で表示（高速移動中は探索半径を拡大）
@@ -1895,9 +1919,15 @@ function drawCells(){
       let peak=true; for(const nb of GeoCell.neighbors(cid)){ if(jpOf(nb) > jp){ peak=false; break; } }   // 塊の頂点(局所最大)＝1点だけ表示
       if(!peak) continue;
       const ll=GeoCell.cellToLatLng(cid);
-      const halo=L.circleMarker(ll,{radius:12, weight:0, fillColor:'#FFD66B', fillOpacity:.18, interactive:false});
-      const dot =L.circleMarker(ll,{radius:6, color:'#FFE9A8', weight:2, fillColor:'#FFD66B', fillOpacity:.95});
-      halo.addTo(LMAP); dot.addTo(LMAP); sweetMarkers.push(halo,dot);
+      const popup=sweetSpotPopupHtml(cid);
+      const halo=L.circleMarker(ll,{radius:16, weight:0, fillColor:'#FFD66B', fillOpacity:.16, interactive:false});
+      const dot =L.circleMarker(ll,{radius:7, color:'#FFE9A8', weight:2, fillColor:'#FFD66B', fillOpacity:.95, bubblingMouseEvents:false});
+      const touch=L.circleMarker(ll,{radius:28, weight:0, fillColor:'#FFD66B', fillOpacity:.001, opacity:0, interactive:true, bubblingMouseEvents:false});
+      dot.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
+      touch.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
+      dot.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); dot.openPopup(); });
+      touch.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); touch.openPopup(); });
+      halo.addTo(LMAP); touch.addTo(LMAP); dot.addTo(LMAP); sweetMarkers.push(halo,touch,dot);
     }
   }
   renderCellCard(); }
