@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Fireworks icon">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3CF0FF"/>
+      <stop offset="55%" stop-color="#B46BFF"/>
+      <stop offset="100%" stop-color="#FFD66B"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="#05060E"/>
+  <circle cx="256" cy="256" r="148" fill="none" stroke="url(#g)" stroke-width="18"/>
+  <path d="M256 112l24 96 96 24-96 24-24 96-24-96-96-24 96-24z" fill="url(#g)"/>
+  <path d="M158 162l16 58 58 16-58 16-16 58-16-58-58-16 58-16z" fill="#3CF0FF" opacity=".72"/>
+  <path d="M354 162l16 58 58 16-58 16-16 58-16-58-58-16 58-16z" fill="#FFD66B" opacity=".72"/>
+</svg>

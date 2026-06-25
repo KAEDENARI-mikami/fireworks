@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Fireworks — 位置情報 × 放置 × ローグライク タワーディフェンス。時空間データベースを用いた Web アプリの企画（課題7）。">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#05060E">
 <title>Fireworks</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<script src="fireworks.config.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +21,7 @@
 <style>
 :root{
   --void:#05060E; --ink:#EAF0FF; --dim:#8A93AD;
-  --red:#FF4A4A; --blue:#3CA0FF; --green:#6BE06B; --yellow:#FFD66B; --purple:#B46BFF; --cyan:#3CF0FF; --gold:#FFD66B;
+  --red:#FF4A4A; --blue:#3CA0FF; --green:#6BE06B; --yellow:#FFD66B; --purple:#B46BFF; --cyan:#3CF0FF; --gold:#FFD66B; --powder:#D6DAE8;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 html,body{height:100%;}
@@ -106,6 +111,7 @@ body.state-home #home{display:flex;}
 body.state-home .title, body.state-home .meta, body.state-home .hint{display:none;}
 .home-top{display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center; font-family:"DotGothic16",monospace; font-size:.78rem; color:var(--ink);}
 .home-top .hcur b{color:var(--gold);}
+.home-top .hcur.powder b{color:var(--powder); text-shadow:0 0 12px rgba(214,218,232,.28);}
 #hbank .hb, #skbank .hb{display:inline-flex; align-items:center; gap:.25rem; margin-right:.6rem;}
 #hbank .hb i, #skbank .hb i{width:10px; height:10px; border-radius:2px; display:inline-block; flex:none;}
 .home-title{font-family:"Reggae One",sans-serif; font-size:clamp(1.3rem,4vw,2rem); color:#fff; text-shadow:0 0 16px rgba(60,240,255,.4);}
@@ -129,6 +135,7 @@ body.state-home .title, body.state-home .meta, body.state-home .hint{display:non
 #modebar{display:none; position:fixed; left:0; right:0; bottom:0; z-index:11; height:58px;
   background:linear-gradient(0deg, rgba(5,6,14,.97), rgba(5,6,14,.72)); border-top:1px solid rgba(234,240,255,.12);}
 body.state-home #modebar{display:flex;}
+body.state-playing #modebar{display:flex;}
 /* スキル画面 */
 #skills{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
 body.state-skill #skills{display:flex;}
@@ -221,14 +228,19 @@ body.state-shop #modebar{display:flex;}
 #result h2.fall{color:var(--red); text-shadow:0 0 30px rgba(255,74,74,.5);}
 #result .stat{font-size:.95rem; letter-spacing:.12em; color:var(--ink);}
 #result .stat b{color:var(--yellow);}
-#result .btns{display:flex; gap:1rem; margin-top:.6rem;}
-#result button{pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; letter-spacing:.2em; font-size:.8rem; padding:.7rem 1.6rem;
+#result .btns{display:flex; gap:1rem; margin-top:.6rem; flex-wrap:wrap; justify-content:center; max-width:min(720px,92vw);}
+#result button{pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; letter-spacing:.2em; font-size:.8rem; padding:.7rem 1.6rem; min-width:9.5rem;
   color:var(--cyan); background:rgba(60,240,255,.05); border:1px solid var(--cyan); border-radius:2px; transition:.2s;}
 #result button:hover{color:var(--void); background:var(--cyan);}
+#result button.ad{color:var(--gold); background:rgba(255,214,107,.06); border-color:var(--gold);}
+#result button.ad:hover:not(:disabled){color:var(--void); background:var(--gold);}
+#result button:disabled{opacity:.45; cursor:default;}
 
 /* 状態によって表示切替 */
 body.state-playing .title, body.state-playing .meta, body.state-playing .hint{ display:none; }
 body.state-playing #hud{ display:block; }
+body.state-playing .hpwrap{bottom:calc(58px + .9rem);}
+body.state-playing #skillacts{bottom:calc(58px + 1rem + 66px);}
 body.state-result #result{ display:flex; }
 
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;} }
@@ -356,6 +368,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div class="stat">到達WAVE <b id="rwave">0</b> ／ 撃破 <b id="rkill">0</b> ／ SCORE <b id="rscore">0</b></div>
   <div class="stat" id="rspark" style="font-size:.8rem;color:var(--dim)"></div>
   <div class="btns">
+    <button id="rewardad" class="ad" type="button">広告を見る +5 黒色火薬</button>
     <button id="tohome" type="button">拠点へ</button>
     <button id="retry" type="button">もう一度</button>
     <button id="totitle" type="button">タイトルへ</button>
@@ -366,6 +379,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 <div id="home">
   <div class="home-top">
     <span class="hcur">SPARK <b id="hspark">0</b></span>
+    <span class="hcur powder">黒色火薬 <b id="hpowder">0</b></span>
     <span class="hcur" id="hbank"></span>
   </div>
   <div class="home-title">拠点 ／ BASE</div>
@@ -374,7 +388,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div id="permlist"></div>
 </div>
 <div id="skills">
-  <div class="home-top"><span class="hcur">SPARK <b id="skspark">0</b></span><span class="hcur">資源 <span id="skbank"></span></span><span class="hcur">歩行 <b id="skdist">0</b>m</span></div>
+  <div class="home-top"><span class="hcur">SPARK <b id="skspark">0</b></span><span class="hcur powder">黒色火薬 <b id="skpowder">0</b></span><span class="hcur">資源 <span id="skbank"></span></span><span class="hcur">歩行 <b id="skdist">0</b>m</span></div>
   <div class="home-title" id="sktitle">スキル ／ SKILL</div>
   <div class="home-sub" id="sksub">SPARKでガチャ抽選 → 資源でLv上げ → 3つ装備して出撃（被りで潜在★最大5）</div>
   <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;justify-content:center;">
@@ -396,12 +410,14 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div class="sdbtns" id="sdbtns"></div>
 </div></div>
 <div id="shop">
-  <div class="home-top"><span class="hcur">SPARK <b id="shopspark">0</b></span></div>
+  <div class="home-top"><span class="hcur">SPARK <b id="shopspark">0</b></span><span class="hcur powder">黒色火薬 <b id="shoppowder">0</b></span></div>
   <div class="home-title">ショップ ／ SHOP</div>
-  <div class="home-sub" id="shopsub">SPARKでアイテム購入 →「使用」で次の戦闘に効果（消費型）</div>
+  <div class="home-sub" id="shopsub">黒色火薬でアイテム購入 →「使用」で次の戦闘に効果（消費型）</div>
+  <button class="skgacha" id="shoprewardad" type="button">広告を見る +5 黒色火薬</button>
   <div id="shoplist"></div>
 </div>
 <nav id="modebar">
+  <button class="mtab" id="mode-combat" type="button">戦闘</button>
   <button class="mtab on" id="mode-base" type="button">強化</button>
   <button class="mtab" id="mode-skill" type="button">スキル</button>
   <button class="mtab" id="mode-research" type="button">リサーチ</button>
@@ -1080,7 +1096,7 @@ function applyBurn(dur){ game.burn=Math.min(6, game.burn+dur*(game.burnResist||1
 function onEnemyDeath(t, noSplitSpawn){
   if(t && t.blessingShieldIgnoresInstant && t.blessingShieldHits>0){ t.blessingShieldHits--; t.hp=Math.max(1, Math.ceil(t.maxhp*0.05)); return; }
   if(t && t.blessedShieldIgnoresInstant && t.blessedShieldHits>0){ t.blessedShieldHits--; t.hp=Math.max(1, Math.ceil(t.maxhp*0.05)); return; }
-  if(t.boss){ dispatch('onKill',DT,t); bossDefeated(t); return; }
+  if(t.boss){ meta.spark += 5; dispatch('onKill',DT,t); bossDefeated(t); return; }
   if(t.orbit){ orbitDestroyed(t); return; }
   if(t.plasma){ t.active=false; t.plasma=false; if(plasmaMesh) plasmaMesh.visible=false; burst(t.x,t.y,t.z,[.85,.5,1],160,2.6); return; }
   const rt = activeModuleRuntime() || {};
@@ -1329,7 +1345,7 @@ function previewELvMul(){ return fieldBaseMul + Math.max(fieldColorBias.red||0,f
 function fieldMul(c){ return fieldBaseMul + ((fieldColorBias&&fieldColorBias[c])||0); }
 function applyField(){ if(currentField){ for(const c of COLORS) DENS[c]=currentField.DENS[c]; TOTAL=currentField.TOTAL; densityMul=currentField.densityMul; fieldBaseMul=currentField.baseMul|| (1+TOTAL/300); fieldColorBias=currentField.colorBias||colorBiasFromDens(DENS); } else { for(const c in BASE_DENS) DENS[c]=Math.round(BASE_DENS[c]*densityMul); TOTAL=Object.values(DENS).reduce((a,b)=>a+b,0); fieldBaseMul=1+TOTAL/300; fieldColorBias=colorBiasFromDens(DENS); } eLvMul=previewELvMul(); }
 const game = {
-  state:'title', t:0, fireCd:0,
+  state:'title', runLive:false, t:0, fireCd:0,
   hp:1000, maxhp:1000, regen:0,
   dmg:10, fireRate:2, range:520, multishot:1, critChance:0.05, critPower:1.8,
   harvestMul:1, skillPow:1, slowLv:0, slow:0, cash:0, dr:0, cashMul:1, vuln:1,
@@ -1347,7 +1363,7 @@ function resetGame(){
   fieldBaseMul = 1 + TOTAL/300;
   fieldColorBias = colorBiasFromDens(DENS);
   eLvMul = previewELvMul();
-  Object.assign(game,{ state:'playing', t:0, fireCd:0, hp:1600, maxhp:1600, regen:18,
+  Object.assign(game,{ state:'playing', runLive:true, t:0, fireCd:0, hp:1600, maxhp:1600, regen:18,
     dmg:16, fireRate:2.4, range:520, multishot:1, critChance:0.05, critPower:1.8, harvestMul:1, skillPow:1, slowLv:0, cash:0, dr:0, cashMul:1, vuln:1,
     armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
     res:{red:0,blue:0,green:0,yellow:0,purple:0}, mining:{red:0,blue:0,green:0,yellow:0,purple:0}, lv:{},
@@ -1405,7 +1421,7 @@ function buyMining(c){ if(applyMining(c)){ toast(CRES[c]+'採掘機 設置 ×'+g
 function applyPurchasesUpTo(tick){ const P=game.purchases; while(game._pidx<P.length && P[game._pidx].tick<=tick){ const e=P[game._pidx]; if(e.m){ applyMining(e.m); } else { const s=STATS.find(x=>x.k===e.k); if(s) applyStat(s); } game._pidx++; } }
 
 function recentHits(){ const cut=game.t-10, L=game.hitLog; while(L.length && L[0]<cut) L.shift(); return L.length; }
-function damageTower(d){ if(game.state!=='playing') return;
+function damageTower(d){ if(!isRunLive()) return;
   const rt = activeModuleRuntime();
   if(rt) d *= (rt.frenzyWaveAtkMul||1);
   const _in={d}; dispatch('onTowerHurt',DT,_in); d=_in.d; if(d<=0){ game.hitLog.push(game.t); return; }
@@ -1546,7 +1562,7 @@ function potFromDup(dup,potMax){ let p=0; for(let i=1;i<DUP_THRESH.length;i++) i
 function skillCtx(dt){ return {game,srand,hurtEnemy,damageTower,spawnWave,summon,E,MAXE,CORE,DENS,eLvMul,fieldBaseMul,fieldColorBias,dt,tick:game.tick}; }
 function dispatch(hook,dt,a,b){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks[hook]; if(fn) fn(S,ctx,a,b); } }
 let _castSeen={};
-function castFx(def){ if(!RENDER||!def) return; const t=performance.now(); if(_castSeen[def.id] && t-_castSeen[def.id]<1000) return; _castSeen[def.id]=t;   // スキル発動キャスト表示（演出のみ・RENDER限定／real-timeスロットルでラン跨ぎ安全）
+function castFx(def){ if(!RENDER||!def||def.id==='windgrace') return; const t=performance.now(); if(_castSeen[def.id] && t-_castSeen[def.id]<1000) return; _castSeen[def.id]=t;   // スキル発動キャスト表示（演出のみ・RENDER限定／real-timeスロットルでラン跨ぎ安全）
   const layer=document.getElementById('castlayer'); if(!layer) return;
   const el=document.createElement('div'); el.className='castmsg'; el.textContent='✦ '+def.name; el.style.color=COLORHEX[def.color]||'#EAF0FF';
   layer.appendChild(el); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 1100); }
@@ -1567,7 +1583,7 @@ function buildActiveButtons(){ const host=$('skillacts'); if(!host) return; host
     btn.appendChild(al); btn.appendChild(as); btn.appendChild(chg); const slot=i; btn.addEventListener('click',()=>fireActiveSkill(slot));
     host.appendChild(btn); game._actBtns.push({btn,as,chg,S}); } }
 
-function fireSkill(){ if(game.state!=='playing' || !game.skillUnlocked || game.skillCharge < game.skillMax) return;
+function fireSkill(){ if(!isRunLive() || !game.skillUnlocked || game.skillCharge < game.skillMax) return;
   game.skillCharge=0;
   if(RENDER){ const fl=document.getElementById('flash'); fl.style.transition='opacity .08s'; fl.style.opacity='.6'; requestAnimationFrame(()=>{ fl.style.transition='opacity .9s ease'; fl.style.opacity='0'; });
     burst(WAVE_ORIGIN.x, WAVE_ORIGIN.y, WAVE_ORIGIN.z, [1,.82,.42], 140, 2.4); }   // 起点の閃光（演出）
@@ -1649,7 +1665,7 @@ function updateHUD(dt){
 }
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
-const meta = { spark:0, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false };
+const meta = { spark:0, blackPowder:0, towerSlots:1, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -1705,6 +1721,7 @@ const RESEARCH=[
  {key:'r_vuln',  c:'purple',name:'探査脆弱',   max:8,  cost:(lv)=>Math.ceil(460*Math.pow(1.7,lv)), fn:(lv)=>{ game.vuln+=0.06*lv; },                                   val:(lv)=>'脆弱 +'+(6*lv)+'%'},
  {key:'r_spark', c:'purple',name:'残光収集',   max:8,  cost:(lv)=>Math.ceil(500*Math.pow(1.9,lv)), fn:(lv)=>{ meta._rSparkMul=1+0.07*lv; },                            val:(lv)=>'SPARK ×'+(1+0.07*lv).toFixed(2)},
  {key:'extraSlot',c:'purple',name:'戦術スロット',max:1, cost:(lv)=>Math.ceil(8000*Math.pow(3,lv)),  fn:(lv)=>{ meta._rExtraSlot=lv; },                                 val:(lv)=>lv>0?'装備4枠':'装備3枠'},
+ {key:'parallelTower',c:'purple',name:'並列塔制御',max:1, cost:()=>40000, fn:(lv)=>{ meta._rParallelTower=lv; },                                  val:(lv)=>lv>0?'塔スロット購入 解禁':'塔スロット購入 未解禁'},
 ];
 const RESEARCH_BY_KEY=Object.fromEntries(RESEARCH.map(n=>[n.key,n]));
 const RESEARCH_SLOTS=3;
@@ -1720,10 +1737,34 @@ function cancelResearchSlot(i){ ensureSlots(); if(meta.research.slots[i]){ meta.
 function checkResearchComplete(){ ensureSlots(); let changed=false; for(let i=0;i<RESEARCH_SLOTS;i++){ const sl=meta.research.slots[i]; if(!sl) continue; const n=RESEARCH_BY_KEY[sl.key]; if(!n){ meta.research.slots[i]=null; changed=true; continue; }
     if(resSlotProgress(sl) >= resTarget(sl.key)){ const lv=resLv(sl.key); meta.research.node[sl.key]=Math.min(n.max||99, lv+1); meta.research.slots[i]=null; changed=true; if(RENDER) toast('🔬 研究完了: '+n.name+' Lv'+resLv(sl.key)); } }
   if(changed){ saveMeta(); if(game.state==='skills') buildSkills(); } return changed; }
-function applyResearch(){ meta._rGachaDiscount=0; meta._rSparkMul=1; meta._rExtraSlot=0; for(const n of RESEARCH){ const lv=resLv(n.key); if(lv>0) n.fn(lv); } }
+function applyResearch(){ meta._rGachaDiscount=0; meta._rSparkMul=1; meta._rExtraSlot=0; meta._rParallelTower=0; for(const n of RESEARCH){ const lv=resLv(n.key); if(lv>0) n.fn(lv); } }
 let homeCat='red';
+function refreshSparkDisplays(){
+  const v=fmt(meta.spark);
+  const ids=['hspark','skspark','shopspark'];
+  for(const id of ids){ const el=$(id); if(el) el.textContent=v; }
+}
+function refreshBlackPowderDisplays(){
+  const v=fmt(meta.blackPowder);
+  const ids=['hpowder','skpowder','shoppowder'];
+  for(const id of ids){ const el=$(id); if(el) el.textContent=v; }
+}
+function refreshCurrencyDisplays(){
+  refreshSparkDisplays();
+  refreshBlackPowderDisplays();
+}
+const VIEW_STATES=['state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop'];
+function isRunLive(){ return !!game.runLive && !game.ended; }
+function setViewState(state, keepRun=false){
+  document.body.classList.remove(...VIEW_STATES);
+  if(keepRun) document.body.classList.add('state-playing');
+  document.body.classList.add(state);
+}
+function setOverlayView(state){
+  setViewState(state, isRunLive() && state!=='state-title' && state!=='state-result' && !catchup.active);
+}
 function buildHome(){ try{
-  $('hspark').textContent=fmt(meta.spark);
+  refreshCurrencyDisplays();
   const hb=$('hbank'); hb.innerHTML='';
   ['red','blue','green','yellow','purple'].forEach(c=>{ const s=document.createElement('span'); s.className='hb';
     const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=fmt(meta.bank[c]);
@@ -1749,7 +1790,7 @@ function buildHome(){ try{
   el.appendChild(grid);
   }catch(e){ const pl=document.getElementById('permlist'); if(pl) pl.textContent='buildHome ERR: '+(e&&e.message); console.log('buildHome error', e); }
 }
-function setTab(id){ if(typeof closeDetail==='function') closeDetail(); ['mode-base','mode-skill','mode-research','mode-shop','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); }
+function setTab(id){ if(typeof closeDetail==='function') closeDetail(); ['mode-combat','mode-base','mode-skill','mode-research','mode-shop','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); const cb=$('mode-combat'); if(cb) cb.disabled=!isRunLive(); }
 /* ===== スキル画面（ガチャ/Lv上げ/装備） ===== */
 let skillCat='red', lastGacha=null, skResearchView=false;
 function gachaCost(){ return Math.max(200, Math.round(1000*(1-0.05*resLv('gachaDiscount')))); }
@@ -1770,28 +1811,198 @@ function equipSkill(id){ const max=3+resLv('extraSlot'); while(meta.skillEquip.l
   const i=meta.skillEquip.indexOf(id);
   if(i>=0){ meta.skillEquip[i]=null; } else { let s=meta.skillEquip.indexOf(null); if(s<0) s=0; meta.skillEquip[s]=id; }
   saveMeta(); buildSkills(); }
-function enterSkillPanel(research){ skResearchView=!!research; game.state='skills'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-skill'); controls.autoRotate=!REDUCED; setTab(research?'mode-research':'mode-skill'); buildSkills(); }
+function enterSkillPanel(research){ skResearchView=!!research; game.state='skills'; setOverlayView('state-skill'); controls.autoRotate=!REDUCED; setTab(research?'mode-research':'mode-skill'); buildSkills(); }
 function showSkills(){ enterSkillPanel(false); }
 function showResearch(){ enterSkillPanel(true); }
 /* ===== アイテムショップ ===== */
-const ITEMS=[ {id:'shibuya', name:'シブヤテレポート', cost:10,
+const TOWER_SLOT_RESEARCH_KEY='parallelTower';
+const TOWER_SLOT_COST=100;
+const TOWER_SLOT_MAX=2;
+const PARALLEL_RUNS_KEY='fw.parallelRuns.v1';
+const PARALLEL_RUN_MAX_CATCHUP_MS=6*60*60*1000;
+const parallelRuns=[];
+const ITEMS=[ {id:'shibuya', name:'シブヤテレポート', cost:3,
   desc:'使用すると消費。次の戦闘が「全鉱石密度100」の地獄に変化：敵HP/攻撃 ×5・敵の量 常時×2。代わりに資源採取は最大密度（持ち帰り資源が激増）。'} ];
 const ITEM_BY_ID=Object.fromEntries(ITEMS.map(x=>[x.id,x]));
 function itemCount(id){ return (meta.items&&meta.items[id])||0; }
-function buyItem(it){ if(meta.spark<it.cost) return; meta.spark-=it.cost; meta.items[it.id]=itemCount(it.id)+1; saveMeta(); buildShop(); }
+function buyItem(it){ if(meta.blackPowder<it.cost) return; meta.blackPowder-=it.cost; meta.items[it.id]=itemCount(it.id)+1; saveMeta(); buildShop(); }
 function useItem(it){ if(itemCount(it.id)<=0) return; meta.items[it.id]=itemCount(it.id)-1; if(it.id==='shibuya') meta.armedShibuya=true; saveMeta(); toast(it.name+' 使用：次の戦いに適用'); buildShop(); }
-function showShop(){ game.state='shop'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-shop'); controls.autoRotate=!REDUCED; setTab('mode-shop'); buildShop(); }
+function towerSlotUnlocked(){ return resLv(TOWER_SLOT_RESEARCH_KEY)>0; }
+function buyTowerSlot(){
+  if(!towerSlotUnlocked() || meta.towerSlots>=TOWER_SLOT_MAX || meta.blackPowder<TOWER_SLOT_COST) return;
+  meta.blackPowder-=TOWER_SLOT_COST;
+  meta.towerSlots=TOWER_SLOT_MAX;
+  saveMeta();
+  toast('第二塔スロット 解禁');
+  buildShop();
+}
+function activeParallelSlots(){ return parallelRuns.filter(r=>r && r.state!=='claimed').length; }
+function totalTowerSlotsInUse(){ return (isRunLive()?1:0) + activeParallelSlots(); }
+function canStartParallelTower(){ return meta.towerSlots>totalTowerSlotsInUse(); }
+function parallelPower(){
+  const skillLv=(meta.skillEquip||[]).reduce((a,id)=>a+((id&&meta.skillOwned[id]&&meta.skillOwned[id].level)||0),0);
+  return 1
+    + permLv('p_dmg')*0.14 + permLv('p_rof')*0.08 + permLv('p_spow')*0.07 + permLv('p_spow2')*0.06
+    + resLv('r_pow')*0.055 + resLv('r_rof')*0.04 + resLv('r_spow')*0.035 + skillLv*0.018;
+}
+function parallelDefense(){
+  return 1
+    + permLv('p_hp')*0.12 + permLv('p_armor')*0.045 + permLv('p_dr')*0.08 + permLv('p_regen')*0.04
+    + resLv('r_vit')*0.05 + resLv('r_armor')*0.035 + resLv('r_dr')*0.065 + resLv('r_regen')*0.035;
+}
+function emptyHaul(){ return {red:0,blue:0,green:0,yellow:0,purple:0}; }
+function parallelRunResult(r){
+  const clear=!!r.clear, w=Math.max(1, r.wave||1), mul=Number(r.rewardMul||1);
+  const sc=Math.round(6*Math.sqrt(w) * (clear?1.5:1) * (1+0.10*((r.total||0)/100)) * mul * (1+0.07*resLv('r_spark')));
+  return { sc, haul:Object.fromEntries(COLORS.map(c=>[c,Math.floor((r.haul&&r.haul[c])||0)])) };
+}
+function sanitizeParallelRun(r){
+  if(!r || typeof r!=='object') return null;
+  const haul=Object.assign(emptyHaul(), r.haul&&typeof r.haul==='object'?r.haul:{});
+  for(const c of COLORS) haul[c]=Math.max(0, Number(haul[c])||0);
+  return {
+    id:String(r.id||hash32('parallel',Date.now(),Math.random())),
+    slot:Math.max(2, Number(r.slot)||2),
+    state:r.state==='done'?'done':'running',
+    cellId:String(r.cellId||''),
+    label:String(r.label||'第二塔'),
+    deployTs:Math.max(0, Number(r.deployTs)||Date.now()),
+    lastTs:Math.max(0, Number(r.lastTs)||Date.now()),
+    wave:Math.max(1, Number(r.wave)||1),
+    hp:Math.max(0, Number(r.hp)||1200),
+    maxhp:Math.max(1, Number(r.maxhp)||1200),
+    kills:Math.max(0, Number(r.kills)||0),
+    total:Math.max(0, Number(r.total)||0),
+    eLvMul:Math.max(0.1, Number(r.eLvMul)||1),
+    rewardMul:Math.max(0.1, Number(r.rewardMul)||1),
+    density:Object.assign({red:0,blue:0,green:0,yellow:0,purple:0}, r.density&&typeof r.density==='object'?r.density:{}),
+    haul,
+    clear:!!r.clear,
+  };
+}
+function saveParallelRuns(){ try{ localStorage.setItem(PARALLEL_RUNS_KEY, JSON.stringify(parallelRuns.filter(r=>r&&r.state!=='claimed'))); }catch(e){} }
+function loadParallelRuns(){ try{ const raw=JSON.parse(localStorage.getItem(PARALLEL_RUNS_KEY)||'[]'); parallelRuns.length=0; if(Array.isArray(raw)){ for(const r of raw.slice(0,TOWER_SLOT_MAX-1)){ const rr=sanitizeParallelRun(r); if(rr) parallelRuns.push(rr); } } }catch(e){ parallelRuns.length=0; console.log('loadParallelRuns', e); } }
+function startParallelTowerRun(cellId){
+  if(!canStartParallelTower()){ toast('空き塔スロットがありません'); return false; }
+  const ts=Date.now(), ll=GeoCell.cellToLatLng(cellId), f=fieldFromCell(cellId, todBucketAt(ts,ll[1]), ts);
+  const run=sanitizeParallelRun({
+    id:'pt-'+hash32(cellId,ts,parallelRuns.length),
+    slot:2,
+    state:'running',
+    cellId,
+    label:f.jackpot?'第二塔 ★スポット':'第二塔',
+    deployTs:ts,
+    lastTs:ts,
+    wave:1,
+    hp:1200*parallelDefense(),
+    maxhp:1200*parallelDefense(),
+    kills:0,
+    total:f.TOTAL,
+    eLvMul:f.eLvMul,
+    rewardMul:f.rewardMul||1,
+    density:f.DENS,
+    haul:emptyHaul(),
+  });
+  parallelRuns.push(run);
+  saveParallelRuns();
+  toast('第二塔 出撃');
+  if(game.state==='shop') buildShop();
+  renderCellCard();
+  return true;
+}
+function simulateParallelRun(r, now=Date.now(), forceMs=0){
+  if(!r || r.state!=='running') return false;
+  const elapsedMs=Math.max(0, forceMs || Math.min(now-r.lastTs, PARALLEL_RUN_MAX_CATCHUP_MS));
+  if(elapsedMs<1000) return false;
+  const elapsed=elapsedMs/1000, power=parallelPower(), defense=parallelDefense(), threat=Math.max(0.5, r.eLvMul||1);
+  const rate=clamp(0.055*power/(0.65+threat*0.35), 0.008, 0.24);
+  const waveGain=elapsed*rate;
+  r.wave=Math.min(TARGET_WAVE, r.wave+waveGain);
+  r.kills += Math.floor(waveGain*(9+(r.total||0)/18));
+  const pressure=(0.35+threat*0.32)*(1+r.wave/9000);
+  r.hp -= Math.max(0, pressure-defense*0.42) * elapsed * 2.2;
+  const harvest=(0.0017+0.00015*Math.min(12,power)) * elapsed * (0.7+Math.sqrt(Math.max(1,r.wave))/150);
+  for(const c of COLORS) r.haul[c]+=((r.density&&Number(r.density[c]))||0)*harvest;
+  r.lastTs=now;
+  if(r.hp<=0){ r.hp=0; r.state='done'; r.clear=false; }
+  else if(r.wave>=TARGET_WAVE){ r.wave=TARGET_WAVE; r.state='done'; r.clear=true; }
+  return true;
+}
+let parallelTickT=0;
+function updateParallelTowerRuns(force=false, render=true){
+  const now=Date.now();
+  if(!force && now-parallelTickT<1000) return;
+  parallelTickT=now;
+  let changed=false, completed=false;
+  for(const r of parallelRuns){ const was=r.state; if(simulateParallelRun(r, now)){ changed=true; if(was==='running'&&r.state==='done') completed=true; } }
+  if(changed){ saveParallelRuns(); if(render && game.state==='shop') buildShop(); if(render && game.state==='map') renderCellCard(); }
+  if(completed) toast('並列塔の戦闘が完了');
+}
+function collectParallelRun(id){
+  updateParallelTowerRuns(true);
+  const i=parallelRuns.findIndex(r=>r.id===id); if(i<0) return;
+  const r=parallelRuns[i], res=parallelRunResult(r);
+  meta.spark+=res.sc; for(const c of COLORS) meta.bank[c]+=res.haul[c];
+  parallelRuns.splice(i,1);
+  saveMeta(); saveParallelRuns();
+  toast('第二塔 報酬回収 SPARK '+fmt(res.sc));
+  buildShop();
+}
+function recallParallelRun(id){
+  const r=parallelRuns.find(x=>x.id===id); if(!r || r.state!=='running') return;
+  simulateParallelRun(r, Date.now());
+  r.state='done'; r.clear=false;
+  saveParallelRuns();
+  buildShop();
+}
+function buildParallelTowerCards(el){
+  updateParallelTowerRuns(true, false);
+  const summary=document.createElement('div'); summary.className='skcard'; summary.style.setProperty('--ac', COLORHEX.yellow);
+  const hd=document.createElement('div'); hd.className='skhd'; const nm=document.createElement('div'); nm.className='skn'; nm.textContent='並列塔エンジン';
+  const bd=document.createElement('span'); bd.className='skbadge'; bd.textContent='使用 '+fmt(totalTowerSlotsInUse())+'/'+fmt(meta.towerSlots); hd.appendChild(nm); hd.appendChild(bd);
+  const ds=document.createElement('div'); ds.className='skd'; ds.textContent=meta.towerSlots>=2?'GPS画面で第二塔を別セルへ出撃できます。背景で戦闘が進み、ここで報酬回収します。':'第二塔スロット購入後に使用可能。';
+  summary.appendChild(hd); summary.appendChild(ds); el.appendChild(summary);
+  for(const r of parallelRuns){
+    const res=parallelRunResult(r), card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac', r.state==='done'?(r.clear?COLORHEX.cyan||'#3CF0FF':COLORHEX.red):COLORHEX.green);
+    const hd2=document.createElement('div'); hd2.className='skhd'; const nm2=document.createElement('div'); nm2.className='skn'; nm2.textContent=r.label||'第二塔';
+    const bd2=document.createElement('span'); bd2.className='skbadge'; bd2.textContent=r.state==='done'?(r.clear?'踏破':'完了'):'進行中'; hd2.appendChild(nm2); hd2.appendChild(bd2);
+    const h=r.haul||emptyHaul();
+    const ds2=document.createElement('div'); ds2.className='skd'; ds2.textContent='WAVE '+fmt(Math.floor(r.wave))+' / '+fmt(TARGET_WAVE)+' ／ HP '+fmt(Math.ceil(r.hp))+'/'+fmt(Math.ceil(r.maxhp))+' ／ 見込SPARK '+fmt(res.sc)+' ／ 資源 R'+fmt(h.red)+' B'+fmt(h.blue)+' G'+fmt(h.green)+' Y'+fmt(h.yellow)+' P'+fmt(h.purple);
+    card.appendChild(hd2); card.appendChild(ds2);
+    const btns=document.createElement('div'); btns.className='skbtns';
+    const collect=document.createElement('button'); collect.textContent=r.state==='done'?'報酬回収':'途中回収'; collect.addEventListener('click',()=>collectParallelRun(r.id)); btns.appendChild(collect);
+    if(r.state==='running'){ const recall=document.createElement('button'); recall.textContent='停止'; recall.addEventListener('click',()=>recallParallelRun(r.id)); btns.appendChild(recall); }
+    card.appendChild(btns); el.appendChild(card);
+  }
+}
+function showShop(){ game.state='shop'; setOverlayView('state-shop'); controls.autoRotate=!REDUCED; setTab('mode-shop'); buildShop(); }
 function buildShop(){ try{
-  $('shopspark').textContent=fmt(meta.spark);
-  $('shopsub').textContent = meta.armedShibuya ? '⚠ 次の戦い：シブヤ（地獄）発動待ち' : 'SPARKでアイテム購入 →「使用」で次の戦闘に効果（消費型）';
+  refreshCurrencyDisplays();
+  $('shopsub').textContent = meta.armedShibuya ? '⚠ 次の戦い：シブヤ（地獄）発動待ち' : '黒色火薬でアイテム購入 →「使用」で次の戦闘に効果（消費型）';
+  refreshRewardAdButton();
   const el=$('shoplist'); el.textContent='';
+  buildParallelTowerCards(el);
+  {
+    const unlocked=towerSlotUnlocked(), maxed=meta.towerSlots>=TOWER_SLOT_MAX, afford=meta.blackPowder>=TOWER_SLOT_COST;
+    const card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac', unlocked?COLORHEX.yellow:COLORHEX.purple);
+    const hd=document.createElement('div'); hd.className='skhd'; const nm=document.createElement('div'); nm.className='skn'; nm.textContent='第二塔スロット';
+    const bd=document.createElement('span'); bd.className='skbadge'; bd.textContent='塔 '+fmt(meta.towerSlots)+'/'+TOWER_SLOT_MAX; hd.appendChild(nm); hd.appendChild(bd);
+    const ds=document.createElement('div'); ds.className='skd';
+    ds.textContent=unlocked?'黒色火薬100で、将来の複数塔同時運用スロットを2枠まで解禁。':'研究「並列塔制御」（40000歩）で購入解禁。';
+    card.appendChild(hd); card.appendChild(ds);
+    const btns=document.createElement('div'); btns.className='skbtns';
+    const buy=document.createElement('button'); buy.textContent=maxed?'解禁済み':('購入  黒色火薬'+fmt(TOWER_SLOT_COST));
+    buy.disabled=maxed || !unlocked || !afford;
+    buy.addEventListener('click', buyTowerSlot);
+    btns.appendChild(buy); card.appendChild(btns); el.appendChild(card);
+  }
   for(const it of ITEMS){ const cnt=itemCount(it.id);
     const card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac', COLORHEX.purple);
     const hd=document.createElement('div'); hd.className='skhd'; const nm=document.createElement('div'); nm.className='skn'; nm.textContent=it.name;
     const bd=document.createElement('span'); bd.className='skbadge'; bd.textContent='所持 '+cnt; hd.appendChild(nm); hd.appendChild(bd);
     const ds=document.createElement('div'); ds.className='skd'; ds.textContent=it.desc; card.appendChild(hd); card.appendChild(ds);
     const btns=document.createElement('div'); btns.className='skbtns';
-    const buy=document.createElement('button'); buy.textContent='購入  SPARK'+fmt(it.cost); if(meta.spark<it.cost) buy.disabled=true; buy.addEventListener('click',()=>buyItem(it)); btns.appendChild(buy);
+    const buy=document.createElement('button'); buy.textContent='購入  黒色火薬'+fmt(it.cost); if(meta.blackPowder<it.cost) buy.disabled=true; buy.addEventListener('click',()=>buyItem(it)); btns.appendChild(buy);
     const use=document.createElement('button'); use.textContent='使用'; if(cnt<=0) use.disabled=true; if(cnt>0)use.className='eq'; use.addEventListener('click',()=>useItem(it)); btns.appendChild(use);
     card.appendChild(btns); el.appendChild(card); }
 }catch(e){ const el=$('shoplist'); if(el) el.textContent='buildShop ERR: '+(e&&e.message); console.log('buildShop',e); } }
@@ -1818,7 +2029,7 @@ function openResearchDetail(key){ const n=RESEARCH_BY_KEY[key]; if(!n) return; e
   else { const b=document.createElement('button'); b.textContent= maxed?'MAX':(freeSlot?('セット  '+fmt(c)+'m'):'研究枠なし'); if(maxed||!freeSlot) b.disabled=true; b.addEventListener('click',()=>{ assignResearch(key); openResearchDetail(key); }); bt.appendChild(b); }
   $('skdetail').classList.add('on'); }
 function buildSkills(){ try{
-  $('skspark').textContent=fmt(meta.spark);
+  refreshCurrencyDisplays();
   const hb=$('skbank'); hb.textContent=''; for(const c of COLORS){ const s=document.createElement('span'); s.className='hb'; const i=document.createElement('i'); i.style.background=COLORHEX[c]; const v=document.createElement('span'); v.textContent=fmt(meta.bank[c]); s.appendChild(i); s.appendChild(v); hb.appendChild(s); }
   $('skdist').textContent=fmt(meta.research.dist);
   $('skgacha').textContent='ガチャ （SPARK '+gachaCost()+'）';
@@ -1978,8 +2189,10 @@ function renderCellCard(){
     for(const m of f.modules){ const chip=document.createElement('span'); chip.className='modchip'; chip.style.borderColor=MODULE_THEME[m.family]||'rgba(234,240,255,.18)'; chip.textContent=m.name; mods.appendChild(chip); }
     card.appendChild(mods);
   }
-  const go=document.createElement('button'); go.className='mapgo'; go.type='button'; go.textContent=hellOn?'シブヤ地獄へ出撃':'ここに出撃';
-  go.addEventListener('click', ()=>deployFromCell(cell)); card.appendChild(go);
+  const go=document.createElement('button'); go.className='mapgo'; go.type='button';
+  const canParallel=isRunLive() && canStartParallelTower();
+  go.textContent=canParallel?'第二塔をここに出撃':(isRunLive()?'戦闘へ戻る':(hellOn?'シブヤ地獄へ出撃':'ここに出撃'));
+  go.addEventListener('click', ()=>{ if(canParallel) startParallelTowerRun(cell); else if(isRunLive()) showCombat(); else deployFromCell(cell); }); card.appendChild(go);
   const ctrls=document.createElement('div'); ctrls.className='mapbtns';
   const updatePos=document.createElement('button'); updatePos.type='button'; updatePos.textContent='📍 位置更新';
   updatePos.addEventListener('click', refreshCurrentPosition);
@@ -1999,7 +2212,7 @@ function startGPS(){
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
-function showMap(){ game.state='map'; document.body.classList.remove('state-title','state-playing','state-result','state-home','state-deploy','state-skill','state-shop'); document.body.classList.add('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
+function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('セルをタップ→「ここに出撃」 ／ 密度↑=報酬↑･難度↑ ／ ★=スイートスポット'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
   if(!avatarLL) setAvatar(VENUE.lat, VENUE.lng);   // 即・既定地点を表示（GPS/Leaflet失敗でも常に出撃可能）
@@ -2009,7 +2222,7 @@ function showMap(){ game.state='map'; document.body.classList.remove('state-titl
     if(e.key==='ArrowUp'){avatarLL[0]+=st;mv=true;} else if(e.key==='ArrowDown'){avatarLL[0]-=st;mv=true;} else if(e.key==='ArrowLeft'){avatarLL[1]-=st;mv=true;} else if(e.key==='ArrowRight'){avatarLL[1]+=st;mv=true;}
     if(mv){ devMode=true; setAvatar(avatarLL[0],avatarLL[1]); e.preventDefault(); } }); }
 }
-function showHome(){ game.state='home'; document.body.classList.remove('state-title','state-playing','state-result','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-home'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-base'); buildHome(); hideBeams(); }
+function showHome(){ game.state='home'; setOverlayView('state-home'); controls.autoRotate=!REDUCED; controls.target.copy(CORE); setTab('mode-base'); buildHome(); if(!isRunLive()) hideBeams(); }
 
 /* ===== ラン進行 ===== */
 function runStep(dt){
@@ -2070,7 +2283,7 @@ function runStep(dt){
   // 勝敗：BOSS撃破＝踏破 / HP0＝陥落（時間切れでは終わらない）
 }
 /* ラン終了：純粋精算（DOMなし・ヘッドレス/追いつき安全）。演出は showResult が担う。 */
-function finishRun(clear, retreat){ if(game.state!=='playing') return; game.state='result'; game.ended=true;
+function finishRun(clear, retreat){ if(!isRunLive()) return; game.state='result'; game.runLive=false; game.ended=true;
   const sc=Math.round(8*Math.sqrt(Math.max(1,game.wave))) * (clear?1.5:1) * (1+0.12*(TOTAL/100)) * (game.sparkMul||1) * (1+0.07*resLv('r_spark')) * (game.moduleRewardMul||1);
   meta.spark += Math.round(sc); for(const c of COLORS) meta.bank[c]+=Math.floor(game.res[c]);   // 持ち帰り（撤退でも全額キープ）
   game.result = { clear, retreat:!!retreat, wave:game.wave, kills:game.kills, sc:Math.round(sc),
@@ -2080,21 +2293,158 @@ function finishRun(clear, retreat){ if(game.state!=='playing') return; game.stat
 /* リザルト演出（前面のみ）。finishRun が積んだ game.result を描画。冪等。 */
 function showResult(){ if(!game.result || game.resultShown) return; game.resultShown=true; const r=game.result;
   hideBossMeshes(); hideFortressFx(); hideBeams();
-  document.body.classList.remove('state-playing','state-map','state-home','state-skill','state-deploy'); document.body.classList.add('state-result');
+  setViewState('state-result', false);
   $('rtitle').textContent = r.retreat?'撤退':(r.clear?'踏破':'陥落'); $('rtitle').className = (r.clear||r.retreat)?'clear':'fall';
   $('rwave').textContent=r.wave; $('rkill').textContent=fmt(r.kills); $('rscore').textContent=fmt(r.kills);
   const h=r.haul; const haul='R'+fmt(h.red)+' B'+fmt(h.blue)+' G'+fmt(h.green)+' Y'+fmt(h.yellow)+' P'+fmt(h.purple);
   $('rspark').textContent='精算 Spark '+fmt(r.sc)+'（報酬×'+(r.clear?'1.5':'1')+'） ／ 恒常資源 '+haul;
+  refreshRewardAdButton();
   controls.autoRotate=!REDUCED;
   if((r.clear||r.retreat) && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
 }
-function enterPlaying(){ game.resultShown=false; document.body.classList.remove('state-title','state-home','state-map','state-result','state-deploy','state-skill','state-shop'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE); }
+const REWARD_AD_BLACK_POWDER=5;
+let rewardAdBusy=false;
+let adsInitPromise=null;
+let adsReady=false;
+/* Native bridge contract:
+   window.Capacitor?.Plugins?.FireworksAds.showRewarded({ placement, reward })
+   or window.FireworksAds.showRewarded({ placement, reward })
+   -> Promise<{ rewarded:boolean }>
+*/
+const ADMOB_TEST_REWARDED = {
+  android: 'ca-app-pub-3940256099942544/5224354917',
+  ios: 'ca-app-pub-3940256099942544/1712485313',
+};
+const AD_CONFIG = Object.assign({
+  rewardedAdId: null,
+  testing: true,
+  npa: false,
+}, window.FireworksAdsConfig || {});
+function isNativeRuntime(){ return !!window.Capacitor?.getPlatform || !!window.Capacitor?.isNativePlatform?.(); }
+function currentPlatform(){
+  try{
+    if(window.Capacitor?.getPlatform) return window.Capacitor.getPlatform();
+    if(window.Capacitor?.isNativePlatform?.()){
+      const p=window.Capacitor.getPlatform?.();
+      if(p) return p;
+    }
+  }catch(e){}
+  return /iphone|ipad|ipod/i.test(navigator.userAgent)?'ios':(/android/i.test(navigator.userAgent)?'android':'web');
+}
+function getAdMobBridge(){
+  const bridge = window.Capacitor?.Plugins?.AdMob || window.Capacitor?.Plugins?.FireworksAds || window.FireworksAds || window.androidRewardedAds || null;
+  return bridge || null;
+}
+function getRewardedAdBridge(){
+  const bridge = getAdMobBridge();
+  if(!bridge) return null;
+  if(typeof bridge.showRewardVideoAd==='function') return bridge;
+  if(typeof bridge.showRewarded==='function') return bridge;
+  return null;
+}
+function canUseLocalRewardedAdMock(){
+  return location.protocol==='file:' || ['localhost','127.0.0.1','::1'].includes(location.hostname);
+}
+function rewardAdAvailable(){ return !!getRewardedAdBridge() || canUseLocalRewardedAdMock(); }
+function refreshRewardAdButton(){
+  for(const id of ['rewardad','shoprewardad']){
+    const btn=$(id); if(!btn) continue;
+    btn.disabled=rewardAdBusy || !rewardAdAvailable();
+    btn.textContent=rewardAdBusy?'広告再生中…':(rewardAdAvailable()?('広告を見る +'+REWARD_AD_BLACK_POWDER+' 黒色火薬'):'広告未接続');
+  }
+}
+function grantBlackPowder(amount, reason){
+  const v=Math.max(0, Math.floor(Number(amount)||0));
+  if(v<=0) return;
+  meta.blackPowder += v;
+  saveMeta();
+  refreshCurrencyDisplays();
+  if(reason) toast(reason+' +'+fmt(v)+' 黒色火薬');
+}
+function rewardedAdUnitId(){
+  const cfg = AD_CONFIG || {};
+  if(cfg.rewardedAdId) return cfg.rewardedAdId;
+  const p=currentPlatform();
+  return p==='ios' ? ADMOB_TEST_REWARDED.ios : ADMOB_TEST_REWARDED.android;
+}
+async function initializeAdSystem(){
+  if(adsReady) return true;
+  const bridge=getAdMobBridge();
+  if(!bridge || typeof bridge.initialize!=='function') return false;
+  if(!adsInitPromise){
+    adsInitPromise=(async()=>{
+      try{
+        await bridge.initialize();
+        if(typeof bridge.trackingAuthorizationStatus==='function' && typeof bridge.requestTrackingAuthorization==='function'){
+          const trackingInfo = await bridge.trackingAuthorizationStatus();
+          if(trackingInfo && trackingInfo.status==='notDetermined') await bridge.requestTrackingAuthorization();
+        }
+        if(typeof bridge.requestConsentInfo==='function'){
+          const consentInfo = await bridge.requestConsentInfo();
+          if(consentInfo && consentInfo.isConsentFormAvailable && consentInfo.status==='REQUIRED' && typeof bridge.showConsentForm==='function'){
+            await bridge.showConsentForm();
+          }
+        }
+        adsReady=true;
+        return true;
+      }catch(e){
+        console.log('initializeAdSystem', e);
+        return false;
+      }
+    })();
+  }
+  return adsInitPromise;
+}
+async function showRewardedAd(placement='result_reward_black_powder'){
+  if(rewardAdBusy) return false;
+  const bridge=getRewardedAdBridge();
+  if(!bridge || (typeof bridge.showRewarded!=='function' && !(typeof bridge.prepareRewardVideoAd==='function' && typeof bridge.showRewardVideoAd==='function'))){
+    if(!canUseLocalRewardedAdMock()){ toast('広告は未接続です'); return false; }
+    rewardAdBusy=true; refreshRewardAdButton(); toast('広告再生中…');
+    try{
+      await new Promise(r=>setTimeout(r,1500));
+      grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬');
+      return true;
+    }finally{ rewardAdBusy=false; refreshRewardAdButton(); }
+  }
+  rewardAdBusy=true; refreshRewardAdButton();
+  try{
+    const ok = await initializeAdSystem();
+    if(!ok){ toast('広告の初期化に失敗しました'); return false; }
+    const adId=rewardedAdUnitId();
+    if(typeof bridge.prepareRewardVideoAd==='function' && typeof bridge.showRewardVideoAd==='function'){
+      await bridge.prepareRewardVideoAd({ adId, isTesting:!!AD_CONFIG.testing, npa:!!AD_CONFIG.npa, immersiveMode:true });
+      const res=await bridge.showRewardVideoAd();
+      const rewarded=!!res;
+      if(rewarded){ grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬'); }
+      else toast('広告は完了しませんでした');
+      return rewarded;
+    }
+    const res=await bridge.showRewarded({ placement, reward:{ type:'blackPowder', amount:REWARD_AD_BLACK_POWDER } });
+    const rewarded=!!(res && (res.rewarded===true || res.ok===true || res.reward===true));
+    if(rewarded){ grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬'); }
+    else toast('広告は完了しませんでした');
+    return rewarded;
+  }catch(e){ console.log('showRewardedAd', e); toast('広告の再生に失敗しました'); return false; }
+  finally{ rewardAdBusy=false; refreshRewardAdButton(); }
+}
+window.FireworksAds = Object.assign(window.FireworksAds || {}, {
+  showRewarded: showRewardedAd,
+  initialize: initializeAdSystem,
+});
+function enterPlaying(){ game.resultShown=false; game.state='playing'; if(isRunLive()) game.runLive=true; setViewState('state-playing', false); controls.autoRotate=false; controls.target.copy(CORE); setTab('mode-combat'); }
+function showCombat(){ if(!isRunLive()){ showHome(); return; } game.state='playing'; setViewState('state-playing', false); controls.autoRotate=false; controls.target.copy(CORE); setTab('mode-combat'); updateHUD(0); }
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(e=>console.log('sw register failed', e)); });
+}
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya})); }catch(e){} }
+function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya})); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
+  meta.blackPowder=Math.max(0, Number(m.blackPowder)||0);
+  meta.towerSlots=Math.max(1, Math.min(TOWER_SLOT_MAX, Number(m.towerSlots)||1));
   const mb=(m.bank&&typeof m.bank==='object')?m.bank:{}; meta.bank={red:0,blue:0,green:0,yellow:0,purple:0}; for(const c of COLORS) meta.bank[c]=Math.max(0, Number(mb[c])||0);   // 数値強制（壊れた保存でNaN通貨を防ぐ）
   meta.perm=(m.perm&&typeof m.perm==='object')?m.perm:{}; for(const k in meta.perm) meta.perm[k]=Math.max(0, meta.perm[k]|0);
   meta.research=Object.assign({dist:0,node:{}},(m.research&&typeof m.research==='object')?m.research:{}); if(!(meta.research.dist>=0))meta.research.dist=0;
@@ -2112,7 +2462,7 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,N):[]; while(meta.skillEquip.length<N)meta.skillEquip.push(null);
   meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
   }catch(e){ console.log('loadMeta',e); } }
-function saveRun(){ try{ if(!game.seedInfo || game.state!=='playing') return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell })); }catch(e){} }
+function saveRun(){ try{ if(!game.seedInfo || !isRunLive()) return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell })); }catch(e){} }
 function loadRun(){ try{ const s=localStorage.getItem(RUN_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
 function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
 
@@ -2158,8 +2508,8 @@ function restoreRun(sv){
   dispatchModifyStats(); refreshModuleRuntime(); buildActiveButtons(); buildRes();
   game.purchases=Array.isArray(sv.purchases)?sv.purchases.slice():[]; game._pidx=0;
   game.acts=Array.isArray(sv.acts)?sv.acts.slice():[]; game._aidx=0;
-  game.state='playing'; game.ended=false;
-  document.body.classList.remove('state-title','state-result','state-deploy','state-home','state-map','state-skill','state-shop'); document.body.classList.add('state-playing'); controls.autoRotate=false; controls.target.copy(CORE);   // 追いつき中はモードバー非表示＝誤操作で再生破損を防ぐ
+  game.state='playing'; game.runLive=true; game.ended=false;
+  setViewState('state-playing', false); controls.autoRotate=false; controls.target.copy(CORE);   // 追いつき中はモードバー非表示＝誤操作で再生破損を防ぐ
   startCatchUp(Math.floor(Math.max(0, Date.now()-sv.deployTs)/1000/DT));
 }
 
@@ -2173,13 +2523,14 @@ function snowVfxTick(){ if(REDUCED||!game.skillZones.length) return;   // 吹雪
 function loop(now){
   const realDt=Math.min((now-last)/1000,0.25); last=now; tval+=realDt;
   if(!REDUCED){ controls.update(); if(beacon){ const pu=0.78+0.22*Math.sin(tval*3); beacon.scale.set(30*pu,30*pu,1); beacon.material.opacity=0.6+0.4*Math.sin(tval*3); } }
-  if(game.state==='title' || game.state==='home' || game.state==='map'){ if(!REDUCED){ if((Math.floor(tval*60)%40)===0) spawnShell(); updateShells(); } }
-  else if(game.state==='playing' && !catchup.active){                     // 前面：固定DTで実時間消化（放置追いつき中は停止）
+  updateParallelTowerRuns(false);
+  if(isRunLive() && !catchup.active){                     // 前面：固定DTで実時間消化（放置追いつき中は停止）
     acc += realDt*timeScale; let steps=0;
-    while(acc>=DT && game.state==='playing' && steps<MAX_STEPS_PER_FRAME){ runStep(DT); game.tick++; acc-=DT; steps++; }
-    if(game.state==='playing'){ updateHUD(realDt); snowVfxTick(); }
+    while(acc>=DT && isRunLive() && steps<MAX_STEPS_PER_FRAME){ runStep(DT); game.tick++; acc-=DT; steps++; }
+    if(isRunLive()){ updateHUD(realDt); snowVfxTick(); }
     else if(typeof showResult==='function') showResult();                 // 前面でラン終了→リザルト演出
   }
+  else if(game.state==='title' || game.state==='home' || game.state==='map'){ if(!REDUCED){ if((Math.floor(tval*60)%40)===0) spawnShell(); updateShells(); } }
   if(!REDUCED){ stepP(); renderer.render(scene,camera); }
   requestAnimationFrame(loop);
 }
@@ -2206,42 +2557,48 @@ function startGame(opts){
   game.wave = game.startWave || 1;
   game._skillDispatchWave = Math.max(0, game.wave - 1);
   game.lastBossWave = Math.floor(Math.max(0, game.wave - 1)/BOSS_EVERY)*BOSS_EVERY;
-  snapshotSkills(); dispatchModifyStats(); refreshModuleRuntime(); buildActiveButtons(); buildRes(); document.body.classList.remove('state-title','state-result','state-home','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-playing');
+  game.runLive=true;
+  snapshotSkills(); dispatchModifyStats(); refreshModuleRuntime(); buildActiveButtons(); buildRes(); setViewState('state-playing', false); setTab('mode-combat');
   controls.autoRotate=false; controls.target.copy(CORE); saveRun(); }
 // セル出撃：そのセルの手続きフィールドでランを開始（地図UIから呼ぶ）
 function deployFromCell(cellId){ if(!cellId) cellId=GeoCell.latLngToCell(VENUE.lat,VENUE.lng); const ts=Date.now(); const lng=GeoCell.cellToLatLng(cellId)[1]; currentField=fieldFromCell(cellId, todBucketAt(ts,lng), ts); startGame({cellId, deployTs:ts, runSeed:0}); }
 $('start').addEventListener('click', showHome);
 $('retry').addEventListener('click', ()=>startGame());
 $('tohome').addEventListener('click', showHome);
+$('mode-combat').addEventListener('click', showCombat);
 $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
 $('mode-skill').addEventListener('click', showSkills);
 $('mode-research').addEventListener('click', showResearch);
 $('mode-shop').addEventListener('click', showShop);
+$('rewardad').addEventListener('click', ()=>{ showRewardedAd('result_reward_black_powder'); });
+$('shoprewardad').addEventListener('click', ()=>{ showRewardedAd('shop_reward_black_powder'); });
 $('skgacha').addEventListener('click', gachaPull);
 $('skfree10').addEventListener('click', gachaFree10);
 $('sdclose').addEventListener('click', closeDetail);
 $('skdetail').addEventListener('click', (e)=>{ if(e.target===$('skdetail')) closeDetail(); });
-$('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.state='title'; document.body.classList.remove('state-home','state-playing','state-result','state-deploy','state-map','state-skill','state-shop'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; });
+$('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.runLive=false; game.ended=true; clearRun(); game.state='title'; setViewState('state-title', false); controls.autoRotate=!REDUCED; });
 $('speedbtn').addEventListener('click', ()=>{ timeScale = timeScale===1?5:1; $('speedbtn').textContent = timeScale===1?'▶▶ 5×':'■ 1×'; $('speedbtn').classList.toggle('on', timeScale!==1); });
 let _retreatArm=false, _retreatT=null;
-function retreatTap(){ if(game.state!=='playing') return; const btn=$('retreatbtn');
+function retreatTap(){ if(!isRunLive()) return; const btn=$('retreatbtn');
   if(_retreatArm){ _retreatArm=false; if(_retreatT)clearTimeout(_retreatT); if(btn){btn.classList.remove('arm'); btn.textContent='■ 切り上げ';} finishRun(false, true); if(typeof showResult==='function') showResult(); return; }
   _retreatArm=true; if(btn){ btn.classList.add('arm'); btn.textContent='■ 確定?'; } toast('もう一度タップで切り上げ（報酬は全額持ち帰り）');
   _retreatT=setTimeout(()=>{ _retreatArm=false; if(btn){ btn.classList.remove('arm'); btn.textContent='■ 切り上げ'; } }, 3000); }
 $('retreatbtn').addEventListener('click', retreatTap);
-$('totitle').addEventListener('click', ()=>{ game.state='title'; document.body.classList.remove('state-playing','state-result','state-home','state-map','state-deploy','state-skill','state-shop'); document.body.classList.add('state-title'); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); hideBeams(); });
+$('totitle').addEventListener('click', ()=>{ game.runLive=false; game.ended=true; clearRun(); game.state='title'; setViewState('state-title', false); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); hideBeams(); });
 
 renderer.render(scene,camera);
 if(!REDUCED) for(let i=0;i<4;i++) spawnShell();
 loadMeta();                                                  // 恒久メタ復元
+loadParallelRuns();
+updateParallelTowerRuns(true);
 /* 【一時・今だけ】スノーストームをテスト用に付与（未所持なら開放＋装備） */
 if(!meta.skillOwned.snowstorm){ meta.skillOwned.snowstorm={level:5,dup:3,pot:2};
   const _mx=3+resLv('extraSlot'); while(meta.skillEquip.length<_mx) meta.skillEquip.push(null);
   if(meta.skillEquip.indexOf('snowstorm')<0){ let s=meta.skillEquip.indexOf(null); if(s<0)s=0; meta.skillEquip[s]='snowstorm'; }
   saveMeta(); }
 try{ const _sv=loadRun(); if(_sv && _sv.deployTs>1.5e12 && _sv.deployTs<=Date.now()+60000) restoreRun(_sv); else if(_sv) clearRun(); }catch(e){ clearRun(); console.log('restoreRun failed',e); }   // 進行中ランがあればレジューム（破損/異常なdeployTsは破棄）
-window.addEventListener('pagehide', ()=>{ if(game.state==='playing') saveRun(); });
+window.addEventListener('pagehide', ()=>{ if(isRunLive()) saveRun(); saveParallelRuns(); });
 requestAnimationFrame(loop);   // ループは常時稼働（REDUCEDでも sim は進む／描画・演出のみ抑制）
 </script>
 </body>
