@@ -273,7 +273,7 @@ body.state-result #result{ display:flex; }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;} }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
 /* 位置情報マップ（探索画面） */
-#map{display:none; position:fixed; inset:0; z-index:8; background:#05060E;}
+#map{display:none; position:fixed; inset:0; z-index:8; background:transparent; opacity:0; pointer-events:none;}
 body.state-map #map{display:block;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
@@ -308,6 +308,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 .mapbtns{display:flex; gap:.35rem; margin-top:.45rem;}
 .mapbtns button{flex:1; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.72rem; padding:.52rem .3rem; border-radius:7px; color:var(--ink); border:1px solid color-mix(in srgb, var(--cyan) 45%, rgba(234,240,255,.24)); background:rgba(60,240,255,.08); transition:.15s;}
 .mapbtns button:hover:not(:disabled){background:color-mix(in srgb,var(--cyan) 30%, transparent);}
+.mapbtns button.eq{color:var(--void);background:linear-gradient(135deg,var(--cyan),var(--gold));border-color:transparent;}
 .modline{display:flex; flex-wrap:wrap; gap:.25rem; margin:.45rem 0 .1rem; font-family:"DotGothic16",monospace;}
 .modchip{font-size:.55rem; line-height:1.2; padding:.12rem .35rem; border-radius:999px; color:var(--ink); background:rgba(234,240,255,.08); border:1px solid rgba(234,240,255,.18);}
 .modchip.head{color:var(--gold); border-color:rgba(255,214,107,.45); background:rgba(255,214,107,.12);}
@@ -1837,7 +1838,8 @@ function updateHUD(dt){
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
 const meta = { spark:0, blackPowder:0, towerSlots:1, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false, mapSupply:{claims:{},lastDay:'',streak:0,task:null},
-  towerMods:{owned:{}, equip:{turret:null,barrier:null,armor:null,transmitter:null,reactor:null}, addons:{}, addonEquip:{turret:[null,null,null],barrier:[null,null,null],armor:[null,null,null],transmitter:[null,null,null],reactor:[null,null,null]}, dust:0, catDust:{turret:0,barrier:0,armor:0,transmitter:0,reactor:0}, addonTokens:0, pity:0, legendPity:0, seed:0, walkBank:0} };
+  towerMods:{owned:{}, equip:{turret:null,barrier:null,armor:null,transmitter:null,reactor:null}, addons:{}, addonEquip:{turret:[null,null,null],barrier:[null,null,null],armor:[null,null,null],transmitter:[null,null,null],reactor:[null,null,null]}, dust:0, catDust:{turret:0,barrier:0,armor:0,transmitter:0,reactor:0}, addonTokens:0, pity:0, legendPity:0, seed:0, walkBank:0},
+  settings:{combatObserverMode:'live'} };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -1931,6 +1933,7 @@ function setViewState(state, keepRun=false){
   document.body.classList.remove(...VIEW_STATES);
   if(keepRun) document.body.classList.add('state-playing');
   document.body.classList.add(state);
+  setExploreView(state==='state-map');
 }
 function setOverlayView(state){
   setViewState(state, isRunLive() && state!=='state-title' && state!=='state-result' && !catchup.active);
@@ -2596,10 +2599,168 @@ function buildSkills(){ try{
   }
 }catch(e){ const el=$('sklist'); if(el) el.textContent='buildSkills ERR: '+(e&&e.message); console.log('buildSkills',e); } }
 
-/* ===== 位置情報マップ（探索画面）：Leaflet＋GPS＋DEV移動＋施設補給＋スイートスポット ===== */
-let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], supplySpots=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
+/* ===== 位置情報マップ（探索画面）：Three.js探索フィールド＋GPS＋DEV移動＋施設補給＋スイートスポット ===== */
+let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, selectedMapTowerId=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], supplySpots=[], sweetSpotItems=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
 const SUPPLY_FETCH_RADIUS=900, SUPPLY_FAST_RADIUS=1800, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
+const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
+const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=100;
+const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
+map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.combat); scene.add(map3D.root);
+const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
+function setExploreView(on){
+  map3D.active=!!on; map3D.root.visible=!!on;
+  if(on){
+    controls.enabled=false; controls.autoRotate=false;
+    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+560, MAP_ORIGIN.z+680);
+    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+18, MAP_ORIGIN.z-120);
+    camera.lookAt(controls.target);
+    renderer.setClearColor(0x77EFD4,1);
+    scene.fog.color.set(0x77EFD4); scene.fog.density=0.00095;
+  }else{
+    controls.enabled=true;
+    if(camera.position.distanceTo(CORE)>5000) camera.position.set(0,220,660);
+    controls.target.copy(CORE); renderer.setClearColor(0x05060E,1);
+    scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
+  }
+}
+function clearObj(g){ while(g.children.length){ g.remove(g.children[0]); } }
+function mapMode(){ return meta.settings&&meta.settings.combatObserverMode==='cinematic'?'cinematic':'live'; }
+function toggleMapMode(){ if(!meta.settings) meta.settings={}; meta.settings.combatObserverMode=mapMode()==='live'?'cinematic':'live'; saveMeta(); renderCellCard(); updateExplore3D(true); }
+function mapLocalPos(lat,lng){
+  if(!avatarLL) return new THREE.Vector3(MAP_ORIGIN.x,0,MAP_ORIGIN.z);
+  const cos=Math.max(0.2,Math.cos(avatarLL[0]*Math.PI/180));
+  const east=(lng-avatarLL[1])*111320*cos, north=(lat-avatarLL[0])*111320;
+  return new THREE.Vector3(MAP_ORIGIN.x+east,0,MAP_ORIGIN.z-north);
+}
+function addMapLabel(parent, text, color=0xEAF0FF, y=58){
+  const c=document.createElement('canvas'); c.width=256; c.height=64; const g=c.getContext('2d');
+  g.font='24px DotGothic16, monospace'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillStyle='rgba(5,6,14,.72)'; g.fillRect(8,12,240,40); g.strokeStyle='rgba(234,240,255,.24)'; g.strokeRect(8,12,240,40);
+  g.fillStyle='#'+color.toString(16).padStart(6,'0'); g.fillText(text,128,33);
+  const tex=new THREE.CanvasTexture(c), sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+  sp.position.y=y; sp.scale.set(82,20,1); parent.add(sp); return sp;
+}
+function addDiscMarker(parent, color, ready=true){
+  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:ready?.82:.32,blending:THREE.AdditiveBlending,depthWrite:false});
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(18,1.6,8,48), mat); ring.rotation.x=Math.PI/2; ring.position.y=4; parent.add(ring);
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,38,8), mat); stem.position.y=22; parent.add(stem);
+  const cube=new THREE.Mesh(new THREE.BoxGeometry(16,16,16), mat); cube.position.y=48; cube.rotation.set(.7,.3,.8); parent.add(cube);
+  return cube;
+}
+function addBeaconMarker(parent, color, height=250){
+  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.42,blending:THREE.AdditiveBlending,depthWrite:false});
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(4,9,height,18,true), mat); beam.position.y=height/2; parent.add(beam);
+  const orb=new THREE.Mesh(new THREE.SphereGeometry(14,18,12), new THREE.MeshBasicMaterial({color,transparent:true,opacity:.86,blending:THREE.AdditiveBlending})); orb.position.y=20; parent.add(orb);
+  return orb;
+}
+function addGroundRing(parent, radius, color, opacity=.35, width=2){
+  const ring=new THREE.Mesh(new THREE.RingGeometry(Math.max(1,radius-width), radius+width, 96), new THREE.MeshBasicMaterial({color,transparent:true,opacity,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
+  ring.rotation.x=-Math.PI/2; ring.position.y=1.5; parent.add(ring); return ring;
+}
+function addRoad(parent, x,z,len,w,rot,color=0xCFFFD3,opacity=.42){
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,len), new THREE.MeshBasicMaterial({color,transparent:true,opacity,side:THREE.DoubleSide,depthWrite:false}));
+  m.rotation.x=-Math.PI/2; m.rotation.z=rot; m.position.set(MAP_ORIGIN.x+x,1,MAP_ORIGIN.z+z); parent.add(m); return m;
+}
+function buildMapField(){
+  clearObj(map3D.field);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(2400,2400), new THREE.MeshBasicMaterial({color:0x6EF0AE,transparent:true,opacity:.72,side:THREE.DoubleSide}));
+  ground.rotation.x=-Math.PI/2; ground.position.copy(MAP_ORIGIN); map3D.field.add(ground);
+  const zone=new THREE.Mesh(new THREE.RingGeometry(100,104,128), new THREE.MeshBasicMaterial({color:0xB46BFF,transparent:true,opacity:.45,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
+  zone.rotation.x=-Math.PI/2; zone.position.set(MAP_ORIGIN.x,3,MAP_ORIGIN.z); map3D.field.add(zone);
+  const rng=makeRNG(hash32('mapfield', avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'base'));
+  for(let i=-5;i<=5;i++){ addRoad(map3D.field, i*120+rng.range(-16,16), 0, 2300, i%3===0?34:18, rng.range(-.08,.08), 0xBFFFF1, .34); }
+  for(let i=-5;i<=5;i++){ addRoad(map3D.field, 0, i*120+rng.range(-16,16), 2300, i%3===0?36:20, Math.PI/2+rng.range(-.09,.09), 0xD8FFD2, .32); }
+  for(let i=0;i<34;i++){
+    const bx=rng.range(-980,980), bz=rng.range(-980,980), bw=rng.range(48,140), bd=rng.range(32,110), bh=rng.range(3,24);
+    const block=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd), new THREE.MeshBasicMaterial({color:rng.chance(.5)?0x8FF2C0:0x83D9F0,transparent:true,opacity:.18}));
+    block.position.set(MAP_ORIGIN.x+bx,bh/2,MAP_ORIGIN.z+bz); map3D.field.add(block);
+  }
+  const drone=new THREE.Group(); drone.name='map-drone'; drone.position.copy(MAP_ORIGIN);
+  addGroundRing(drone, 24, 0x3CF0FF, .45, 1.4);
+  const core=new THREE.Mesh(new THREE.SphereGeometry(9,18,12), new THREE.MeshBasicMaterial({color:0xEAF0FF,transparent:true,opacity:.95,blending:THREE.AdditiveBlending}));
+  core.position.y=24; drone.add(core);
+  const shadow=new THREE.Mesh(new THREE.RingGeometry(8,18,32), new THREE.MeshBasicMaterial({color:0x05060E,transparent:true,opacity:.22,side:THREE.DoubleSide}));
+  shadow.rotation.x=-Math.PI/2; shadow.position.y=1; drone.add(shadow);
+  map3D.field.add(drone);
+}
+function mapTowerAnchors(){
+  const arr=[];
+  if(isRunLive()&&game.seedInfo){
+    const cid=game.seedInfo.cellId || (avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):GeoCell.latLngToCell(VENUE.lat,VENUE.lng));
+    const ll=GeoCell.cellToLatLng(cid);
+    arr.push({id:'main',kind:'main',label:'メイン塔',lat:ll[0],lng:ll[1],wave:game.wave,hp:game.hp,maxhp:game.maxhp,boss:!!game.boss,state:'running'});
+  }
+  for(const r of parallelRuns){ if(!r||!r.cellId) continue; const ll=GeoCell.cellToLatLng(r.cellId); arr.push({id:'parallel:'+r.id,kind:'parallel',label:r.label||'第二塔',lat:ll[0],lng:ll[1],wave:r.wave,hp:r.hp,maxhp:r.maxhp,boss:false,state:r.state}); }
+  return arr;
+}
+function towerDist(t){ return avatarLL?haversine(avatarLL[0],avatarLL[1],t.lat,t.lng):999999; }
+function findTower(id){ return mapTowerAnchors().find(t=>t.id===id)||null; }
+function nearestTower(max=Infinity){ let best=null, bd=max; for(const t of mapTowerAnchors()){ const d=towerDist(t); if(d<bd){best=t;bd=d;} } return best?Object.assign({dist:bd},best):null; }
+function updateExplore3D(force=false){
+  if(!avatarLL||!map3D.root) return;
+  const key=(avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'')+'|'+supplySpots.length+'|'+sweetSpotItems.length+'|'+mapTowerAnchors().map(t=>t.id+':'+Math.floor(t.wave||0)).join(',');
+  if(!force && key===map3D.builtKey) return; map3D.builtKey=key;
+  buildMapField(); clearObj(map3D.spots); clearObj(map3D.towers); map3D.interactives=[]; map3D.towerPos={};
+  for(const spot of supplySpots.slice(0,48)){
+    const p=mapLocalPos(spot.lat,spot.lng), dist=supplySpotDistance(spot), ready=supplyReady(spot), near=dist<=SUPPLY_INTERACT_RANGE;
+    if(Math.abs(p.x-MAP_ORIGIN.x)>1250||Math.abs(p.z-MAP_ORIGIN.z)>1250) continue;
+    const g=new THREE.Group(); g.position.copy(p);
+    const mesh=addDiscMarker(g, near?0x3CF0FF:0x4FA8FF, ready); mesh.userData={kind:'supply',id:spot.id};
+    addMapLabel(g, ready?(near?'補給':'100m外'):'待機', near?0x3CF0FF:0x8A93AD, 76);
+    map3D.spots.add(g); map3D.interactives.push(mesh);
+  }
+  for(const s of sweetSpotItems.slice(0,24)){
+    const ll=GeoCell.cellToLatLng(s.cell), p=mapLocalPos(ll[0],ll[1]);
+    if(Math.abs(p.x-MAP_ORIGIN.x)>1500||Math.abs(p.z-MAP_ORIGIN.z)>1500) continue;
+    const g=new THREE.Group(); g.position.copy(p);
+    const mesh=addBeaconMarker(g, 0xFFD66B, 280+Math.min(160,(s.field.moduleCost||0)*16)); mesh.userData={kind:'sweet',cell:s.cell};
+    addMapLabel(g, 'C'+fmt(s.field.moduleCost||0), 0xFFD66B, 70);
+    map3D.spots.add(g); map3D.interactives.push(mesh);
+  }
+  for(const t of mapTowerAnchors()){
+    const p=mapLocalPos(t.lat,t.lng); map3D.towerPos[t.id]=p.clone();
+    const g=new THREE.Group(); g.position.copy(p);
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(18,28,30,6), new THREE.MeshBasicMaterial({color:t.kind==='main'?0x3CF0FF:0xFFD66B,transparent:true,opacity:.8,blending:THREE.AdditiveBlending}));
+    base.position.y=18; base.userData={kind:'tower',id:t.id}; g.add(base);
+    addBeaconMarker(g, t.boss?0xFF4A4A:0xB46BFF, t.boss?300:170);
+    addMapLabel(g, 'W'+fmt(Math.floor(t.wave||1)), t.boss?0xFF4A4A:0xEAF0FF, 96);
+    map3D.towers.add(g); map3D.interactives.push(base);
+  }
+}
+function updateExploreCombat(){
+  if(game.state!=='map'||!avatarLL) return;
+  clearObj(map3D.combat);
+  const near=nearestTower(MAP_COMBAT_VISIBLE_M); if(!near) return;
+  const p=map3D.towerPos[near.id]||mapLocalPos(near.lat,near.lng), dist=near.dist, detail=dist<=MAP_COMBAT_DETAIL_M, live=mapMode()==='live'&&near.kind==='main'&&detail;
+  const rangeM=near.kind==='main'?Math.max(24,(Number(game.range)||0)*MAP_RANGE_UNIT_M):120;
+  const rangeRing=new THREE.Mesh(new THREE.RingGeometry(Math.max(2,rangeM-2), rangeM+2, 96), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:dist<=MAP_COMBAT_DETAIL_M?.30:.13,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
+  rangeRing.rotation.x=-Math.PI/2; rangeRing.position.set(p.x,4,p.z); map3D.combat.add(rangeRing);
+  const enemies=[];
+  if(live && typeof E!=='undefined'){
+    for(const e of E){ if(e&&e.active){ enemies.push({x:e.x*MAP_RANGE_UNIT_M,z:e.z*MAP_RANGE_UNIT_M,y:8+(e.size||8)*.12,size:Math.max(3,(e.size||7)*.55),color:e.boss?0xFF4A4A:0xEAF0FF}); if(enemies.length>=90) break; } }
+  }
+  if(!enemies.length){
+    const count=detail?Math.min(60,12+Math.floor((near.wave||1)/35)):Math.min(24,4+Math.floor((near.wave||1)/100));
+    for(let i=0;i<count;i++){ const a=tval*0.8+i*2.399, r=detail?(45+(i%8)*10):(80+(i%8)*22); enemies.push({x:Math.cos(a)*r,z:Math.sin(a*1.13)*r,y:8,size:detail?5:4,color:near.boss?0xFF4A4A:(i%3?0xEAF0FF:0xFF9AD0)}); }
+  }
+  for(let i=0;i<enemies.length;i++){
+    const e=enemies[i], m=new THREE.Mesh(new THREE.BoxGeometry(e.size,e.size,e.size), new THREE.MeshBasicMaterial({color:e.color,transparent:true,opacity:dist<=120?.82:.35,blending:THREE.AdditiveBlending}));
+    m.position.set(p.x+e.x,p.y+e.y,p.z+e.z); m.rotation.set(tval+i,tval*.7+i*.3,tval*.4); map3D.combat.add(m);
+    if(i<10&&detail){ const geo=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute([p.x,36,p.z,m.position.x,m.position.y,m.position.z],3)); map3D.combat.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.28,blending:THREE.AdditiveBlending}))); }
+  }
+}
+function onMapPointer(e){
+  if(game.state!=='map'||!map3D.interactives.length) return;
+  mapPointer.x=(e.clientX/window.innerWidth)*2-1; mapPointer.y=-(e.clientY/window.innerHeight)*2+1;
+  mapRaycaster.setFromCamera(mapPointer,camera);
+  const hit=mapRaycaster.intersectObjects(map3D.interactives,false)[0]; if(!hit) return;
+  const d=hit.object.userData||{};
+  if(d.kind==='supply'){ selectedSupplySpot=supplySpots.find(s=>s.id===d.id)||null; mapSpotCell=null; selectedMapTowerId=null; renderCellCard(); e.preventDefault(); }
+  else if(d.kind==='sweet'){ mapSpotCell=d.cell; selectedSupplySpot=null; selectedMapTowerId=null; renderCellCard(); e.preventDefault(); }
+  else if(d.kind==='tower'){ selectedMapTowerId=d.id; selectedSupplySpot=null; mapSpotCell=null; renderCellCard(); e.preventDefault(); }
+}
+renderer.domElement.addEventListener('pointerdown', onMapPointer);
 function classifyMode(sp, hist){   // sp: m/s
   if(sp<0.6) return 'stop';
   if(sp<2.2) return 'walk';        // 〜約8km/h
@@ -2723,7 +2884,7 @@ function supplySpotIcon(spot){
   const ready=supplyReady(spot), near=supplySpotDistance(spot)<=SUPPLY_INTERACT_RANGE;
   return L.divIcon({className:'',iconSize:[52,70],iconAnchor:[26,62],html:'<div class="supply-marker '+(ready&&near?'ready':'')+(ready?'':' cooling')+'"><i class="cube"></i><i class="core"></i><i class="stem"></i><i class="base"></i><b class="tag">'+(ready?'補給':'待機')+'</b></div>'});
 }
-function setAvatar(lat,lng){ avatarLL=[lat,lng]; mapSpotCell=null; selectedSupplySpot=null;
+function setAvatar(lat,lng){ avatarLL=[lat,lng]; mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null;
   if(LMAP){ if(!avatarMarker){ avatarMarker=L.marker(avatarLL,{icon:avatarIcon(),interactive:false,zIndexOffset:700}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
 function htmlEsc(s){ return String(s).replace(/[&<>"']/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch])); }
@@ -2749,6 +2910,7 @@ function drawSupplyMarkers(){
     marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); selectedSupplySpot=spot; mapSpotCell=null; renderCellCard(); marker.openPopup(); });
     marker.addTo(LMAP); supplyMarkers.push(marker);
   }
+  updateExplore3D(true);
 }
 function claimSupplySpot(spot){
   if(!spot) return;
@@ -2807,7 +2969,7 @@ function drawCells(){
   const _now=performance.now();
   if(LMAP && avatarLL && (avatarCell!==_sweetCenterCell || wantK!==_sweetK) && _now-_sweetT>1000){   // セル/モード変化時のみ・最大1秒に1回（高速移動の再計算暴走を防ぐ）
     _sweetCenterCell=avatarCell; _sweetK=wantK; _sweetT=_now;
-    sweetMarkers.forEach(m=>LMAP.removeLayer(m)); sweetMarkers=[];
+    sweetMarkers.forEach(m=>LMAP.removeLayer(m)); sweetMarkers=[]; sweetSpotItems=[];
     nearbySweetCount=0; nearestSweetDist=0;
     const jpOf=(cid)=>{ const a=GeoCell.cellToAxial(cid); return fieldNoise(a[0],a[1],999); };   // 豊穣度ノイズ
     for(const cid of GeoCell.gridDisk(avatarCell, wantK)){
@@ -2819,6 +2981,7 @@ function drawCells(){
       const dist=avatarLL?haversine(avatarLL[0],avatarLL[1],ll[0],ll[1]):0;
       nearbySweetCount++;
       if(dist>0 && (!nearestSweetDist || dist<nearestSweetDist)) nearestSweetDist=dist;
+      sweetSpotItems.push({cell:cid, field:f, dist});
       const popup=sweetSpotPopupHtml(cid);
       const marker=L.marker(ll,{icon:sweetSpotIcon(f,dist),zIndexOffset:500,bubblingMouseEvents:false});
       marker.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
@@ -2828,6 +2991,7 @@ function drawCells(){
   }
   requestSupplySpots();
   updateMapWalkHud();
+  updateExplore3D(true);
   renderCellCard(); }
 function refreshCurrentPosition(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで移動してください'); return; }
@@ -2878,10 +3042,34 @@ function renderSupplySpotCard(card, spot){
   card.appendChild(ctrls);
   const hint=document.createElement('div'); hint.className='maphint'; hint.textContent='補給スポットはスイートスポットとは別枠。100m以内で回収、5分ごとに再補給できます。'; card.appendChild(hint);
 }
+function renderTowerObserverCard(card, tower){
+  const dist=Math.round(towerDist(tower)), mode=mapMode(), hpPct=tower.maxhp>0?Math.max(0,Math.min(1,tower.hp/tower.maxhp)):0;
+  const top=document.createElement('div'); top.className='mc-top';
+  const title=document.createElement('div'); title.className='mc-title';
+  const st=document.createElement('strong'); st.textContent=tower.label||'戦闘中の塔';
+  const sub=document.createElement('span'); sub.textContent='第三者視点の戦闘観測 / 約'+fmt(dist)+'m / '+(mode==='live'?'実戦闘参照':'軽量演出');
+  title.appendChild(st); title.appendChild(sub);
+  const badges=document.createElement('div'); badges.className='mc-badges';
+  const b1=document.createElement('span'); b1.className='mc-badge gold'; b1.textContent='WAVE '+fmt(Math.floor(tower.wave||1)); badges.appendChild(b1);
+  const b2=document.createElement('span'); b2.className='mc-badge'+(tower.boss?' green':''); b2.textContent=tower.boss?'BOSS':'観測'; badges.appendChild(b2);
+  top.appendChild(title); top.appendChild(badges); card.appendChild(top);
+  const rewards=document.createElement('div'); rewards.className='supply-rewards';
+  [['HP',fmt(Math.ceil(tower.hp||0))+'/'+fmt(Math.ceil(tower.maxhp||1))],['危険度',tower.boss?'高':'通常'],['同期',mode==='live'?'実戦闘':'軽量']].forEach(x=>{ const d=document.createElement('div'); d.className='supply-reward'; d.innerHTML='<b>'+x[1]+'</b>'+x[0]; rewards.appendChild(d); });
+  const task=document.createElement('div'); task.className='supply-task';
+  task.innerHTML='<b>観測範囲</b> '+fmt(MAP_COMBAT_VISIBLE_M)+'m以内で敵軍表示、'+fmt(MAP_COMBAT_DETAIL_M)+'m以内で実戦闘参照を詳細表示 <span>/ 1射程='+MAP_RANGE_UNIT_M+'m / HP '+Math.round(hpPct*100)+'%</span>';
+  rewards.appendChild(task); card.appendChild(rewards);
+  const ctrls=document.createElement('div'); ctrls.className='mapbtns';
+  const combat=document.createElement('button'); combat.type='button'; combat.textContent=tower.kind==='main'?'戦闘画面へ':'ショップで確認'; combat.addEventListener('click',()=>tower.kind==='main'?showCombat():showShop()); ctrls.appendChild(combat);
+  const modeBtn=document.createElement('button'); modeBtn.type='button'; modeBtn.className='eq'; modeBtn.textContent=mode==='live'?'観測: 実戦闘':'観測: 軽量'; modeBtn.addEventListener('click', toggleMapMode); ctrls.appendChild(modeBtn);
+  const back=document.createElement('button'); back.type='button'; back.textContent='現在地へ'; back.addEventListener('click',()=>{ selectedMapTowerId=null; renderCellCard(); }); ctrls.appendChild(back);
+  card.appendChild(ctrls);
+}
 function renderCellCard(){
   updateMapWalkHud();
   const card=$('mapcard'); if(!card) return; card.textContent='';
   if(selectedSupplySpot){ renderSupplySpotCard(card, selectedSupplySpot); return; }
+  const selectedTower=selectedMapTowerId&&findTower(selectedMapTowerId);
+  if(selectedTower){ renderTowerObserverCard(card, selectedTower); return; }
   const cell=selCell||GeoCell.latLngToCell(VENUE.lat,VENUE.lng), lng=avatarLL?avatarLL[1]:VENUE.lng;
   const f=fieldFromCell(cell, todBucketAt(Date.now(),lng), Date.now());
   const hellOn=!!meta.armedShibuya;                                  // シブヤ装備中はこのカードに地獄の値をプレビュー
@@ -2922,6 +3110,8 @@ function renderCellCard(){
   const updateSpots=document.createElement('button'); updateSpots.type='button'; updateSpots.textContent='スポット更新';
   updateSpots.addEventListener('click', refreshSweetSpotCoords);
   ctrls.appendChild(updatePos); ctrls.appendChild(updateSpots);
+  const nearTower=nearestTower(MAP_COMBAT_VISIBLE_M);
+  if(nearTower){ const obs=document.createElement('button'); obs.type='button'; obs.textContent='塔観測 '+fmt(Math.round(nearTower.dist))+'m'; obs.addEventListener('click',()=>{ selectedMapTowerId=nearTower.id; selectedSupplySpot=null; mapSpotCell=null; renderCellCard(); }); ctrls.appendChild(obs); }
   if(selectedSpot){ const clear=document.createElement('button'); clear.type='button'; clear.textContent='現在地へ'; clear.addEventListener('click',()=>{ mapSpotCell=null; selCell=avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):GeoCell.latLngToCell(VENUE.lat,VENUE.lng); renderCellCard(); }); ctrls.appendChild(clear); }
   card.appendChild(ctrls);
   const hint=document.createElement('div'); hint.className='maphint';
@@ -3166,7 +3356,7 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,towerMods:meta.towerMods,mapSupply:meta.mapSupply})); }catch(e){} }
+function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live'}; localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings})); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
   meta.blackPowder=Math.max(0, Number(m.blackPowder)||0);
@@ -3183,6 +3373,8 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.items=(m.items&&typeof m.items==='object')?m.items:{}; meta.armedShibuya=!!m.armedShibuya;
   meta.mapSupply=(m.mapSupply&&typeof m.mapSupply==='object')?m.mapSupply:{claims:{}};
   ensureMapSupply();
+  meta.settings=(m.settings&&typeof m.settings==='object')?m.settings:{combatObserverMode:'live'};
+  meta.settings.combatObserverMode=meta.settings.combatObserverMode==='cinematic'?'cinematic':'live';
   meta.towerMods=(m.towerMods&&typeof m.towerMods==='object')?m.towerMods:meta.towerMods; ensureTowerMods();
   meta.skillOwned=(m.skillOwned&&typeof m.skillOwned==='object')?m.skillOwned:{};
   for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; if(!o||typeof o!=='object'){ delete meta.skillOwned[id]; continue; }   // null/プリミティブ値で TypeError→サニタイズ中断を防ぐ
@@ -3252,6 +3444,7 @@ function snowVfxTick(){ if(REDUCED||!game.skillZones.length) return;   // 吹雪
       emitP(px,py,pz, -Math.sin(a)*55+rand(-12,12), -16+rand(-6,6), Math.cos(a)*55+rand(-12,12), 0.95, .72,.86,1.0, 1.7); } } }
 function loop(now){
   const realDt=Math.min((now-last)/1000,0.25); last=now; tval+=realDt;
+  if(game.state==='map'){ updateExplore3D(false); updateExploreCombat(); }
   if(!REDUCED){ controls.update(); if(beacon){ const pu=0.78+0.22*Math.sin(tval*3); beacon.scale.set(30*pu,30*pu,1); beacon.material.opacity=0.6+0.4*Math.sin(tval*3); } }
   updateParallelTowerRuns(false);
   if(isRunLive() && !catchup.active){                     // 前面：固定DTで実時間消化（放置追いつき中は停止）
