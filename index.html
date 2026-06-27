@@ -147,6 +147,31 @@ body.state-shop #shop{display:flex;}
 body.state-shop .title, body.state-shop .meta, body.state-shop .hint, body.state-shop #hud{display:none;}
 body.state-shop #modebar{display:flex;}
 #shoplist{width:min(760px,94vw); display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:.55rem;}
+/* 改装画面 */
+#mods{display:none; position:fixed; inset:0; z-index:9; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3.5vh,2rem) 1rem 78px; gap:.5rem; background:rgba(5,6,14,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); overflow-y:auto;}
+body.state-mod #mods{display:flex;}
+body.state-mod .title, body.state-mod .meta, body.state-mod .hint, body.state-mod #hud{display:none;}
+body.state-mod #modebar{display:flex;}
+.modactions{display:flex; gap:.55rem; align-items:center; justify-content:center; flex-wrap:wrap;}
+.modactions .skgacha{font-size:.88rem; padding:.55rem 1rem;}
+.modslots{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:.45rem; width:min(980px,96vw);}
+.modslot{--ac:#3CF0FF; min-height:72px; border:2px dashed rgba(234,240,255,.22); border-radius:8px; background:rgba(13,18,38,.68); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.15rem; padding:.45rem; text-align:center; cursor:pointer; pointer-events:auto; color:var(--dim);}
+.modslot.on{border-style:solid; border-color:var(--ac); color:var(--ink); box-shadow:0 0 14px color-mix(in srgb,var(--ac) 26%,transparent);}
+.modslot b{font-family:"Reggae One",sans-serif; font-size:.72rem; color:var(--ac);}
+.modslot span{font-size:.58rem; line-height:1.25;}
+#modcats{width:min(980px,96vw);display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
+#modlist{width:min(980px,96vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.55rem;align-content:start;}
+.modtile{--ac:#3CF0FF; position:relative; cursor:pointer; pointer-events:auto; min-height:168px; display:flex; flex-direction:column; gap:.32rem; border-radius:10px; padding:.7rem .75rem .75rem; font-family:"DotGothic16",monospace; color:var(--ink); overflow:hidden; border:1px solid color-mix(in srgb,var(--ac) 48%, rgba(234,240,255,.16)); background:linear-gradient(155deg,color-mix(in srgb,var(--ac) 13%,rgba(13,18,38,.9)),rgba(8,10,20,.96));}
+.modtile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac);box-shadow:0 0 12px var(--ac);}
+.modtile:hover{transform:translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,.42),0 0 16px color-mix(in srgb,var(--ac) 32%,transparent);}
+.modtile.eqd{outline:2px solid var(--gold); outline-offset:-2px;}
+.modtile .mtop{display:flex;justify-content:space-between;gap:.4rem;align-items:flex-start;}
+.modtile .mname{font-family:"Reggae One",sans-serif;font-size:.9rem;line-height:1.15;}
+.modtile .mrare{font-size:.58rem;color:var(--ac);border:1px solid color-mix(in srgb,var(--ac) 52%,rgba(234,240,255,.2));border-radius:999px;padding:.04rem .45rem;white-space:nowrap;}
+.modtile .mstats{font-size:.64rem;color:var(--dim);line-height:1.42;white-space:pre-line;flex:1;}
+.modtile .mfoot{display:flex;justify-content:space-between;align-items:center;font-size:.62rem;color:var(--ink);}
+.modtile .mfoot b{color:var(--gold);}
+@media (max-width:720px){.modslots{grid-template-columns:1fr 1fr;}.modslot:last-child{grid-column:1/-1;}}
 .skgacha{pointer-events:auto;cursor:pointer;font-family:"Reggae One",sans-serif;font-size:1rem;letter-spacing:.04em;padding:.6rem 1.6rem;color:var(--void);background:linear-gradient(135deg,var(--purple),var(--gold));border:none;border-radius:7px;box-shadow:0 0 22px rgba(180,107,255,.5);}
 .skreveal{font-family:"DotGothic16",monospace;font-size:.82rem;color:var(--cyan);min-height:1.2em;}
 .skslots{display:flex;gap:.5rem;width:min(760px,94vw);}
@@ -187,7 +212,7 @@ body.state-shop #modebar{display:flex;}
 .sdstars{font-size:1.15rem; letter-spacing:3px; margin:.25rem 0;}
 .sdstars b{color:var(--gold);} .sdstars i{color:rgba(234,240,255,.22); font-style:normal;}
 .sddesc{font-size:.82rem; color:var(--dim); line-height:1.55; margin:.55rem .2rem .95rem; white-space:pre-line;}
-.sdbtns{display:flex; gap:.55rem;}
+.sdbtns{display:flex; gap:.55rem; flex-wrap:wrap;}
 .sdbtns button{flex:1; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.82rem; padding:.62rem .4rem; border-radius:9px; color:var(--ink); transition:.15s;
   background:color-mix(in srgb,var(--ac) 18%, rgba(234,240,255,.05)); border:1px solid var(--ac);}
 .sdbtns button:hover:not(:disabled){background:color-mix(in srgb,var(--ac) 34%,transparent); transform:translateY(-1px);}
@@ -217,6 +242,7 @@ body.state-shop #modebar{display:flex;}
 .mtab:hover:not(:disabled){color:var(--ink); background:rgba(234,240,255,.05);}
 .mtab.on{color:var(--cyan); box-shadow:inset 0 2px 0 var(--cyan);}
 #mode-map{color:var(--gold);}
+#mode-mod{color:var(--cyan);}
 .mtab:disabled{opacity:.38; cursor:default;}
 .mtab small{font-size:.5rem; letter-spacing:.08em; opacity:.7;}
 
@@ -239,27 +265,44 @@ body.state-shop #modebar{display:flex;}
 /* 状態によって表示切替 */
 body.state-playing .title, body.state-playing .meta, body.state-playing .hint{ display:none; }
 body.state-playing #hud{ display:block; }
+body.state-home #hud, body.state-skill #hud, body.state-shop #hud, body.state-mod #hud, body.state-map #hud{ display:none; }
 body.state-playing .hpwrap{bottom:calc(58px + .9rem);}
 body.state-playing #skillacts{bottom:calc(58px + 1rem + 66px);}
 body.state-result #result{ display:flex; }
 
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;} }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
-/* 位置情報マップ（出撃画面） */
+/* 位置情報マップ（探索画面） */
 #map{display:none; position:fixed; inset:0; z-index:8; background:#05060E;}
 body.state-map #map{display:block;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
+#map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 44%,transparent 0 30%,rgba(5,6,14,.12) 52%,rgba(5,6,14,.54) 100%),linear-gradient(180deg,rgba(60,240,255,.07),transparent 24%,transparent 72%,rgba(255,214,107,.06));z-index:400;}
+.mapwalkhud{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + .75rem);transform:translateX(-50%);z-index:10;width:min(560px,94vw);pointer-events:none;font-family:"DotGothic16",monospace;perspective:900px;}
+body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-content:space-between;}
+.walkpill{min-height:34px;display:flex;align-items:center;gap:.35rem;padding:.38rem .62rem;border:1px solid rgba(234,240,255,.18);border-radius:999px;background:linear-gradient(180deg,rgba(18,26,48,.86),rgba(5,6,14,.78));box-shadow:0 10px 22px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08);color:var(--ink);font-size:.68rem;white-space:nowrap;transform:rotateX(5deg);}
+.walkpill b{color:var(--cyan);font-size:.76rem;}
+.walkpill.spot b{color:var(--green);}
+.mapcenter{display:none;position:fixed;left:50%;top:46%;transform:translate(-50%,-50%) rotateX(62deg);z-index:9;pointer-events:none;width:92px;height:92px;border-radius:50%;border:1px solid rgba(60,240,255,.34);background:radial-gradient(circle,rgba(60,240,255,.12),rgba(60,240,255,.03) 48%,transparent 68%);box-shadow:0 0 34px rgba(60,240,255,.2), inset 0 0 26px rgba(60,240,255,.1);}
+.mapcenter::before{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;background:var(--cyan);box-shadow:0 0 18px var(--cyan);}
+.mapcenter::after{content:'';position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(60,240,255,.35);}
+body.state-map .mapcenter{display:block;}
 #mapui{display:none; position:fixed; left:50%; bottom:70px; transform:translateX(-50%); z-index:10; width:min(560px,94vw);}
 body.state-map #mapui{display:flex; flex-direction:column;}
-.mapcard{background:rgba(5,6,14,.88); border:1px solid rgba(60,240,255,.45); border-radius:10px; padding:.7rem .9rem; box-shadow:0 0 22px rgba(60,240,255,.18);}
-.mapcard .mc-top{display:flex; justify-content:space-between; align-items:baseline; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--ink); gap:.5rem;}
+.mapcard{background:linear-gradient(180deg,rgba(17,25,46,.94),rgba(5,6,14,.92)); border:1px solid rgba(60,240,255,.42); border-radius:14px 14px 10px 10px; padding:.72rem .85rem .8rem; box-shadow:0 -10px 26px rgba(0,0,0,.4),0 0 22px rgba(60,240,255,.16),inset 0 1px 0 rgba(255,255,255,.07); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); transform:perspective(900px) rotateX(2deg); transform-origin:bottom center;}
+.mapcard .mc-top{display:flex; justify-content:space-between; align-items:flex-start; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--ink); gap:.65rem;}
 .mapcard .mc-top b{color:var(--cyan); font-size:.92rem;}
+.mc-title{display:flex;flex-direction:column;gap:.1rem;min-width:0;}
+.mc-title strong{font-family:"Reggae One",sans-serif;font-size:1rem;line-height:1.1;color:var(--ink);}
+.mc-title span{color:var(--dim);font-size:.62rem;line-height:1.25;}
+.mc-badges{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;}
+.mc-badge{font-size:.58rem;line-height:1.2;padding:.15rem .42rem;border-radius:999px;border:1px solid rgba(234,240,255,.18);background:rgba(234,240,255,.07);color:var(--ink);white-space:nowrap;}
+.mc-badge.gold{color:var(--gold);border-color:rgba(255,214,107,.5);background:rgba(255,214,107,.12);}
 .mapbars{display:flex; gap:.4rem; margin:.55rem 0 .15rem; align-items:flex-end;}
 .mapbars .mb{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;}
 .mapbars .mb-num{font-family:"DotGothic16",monospace; font-size:.84rem; font-weight:bold; line-height:1;}
-.mapbars .mb-track{width:100%; height:50px; display:flex; flex-direction:column-reverse; background:rgba(234,240,255,.06); border-radius:3px; overflow:hidden;}
-.mapbars .mb-track i{display:block; width:100%; transition:height .25s;}
+.mapbars .mb-track{width:100%; height:44px; display:flex; flex-direction:column-reverse; background:rgba(234,240,255,.06); border-radius:4px; overflow:hidden; box-shadow:inset 0 0 10px rgba(0,0,0,.38),0 5px 12px rgba(0,0,0,.22);}
+.mapbars .mb-track i{display:block; width:100%; transition:height .25s; box-shadow:0 -5px 12px currentColor;}
 .mapgo{width:100%; cursor:pointer; font-family:"Reggae One",sans-serif; font-size:1.05rem; letter-spacing:.05em; padding:.6rem; color:var(--void); background:linear-gradient(135deg,var(--cyan),var(--gold)); border:none; border-radius:7px; box-shadow:0 0 20px rgba(60,240,255,.35); margin-top:.45rem;}
 .mapgo:disabled{opacity:.4; cursor:default;}
 .mapbtns{display:flex; gap:.35rem; margin-top:.45rem;}
@@ -280,6 +323,34 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 .sweet-pop-mod b{color:var(--ink);}
 .sweet-pop-mod span{color:var(--dim);}
 .leaflet-container{background:#05060E;}
+.leaflet-div-icon{background:transparent;border:none;}
+.map-avatar{width:48px;height:56px;position:relative;filter:drop-shadow(0 12px 8px rgba(0,0,0,.45));}
+.map-avatar .core{position:absolute;left:50%;top:43%;width:24px;height:24px;transform:translate(-50%,-50%) rotate(45deg);border:2px solid #fff;background:linear-gradient(135deg,var(--cyan),#0d1730);box-shadow:0 0 18px var(--cyan);border-radius:6px;}
+.map-avatar .ring{position:absolute;left:50%;bottom:0;width:46px;height:18px;transform:translateX(-50%) rotateX(68deg);border-radius:50%;border:1px solid rgba(60,240,255,.45);background:rgba(60,240,255,.08);animation:spotPulse 2.2s ease-out infinite;}
+.sweet-marker{width:56px;height:72px;position:relative;filter:drop-shadow(0 12px 10px rgba(0,0,0,.42));}
+.sweet-marker .orb{position:absolute;left:50%;top:0;width:42px;height:42px;transform:translateX(-50%);border-radius:50%;border:2px solid rgba(255,255,255,.82);background:radial-gradient(circle at 35% 25%,#fff 0 7%,#FFE9A8 8% 22%,#FFD66B 23% 52%,#8A5B12 78%);box-shadow:0 0 20px rgba(255,214,107,.65);}
+.sweet-marker .stem{position:absolute;left:50%;top:36px;width:4px;height:23px;transform:translateX(-50%);background:linear-gradient(var(--gold),rgba(255,214,107,.18));box-shadow:0 0 9px rgba(255,214,107,.35);}
+.sweet-marker .base{position:absolute;left:50%;bottom:0;width:40px;height:14px;transform:translateX(-50%) rotateX(64deg);border-radius:50%;border:1px solid rgba(255,214,107,.55);background:rgba(255,214,107,.14);box-shadow:0 0 14px rgba(255,214,107,.2);}
+.sweet-marker .cost{position:absolute;right:0;top:28px;font-family:"DotGothic16",monospace;font-size:.56rem;color:var(--void);background:var(--gold);border-radius:999px;padding:.02rem .3rem;}
+.sweet-marker.near .orb{animation:spotPulse 1.8s ease-out infinite;}
+.supply-marker{width:52px;height:70px;position:relative;filter:drop-shadow(0 12px 10px rgba(0,0,0,.44));}
+.supply-marker .cube{position:absolute;left:50%;top:4px;width:36px;height:36px;transform:translateX(-50%) rotateX(16deg) rotateZ(45deg);border-radius:8px;border:2px solid rgba(234,240,255,.82);background:linear-gradient(135deg,#3CF0FF,#6BE06B 55%,#FFD66B);box-shadow:0 0 18px rgba(60,240,255,.65), inset -8px -8px 12px rgba(0,0,0,.22), inset 5px 5px 10px rgba(255,255,255,.22);}
+.supply-marker .core{position:absolute;left:50%;top:13px;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);border-radius:4px;background:rgba(5,6,14,.7);border:1px solid rgba(255,255,255,.55);}
+.supply-marker .stem{position:absolute;left:50%;top:39px;width:4px;height:20px;transform:translateX(-50%);background:linear-gradient(var(--cyan),rgba(60,240,255,.12));box-shadow:0 0 9px rgba(60,240,255,.35);}
+.supply-marker .base{position:absolute;left:50%;bottom:0;width:40px;height:13px;transform:translateX(-50%) rotateX(64deg);border-radius:50%;border:1px solid rgba(60,240,255,.5);background:rgba(60,240,255,.13);box-shadow:0 0 14px rgba(60,240,255,.2);}
+.supply-marker .tag{position:absolute;right:-3px;top:31px;font-family:"DotGothic16",monospace;font-size:.55rem;color:var(--void);background:var(--green);border-radius:999px;padding:.02rem .28rem;}
+.supply-marker.cooling{opacity:.55;filter:grayscale(.6) drop-shadow(0 8px 10px rgba(0,0,0,.35));}
+.supply-marker.ready .cube{animation:supplyPulse 1.9s ease-out infinite;}
+.supply-rewards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.35rem;margin:.55rem 0 .2rem;}
+.supply-reward{font-family:"DotGothic16",monospace;font-size:.62rem;line-height:1.25;padding:.42rem .35rem;border-radius:8px;text-align:center;border:1px solid rgba(234,240,255,.15);background:rgba(234,240,255,.06);color:var(--ink);}
+.supply-reward b{display:block;color:var(--cyan);font-size:.78rem;}
+.supply-task{grid-column:1/-1;font-family:"DotGothic16",monospace;font-size:.62rem;line-height:1.35;padding:.42rem .48rem;border-radius:8px;border:1px solid rgba(255,214,107,.28);background:rgba(255,214,107,.08);color:var(--ink);}
+.supply-task b{color:var(--gold);}
+.supply-task span{color:var(--dim);}
+.mc-badge.green{color:var(--green);border-color:rgba(107,224,107,.5);background:rgba(107,224,107,.12);}
+@keyframes spotPulse{0%{box-shadow:0 0 0 0 rgba(255,214,107,.35),0 0 20px rgba(255,214,107,.55);}70%{box-shadow:0 0 0 17px rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}100%{box-shadow:0 0 0 0 rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}}
+@keyframes supplyPulse{0%{box-shadow:0 0 0 0 rgba(60,240,255,.32),0 0 18px rgba(60,240,255,.65);}70%{box-shadow:0 0 0 16px rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}100%{box-shadow:0 0 0 0 rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}}
+@media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}.mapcard{padding:.65rem .7rem .74rem;}.mapbars .mb-track{height:36px;}.mc-title strong{font-size:.9rem;}}
 /* 放置追いつきオーバーレイ */
 #catchup{display:none; position:fixed; left:50%; bottom:78px; transform:translateX(-50%); z-index:30; pointer-events:none;}
 .cu-box{background:rgba(5,6,14,.88); border:1px solid var(--cyan); border-radius:8px; padding:.7rem 1.1rem; text-align:center; box-shadow:0 0 24px rgba(60,240,255,.25);}
@@ -416,17 +487,37 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <button class="skgacha" id="shoprewardad" type="button">広告を見る +5 黒色火薬</button>
   <div id="shoplist"></div>
 </div>
+<div id="mods">
+  <div class="home-top"><span class="hcur powder">黒色火薬 <b id="modpowder">0</b></span><span class="hcur">改装片 <b id="moddust">0</b></span><span class="hcur">アドオントークン <b id="modtokens">0</b></span><span class="hcur">天井 <b id="modpity">0</b></span></div>
+  <div class="home-title">タワー改装 ／ TOWER MOD</div>
+  <div class="home-sub" id="modsub">各カテゴリは素体＋アドオン3枠。戦闘開始時のロードアウトがそのランに固定されます。</div>
+  <div class="modactions">
+    <button class="skgacha" id="moddraw" type="button">通常改装箱</button>
+    <button class="skgacha" id="moddrawcat" type="button">カテゴリ箱</button>
+    <span class="skreveal" id="modreveal"></span>
+  </div>
+  <div class="modslots" id="modslots"></div>
+  <div id="modcats"></div>
+  <div id="modlist"></div>
+</div>
 <nav id="modebar">
   <button class="mtab" id="mode-combat" type="button">戦闘</button>
   <button class="mtab on" id="mode-base" type="button">強化</button>
   <button class="mtab" id="mode-skill" type="button">スキル</button>
+  <button class="mtab" id="mode-mod" type="button">改装</button>
   <button class="mtab" id="mode-research" type="button">リサーチ</button>
   <button class="mtab" id="mode-shop" type="button">ショップ</button>
-  <button class="mtab" id="mode-map" type="button">🗺 出撃</button>
+  <button class="mtab" id="mode-map" type="button">🧭 探索</button>
   <button class="mtab" id="mode-title" type="button">タイトル</button>
 </nav>
 
 <div id="map"></div>
+<div class="mapwalkhud" id="mapwalkhud">
+  <div class="walkpill" id="walkmode">停止 <b>0.0m/s</b></div>
+  <div class="walkpill spot" id="walkspots">スポット <b>0</b></div>
+  <div class="walkpill" id="walkdist">歩行 <b>0m</b></div>
+</div>
+<div class="mapcenter" aria-hidden="true"></div>
 <div id="mapui"><div class="mapcard" id="mapcard"></div></div>
 
 <noscript><p style="position:fixed;inset:0;display:grid;place-items:center;color:#EAF0FF;font-family:sans-serif">Fireworks — JavaScript を有効にしてください。</p></noscript>
@@ -635,6 +726,9 @@ function buildModuleState(field){
   return state;
 }
 function buildFieldProfile(field){ return buildSweetSpot(field); }
+function moduleEffectMul(){ return Math.max(0, Number(game.moduleEffectMul)||1); }
+function moduleMul(v){ v=Number(v); if(!Number.isFinite(v)) v=1; return Math.max(0, 1 + (v - 1) * moduleEffectMul()); }
+function moduleRate(v){ return Math.max(0, Number(v)||0) * moduleEffectMul(); }
 function applyModuleFieldStats(){
   const m = game.moduleState; if(!m) return;
   game.startWave = Math.max(game.startWave||1, m.startWave||1);
@@ -659,21 +753,21 @@ function applyModuleFieldStats(){
 function refreshModuleRuntime(){
   const m = game.moduleState; if(!m){ game.moduleRuntime = null; return null; }
   const rt = {
-    enemyHpMul:m.enemyHpMul, enemyAtkMul:m.enemyAtkMul, enemySpdMul:m.enemySpdMul, enemyDmgTakenMul:m.enemyDmgTakenMul, enemyCountMul:m.enemyCountMul,
-    spawnMul:m.spawnMul, cashMul:m.cashMul, skillDamageMul:m.skillDamageMul, piercePct:m.piercePct, toxicPct:m.toxicPct, enemyHealOnHitPct:m.enemyHealOnHitPct,
-    enemyMeleeFlatPct:m.enemyMeleeFlatPct, scythePct:m.scythePct, adaptAfterHit:m.adaptAfterHit,
-    invincibleShieldHits:m.invincibleShieldHits, invincibleShieldIgnoresInstant:m.invincibleShieldIgnoresInstant,
-    blessingShieldHits:m.blessingShieldHits, blessingShieldIgnoresInstant:m.blessingShieldIgnoresInstant,
-    blessedChance:m.blessedChance, blessedSpeedMul:m.blessedSpeedMul, blessedDamageTakenMul:m.blessedDamageTakenMul, blessedStatusImmune:m.blessedStatusImmune, blessedDeathShield:m.blessedDeathShield,
+    enemyHpMul:moduleMul(m.enemyHpMul), enemyAtkMul:moduleMul(m.enemyAtkMul), enemySpdMul:moduleMul(m.enemySpdMul), enemyDmgTakenMul:moduleMul(m.enemyDmgTakenMul), enemyCountMul:moduleMul(m.enemyCountMul),
+    spawnMul:moduleMul(m.spawnMul), cashMul:moduleMul(m.cashMul), skillDamageMul:moduleMul(m.skillDamageMul), piercePct:moduleRate(m.piercePct), toxicPct:moduleRate(m.toxicPct), enemyHealOnHitPct:moduleRate(m.enemyHealOnHitPct),
+    enemyMeleeFlatPct:moduleRate(m.enemyMeleeFlatPct), scythePct:moduleRate(m.scythePct), adaptAfterHit:m.adaptAfterHit,
+    invincibleShieldHits:Math.ceil((m.invincibleShieldHits||0)*moduleEffectMul()), invincibleShieldIgnoresInstant:m.invincibleShieldIgnoresInstant,
+    blessingShieldHits:Math.ceil((m.blessingShieldHits||0)*moduleEffectMul()), blessingShieldIgnoresInstant:m.blessingShieldIgnoresInstant,
+    blessedChance:moduleRate(m.blessedChance), blessedSpeedMul:moduleMul(m.blessedSpeedMul), blessedDamageTakenMul:moduleMul(m.blessedDamageTakenMul), blessedStatusImmune:m.blessedStatusImmune, blessedDeathShield:Math.ceil((m.blessedDeathShield||0)*moduleEffectMul()),
     frenzyWaveAtkMul:1, frenzyWaveSpdMul:1, frenzyWaveSpawnMul:1,
-    bossTwin:m.bossTwin, karmaSelfDamagePct:m.karmaSelfDamagePct, karmaBossAtkPct:m.karmaBossAtkPct, karmaWindow:m.karmaWindow||5,
-    tempestDamagePct:m.tempestDamagePct, tempestSpdMul:m.tempestSpdMul, tempestAtkMul:m.tempestAtkMul, tempestUntil:m.tempestUntil||0, tempestNextAt:m.tempestNextAt||0, tempestDuration:m.tempestDuration||0,
-    barrierBurnPct:m.barrierBurnPct,
+    bossTwin:m.bossTwin, karmaSelfDamagePct:moduleRate(m.karmaSelfDamagePct), karmaBossAtkPct:moduleRate(m.karmaBossAtkPct), karmaWindow:m.karmaWindow||5,
+    tempestDamagePct:moduleRate(m.tempestDamagePct), tempestSpdMul:moduleMul(m.tempestSpdMul), tempestAtkMul:moduleMul(m.tempestAtkMul), tempestUntil:m.tempestUntil||0, tempestNextAt:m.tempestNextAt||0, tempestDuration:m.tempestDuration||0,
+    barrierBurnPct:moduleRate(m.barrierBurnPct),
   };
   if(m.frenzyPeriod>0 && (game.wave|0) > 0 && (game.wave % m.frenzyPeriod)===0){
-    rt.frenzyWaveAtkMul *= m.frenzyAtkMul;
-    rt.frenzyWaveSpdMul *= m.frenzySpdMul;
-    rt.frenzyWaveSpawnMul *= m.frenzySpawnMul;
+    rt.frenzyWaveAtkMul *= moduleMul(m.frenzyAtkMul);
+    rt.frenzyWaveSpdMul *= moduleMul(m.frenzySpdMul);
+    rt.frenzyWaveSpawnMul *= moduleMul(m.frenzySpawnMul);
   }
   if(m.tempestPeriod>0){
     if(game.t >= (m.tempestUntil||0) && game.t >= (m.tempestNextAt||0)){
@@ -682,8 +776,8 @@ function refreshModuleRuntime(){
       rt.tempestTrigger = true;
     }
     if(game.t < (m.tempestUntil||0)){
-      rt.frenzyWaveAtkMul *= m.tempestAtkMul;
-      rt.frenzyWaveSpdMul *= m.tempestSpdMul;
+      rt.frenzyWaveAtkMul *= moduleMul(m.tempestAtkMul);
+      rt.frenzyWaveSpdMul *= moduleMul(m.tempestSpdMul);
     }
   }
   game.moduleRuntime = rt;
@@ -1066,6 +1160,7 @@ function bossDefeated(e){
   }
   const k=game.bosses.indexOf(e); if(k>=0) game.bosses.splice(k,1);
   game.boss=game.bosses[0]||null;
+  grantTowerModBattleReward('boss');
   if(game.bosses.length===0){ if(game.wave>=TARGET_WAVE) finishRun(true); else game.phase='wave'; }   // 最終ボス撃破=踏破／それ以外はウェーブ再開
 }
 
@@ -1305,7 +1400,7 @@ function updateProjectiles(dt){
     const tgt = (p.ti>=0 && E[p.ti].active && E[p.ti].id===p.tid) ? E[p.ti] : null;
     if(tgt){ const dx=tgt.x-p.x, dy=tgt.y-p.y, dz=tgt.z-p.z, d=Math.hypot(dx,dy,dz)||1;
       p.vx=dx/d*PROJ_SPEED; p.vy=dy/d*PROJ_SPEED; p.vz=dz/d*PROJ_SPEED;   // 軽ホーミング
-      if(d < tgt.size+8){ let dd=p.dmg*(game.rng.chance(game.critChance)?game.critPower:1)*game.vuln; const _h={dd}; dispatch('onTowerHit',DT,tgt,_h); dd=_h.dd; hurtEnemy(tgt, dd); emitP(tgt.x,tgt.y,tgt.z, rand(-.4,.4),rand(-.2,.4),rand(-.4,.4), 10,.4,1,1,1.8);
+      if(d < tgt.size+8){ let dd=p.dmg*(game.rng.chance(game.critChance)?game.critPower:1)*game.vuln*(tgt.boss?(game.bossDmgMul||1):1); const _h={dd}; dispatch('onTowerHit',DT,tgt,_h); dd=_h.dd; hurtEnemy(tgt, dd); emitP(tgt.x,tgt.y,tgt.z, rand(-.4,.4),rand(-.2,.4),rand(-.4,.4), 10,.4,1,1,1.8);
         if(tgt.hp<=0){ onEnemyDeath(tgt); } p.active=false; continue; } }
     else { p.life-=dt; if(p.life<=0){ p.active=false; continue; } }
     p.x+=p.vx*dt; p.y+=p.vy*dt; p.z+=p.vz*dt;
@@ -1347,9 +1442,10 @@ function applyField(){ if(currentField){ for(const c of COLORS) DENS[c]=currentF
 const game = {
   state:'title', runLive:false, t:0, fireCd:0,
   hp:1000, maxhp:1000, regen:0,
-  dmg:10, fireRate:2, range:520, multishot:1, critChance:0.05, critPower:1.8,
+  dmg:10, fireRate:2, range:520, multishot:1, multiCarry:0, critChance:0.05, critPower:1.8,
   harvestMul:1, skillPow:1, slowLv:0, slow:0, cash:0, dr:0, cashMul:1, vuln:1,
   armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
+  upgradeBoost:{red:1,blue:1,green:1,yellow:1,purple:1}, statusEffectMul:1,
   res:{red:0,blue:0,green:0,yellow:0,purple:0},
   mining:{red:0,blue:0,green:0,yellow:0,purple:0},
   lv:{},
@@ -1357,20 +1453,21 @@ const game = {
   phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[],
   rng:null, rngState:0, tick:0, seedInfo:null,
   result:null, resultShown:false, purchases:[], _pidx:0, ended:false,
-  skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemyCountMul:1, hell:false, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[], moduleState:null, moduleRuntime:null, moduleRewardMul:1,
+  skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemyCountMul:1, hell:false, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[], moduleState:null, moduleRuntime:null, moduleRewardMul:1, moduleEffectMul:1, passiveSkillMul:1, bossDmgMul:1, skillChargeRateMul:1, towerModLoadout:{bodies:[],addons:[]},
 };
 function resetGame(){
   fieldBaseMul = 1 + TOTAL/300;
   fieldColorBias = colorBiasFromDens(DENS);
   eLvMul = previewELvMul();
   Object.assign(game,{ state:'playing', runLive:true, t:0, fireCd:0, hp:1600, maxhp:1600, regen:18,
-    dmg:16, fireRate:2.4, range:520, multishot:1, critChance:0.05, critPower:1.8, harvestMul:1, skillPow:1, slowLv:0, cash:0, dr:0, cashMul:1, vuln:1,
+    dmg:16, fireRate:2.4, range:520, multishot:1, multiCarry:0, critChance:0.05, critPower:1.8, harvestMul:1, skillPow:1, slowLv:0, cash:0, dr:0, cashMul:1, vuln:1,
     armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
+    upgradeBoost:{red:1,blue:1,green:1,yellow:1,purple:1}, statusEffectMul:1,
     res:{red:0,blue:0,green:0,yellow:0,purple:0}, mining:{red:0,blue:0,green:0,yellow:0,purple:0}, lv:{},
     skillUnlocked:false, skillCharge:0, skillMax:18, kills:0, score:0, wave:1, startWave:1, spawnCd:0,
     phase:'wave', bossNo:0, bossPlan:'tank', lastBossWave:0, boss:null, bosses:[], tick:0,
     result:null, resultShown:false, purchases:[], _pidx:0, ended:false,
-    skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemyCountMul:1, hell:false, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[], moduleState:null, moduleRuntime:null, moduleRewardMul:1 });
+    skillRT:[], skillStun:0, invuln:0, skillBuffs:{}, spawnMul:1, enemyCountMul:1, hell:false, enemySpdMul:1, enemyAtkMul:1, shieldDecayMul:1, armorDecayBoost:0, burnResist:1, sparkMul:1, dmgTakenMul:1, cashEarned:0, _skillDispatchWave:0, _waveBias:0, acts:[], _aidx:0, skillZones:[], moduleState:null, moduleRuntime:null, moduleRewardMul:1, moduleEffectMul:1, passiveSkillMul:1, bossDmgMul:1, skillChargeRateMul:1, towerModLoadout:{bodies:[],addons:[]} });
   for(let i=0;i<MAXE;i++) E[i].active=false;
   tracers.length=0;
   waves.length=0; for(const m of waveMeshes){ m.visible=false; m.material.opacity=0; }
@@ -1383,32 +1480,48 @@ function resetGame(){
 const COLORHEX={red:'#FF4A4A',blue:'#3CA0FF',green:'#6BE06B',yellow:'#FFD66B',purple:'#B46BFF'};
 const CATNAME={red:'攻撃',blue:'防御',green:'バフ',yellow:'スキル',purple:'トリッキー'};
 // アイコン＝インラインSVGシンボルID（絵文字廃止・人の顔なし・属性色で発光）
-const SK_ICON={oohi:'i-blast',supertower:'i-tower',miniorbit:'i-orbit',stormbolt:'i-bolt',glass:'i-crystal',tetsupeki:'i-shield',tekiou:'i-shieldcheck',kobou:'i-crossswords',zetteki:'i-hex',tenshi:'i-wing',flametower:'i-flame',coinup:'i-coin',bloodfield:'i-drop',indexfund:'i-chart',windgrace:'i-leaf',accelerate:'i-fastfwd',aristotle:'i-shock',waveskip:'i-skip',bloodthirst:'i-fang',originspark:'i-spark',battlegong:'i-gong',tenchi:'i-swirl',alldelete:'i-xburst',snowstorm:'i-snow',
- r_pow:'i-sword',r_rof:'i-rapid',r_crit:'i-target',r_critp:'i-target',r_rng:'i-arrow',r_multi:'i-multi',r_vit:'i-heart',r_regen:'i-plus',r_armor:'i-shield',r_dr:'i-shieldpct',r_barr:'i-hex',r_swpow:'i-shock',r_harv:'i-leaf',r_cash:'i-coin',r_scash:'i-coin',r_spow:'i-spark',r_schg:'i-hourglass',gachaDiscount:'i-ticket',r_slow:'i-down',r_vuln:'i-wilt',r_spark:'i-spark',extraSlot:'i-slot'};
+const SK_ICON={oohi:'i-blast',supertower:'i-tower',miniorbit:'i-orbit',stormbolt:'i-bolt',glass:'i-crystal',dmgup:'i-sword',fireup:'i-rapid',rangeup:'i-arrow',multiup:'i-multi',critrateup:'i-target',critdmgup:'i-target',tetsupeki:'i-shield',tekiou:'i-shieldcheck',kobou:'i-crossswords',zetteki:'i-hex',tenshi:'i-wing',hpup:'i-heart',regenup:'i-plus',armorup:'i-shield',drup:'i-shieldpct',barrierup:'i-hex',shockup:'i-shock',shockintup:'i-hourglass',flametower:'i-flame',coinup:'i-coin',bloodfield:'i-drop',indexfund:'i-chart',windgrace:'i-leaf',harvestup:'i-leaf',cashup:'i-coin',statusup:'i-wilt',accelerate:'i-fastfwd',aristotle:'i-shock',waveskip:'i-skip',skillpowup:'i-spark',chargeup:'i-hourglass',moduleup:'i-tower',passiveup:'i-slot',bloodthirst:'i-fang',originspark:'i-spark',battlegong:'i-gong',tenchi:'i-swirl',alldelete:'i-xburst',snowstorm:'i-snow',slowup:'i-down',vulnup:'i-wilt',
+ r_pow:'i-sword',r_rof:'i-rapid',r_crit:'i-target',r_critp:'i-target',r_rng:'i-arrow',r_multi:'i-multi',r_vit:'i-heart',r_regen:'i-plus',r_armor:'i-shield',r_dr:'i-shieldpct',r_barr:'i-hex',r_swpow:'i-shock',r_harv:'i-leaf',r_cash:'i-coin',r_scash:'i-coin',r_spow:'i-spark',r_schg:'i-hourglass',modulefx:'i-tower',passiveboost:'i-slot',gachaDiscount:'i-ticket',r_slow:'i-down',r_vuln:'i-wilt',r_spark:'i-spark',extraSlot:'i-slot'};
 const COLOR_ICON={red:'i-blast',blue:'i-shield',green:'i-leaf',yellow:'i-spark',purple:'i-swirl'};
 function iconFor(key,color){ return SK_ICON[key]||COLOR_ICON[color]||'i-blast'; }
 const _SVGNS='http://www.w3.org/2000/svg', _XLINK='http://www.w3.org/1999/xlink';
 function iconEl(symId){ const svg=document.createElementNS(_SVGNS,'svg'); svg.setAttribute('viewBox','0 0 24 24'); const u=document.createElementNS(_SVGNS,'use'); u.setAttribute('href','#'+symId); u.setAttributeNS(_XLINK,'href','#'+symId); svg.appendChild(u); return svg; }
+function upgradeBoostOf(c){ return (game.upgradeBoost&&Number(game.upgradeBoost[c]))||1; }
+function statEff(s,v){ return v*(s&&s.noBoost?1:upgradeBoostOf(s.c)); }
+function statusEff(s,v){ return statEff(s,v)*((Number(game.statusEffectMul)||1)); }
+function boostVal(c){ return '×'+upgradeBoostOf(c).toFixed(2); }
+function statusBoostVal(){ return '×'+((Number(game.statusEffectMul)||1)).toFixed(2); }
+function moduleBoostVal(){ return '×'+moduleEffectMul().toFixed(2); }
+function passiveBoostVal(){ return '×'+((Number(game.passiveSkillMul)||1)).toFixed(2); }
+function addMultishot(v){ game.multiCarry=(game.multiCarry||0)+v; const add=Math.floor(game.multiCarry); if(add>0){ game.multiCarry-=add; game.multishot=Math.min(8,game.multishot+add); } }
 const STATS = [
-  {c:'red',   k:'dmg',  name:'ダメージ',   cost:40, r:1.44, fn(){ game.dmg*=1.20; }, val:()=>game.dmg.toFixed(1)},
-  {c:'red',   k:'rof',  name:'連射速度',   cost:46, r:1.40, fn(){ game.fireRate*=1.08; }, val:()=>game.fireRate.toFixed(2)+'/s'},
-  {c:'red',   k:'rng',  name:'射程',       cost:34, r:1.34, fn(){ game.range*=1.06; }, val:()=>Math.round(game.range)},
-  {c:'red',   k:'multi',name:'多重弾',     cost:130,r:2.90, fn(){ game.multishot=Math.min(8,game.multishot+1); }, cap:()=>game.multishot>=8, val:()=>game.multishot+'発'},
-  {c:'red',   k:'critc',name:'クリ率',     cost:60, r:1.60, fn(){ game.critChance=Math.min(1.0,game.critChance+0.05); }, cap:()=>game.critChance>=1.0, val:()=>Math.round(game.critChance*100)+'%'},
-  {c:'red',   k:'critp',name:'クリ倍率',   cost:66, r:1.64, fn(){ game.critPower+=0.25; }, val:()=>'×'+game.critPower.toFixed(2)},
-  {c:'blue',  k:'hp',   name:'最大HP',     cost:40, r:1.44, fn(){ const r=game.hp/game.maxhp; game.maxhp*=1.20; game.hp=game.maxhp*Math.min(1,r+0.1); }, val:()=>Math.round(game.maxhp)},
-  {c:'blue',  k:'regen',name:'HP再生',     cost:38, r:1.40, fn(){ game.regen+=9; }, val:()=>Math.round(game.regen)+'/s'},
-  {c:'blue',  k:'armor',name:'防御力',     cost:48, r:1.52, fn(){ game.armor+=40; }, val:()=>Math.round(game.armor)+' ×'+Math.max(0,1-recentHits()/100).toFixed(2)},
-  {c:'blue',  k:'dr',   name:'防御率',     cost:72, r:1.80, fn(){ game.dr=Math.min(0.6,game.dr+0.05); }, cap:()=>game.dr>=0.6, val:()=>Math.round(game.dr*100)+'%'},
-  {c:'blue',  k:'barr', name:'バリア',     cost:55, r:1.60, fn(){ game.barrier+=150; }, val:()=>Math.round(game.barrier)},
-  {c:'blue',  k:'swpow',name:'衝撃波 威力',cost:60, r:1.64, fn(){ game.swPow+=0.5; }, val:()=>'×'+game.swPow.toFixed(1)},
-  {c:'blue',  k:'swint',name:'衝撃波 間隔',cost:60, r:1.60, fn(){ game.swInterval=Math.max(1.0,game.swInterval*0.85); }, cap:()=>game.swInterval<=1.0, val:()=>game.swInterval.toFixed(1)+'s'},
-  {c:'green', k:'harv', name:'採取効率',   cost:45, r:1.50, fn(){ game.harvestMul*=1.15; }, val:()=>'×'+game.harvestMul.toFixed(2)},
-  {c:'green', k:'cash', name:'$獲得',      cost:50, r:1.56, fn(){ game.cashMul*=1.12; }, val:()=>'×'+game.cashMul.toFixed(2)},
-  {c:'yellow',k:'spow', name:'スキル威力', cost:70, r:1.70, fn(){ game.skillPow*=1.25; }, val:()=>'×'+game.skillPow.toFixed(2)},
-  {c:'yellow',k:'schg', name:'チャージ速度',cost:60,r:1.60, fn(){ game.skillMax=Math.max(5,game.skillMax-1.2); }, cap:()=>game.skillMax<=5, val:()=>game.skillMax.toFixed(1)+'s'},
-  {c:'purple',k:'slow', name:'敵減速',     cost:220, r:1.68, fn(){ game.slowLv++; }, val:()=>'速度 -'+(20*game.slowLv)+'wave'},
-  {c:'purple',k:'vuln', name:'脆弱化',     cost:248, r:1.60, fn(){ game.vuln+=0.12; }, val:()=>'×'+game.vuln.toFixed(2)},
+  {c:'red',   k:'dmg',  name:'ダメージ',   cost:40, r:1.44, fn(){ game.dmg*=1+statEff(this,0.20); }, val:()=>game.dmg.toFixed(1)},
+  {c:'red',   k:'rof',  name:'連射速度',   cost:46, r:1.40, fn(){ game.fireRate*=1+statEff(this,0.08); }, val:()=>game.fireRate.toFixed(2)+'/s'},
+  {c:'red',   k:'rng',  name:'射程',       cost:34, r:1.34, fn(){ game.range*=1+statEff(this,0.06); }, val:()=>Math.round(game.range)},
+  {c:'red',   k:'multi',name:'多重弾',     cost:130,r:2.90, fn(){ addMultishot(statEff(this,1)); }, cap:()=>game.multishot>=8, val:()=>game.multishot+'発'},
+  {c:'red',   k:'critc',name:'クリ率',     cost:60, r:1.60, noBoost:true, fn(){ game.critChance=Math.min(1.0,game.critChance+0.05); }, cap:()=>game.critChance>=1.0, val:()=>Math.round(game.critChance*100)+'%'},
+  {c:'red',   k:'critp',name:'クリ倍率',   cost:66, r:1.64, fn(){ game.critPower+=statEff(this,0.25); }, val:()=>'×'+game.critPower.toFixed(2)},
+  {c:'blue',  k:'hp',   name:'最大HP',     cost:40, r:1.44, fn(){ const r=game.hp/game.maxhp; game.maxhp*=1+statEff(this,0.20); game.hp=game.maxhp*Math.min(1,r+0.1); }, val:()=>Math.round(game.maxhp)},
+  {c:'blue',  k:'regen',name:'HP再生',     cost:38, r:1.40, fn(){ game.regen+=statEff(this,9); }, val:()=>Math.round(game.regen)+'/s'},
+  {c:'blue',  k:'armor',name:'防御力',     cost:48, r:1.52, fn(){ game.armor+=statEff(this,40); }, val:()=>Math.round(game.armor)+' ×'+Math.max(0,1-recentHits()/100).toFixed(2)},
+  {c:'blue',  k:'dr',   name:'防御率',     cost:72, r:1.80, noBoost:true, fn(){ game.dr=Math.min(0.6,game.dr+0.05); }, cap:()=>game.dr>=0.6, val:()=>Math.round(game.dr*100)+'%'},
+  {c:'blue',  k:'barr', name:'バリア',     cost:55, r:1.60, fn(){ game.barrier+=statEff(this,150); }, val:()=>Math.round(game.barrier)},
+  {c:'blue',  k:'swpow',name:'衝撃波 威力',cost:60, r:1.64, fn(){ game.swPow+=statEff(this,0.5); }, val:()=>'×'+game.swPow.toFixed(1)},
+  {c:'blue',  k:'swint',name:'衝撃波 間隔',cost:60, r:1.60, noBoost:true, fn(){ game.swInterval=Math.max(1.0,game.swInterval*0.85); }, cap:()=>game.swInterval<=1.0, val:()=>game.swInterval.toFixed(1)+'s'},
+  {c:'green', k:'harv', name:'採取効率',   cost:45, r:1.50, fn(){ game.harvestMul*=1+statEff(this,0.15); }, val:()=>'×'+game.harvestMul.toFixed(2)},
+  {c:'green', k:'cash', name:'$獲得',      cost:50, r:1.56, fn(){ game.cashMul*=1+statEff(this,0.12); }, val:()=>'×'+game.cashMul.toFixed(2)},
+  {c:'green', k:'atkboost',name:'攻撃アップ',cost:95, r:1.72, noBoost:true, fn(){ game.upgradeBoost.red*=1.05; }, val:()=>boostVal('red')},
+  {c:'green', k:'defboost',name:'防御アップ',cost:100,r:1.72, noBoost:true, fn(){ game.upgradeBoost.blue*=1.05; }, val:()=>boostVal('blue')},
+  {c:'green', k:'buffboost',name:'バフアップ',cost:90,r:1.68, noBoost:true, fn(){ game.upgradeBoost.green*=1.05; }, val:()=>boostVal('green')},
+  {c:'green', k:'statusboost',name:'状態異常効果アップ',cost:120,r:1.76, noBoost:true, fn(){ game.statusEffectMul*=1.08; }, val:()=>statusBoostVal()},
+  {c:'yellow',k:'spow', name:'スキル威力', cost:70, r:1.70, fn(){ game.skillPow*=1+statEff(this,0.25); }, val:()=>'×'+game.skillPow.toFixed(2)},
+  {c:'yellow',k:'schg', name:'チャージ速度',cost:60,r:1.60, fn(){ game.skillMax=Math.max(5,game.skillMax-statEff(this,1.2)); }, cap:()=>game.skillMax<=5, val:()=>game.skillMax.toFixed(1)+'s'},
+  {c:'yellow',k:'modulefx',name:'モジュール効果アップ',cost:145,r:1.78,noBoost:true, fn(){ game.moduleEffectMul*=1.05; game.moduleRewardMul*=1.05; }, val:()=>moduleBoostVal()},
+  {c:'yellow',k:'passiveboost',name:'パッシブアップ',cost:135,r:1.74,noBoost:true, fn(){ game.passiveSkillMul*=1.05; }, val:()=>passiveBoostVal()},
+  {c:'green', k:'skillboost',name:'スキルアップ',cost:115,r:1.74, noBoost:true, fn(){ game.upgradeBoost.yellow*=1.05; }, val:()=>boostVal('yellow')},
+  {c:'purple',k:'slow', name:'敵減速',     cost:220, r:1.68, fn(){ game.slowLv+=statusEff(this,1); }, val:()=>'速度 -'+Math.round(20*game.slowLv)+'wave'},
+  {c:'purple',k:'vuln', name:'脆弱化',     cost:248, r:1.60, fn(){ game.vuln+=statusEff(this,0.12); }, val:()=>'×'+game.vuln.toFixed(2)},
+  {c:'green', k:'specialboost',name:'特殊効果アップ',cost:180,r:1.72, noBoost:true, fn(){ game.upgradeBoost.purple*=1.05; }, val:()=>boostVal('purple')},
 ];
 const lvOf=(k)=>game.lv[k]||0;
 function costOf(s){ return Math.floor(s.cost * Math.pow(1 + 2*(s.r - 1), lvOf(s.k))); }   // 戦闘中アップグレードの値上がり率を2倍（r→1+2(r-1)）
@@ -1448,6 +1561,12 @@ function spawnWave(maxR, speed, dmg, hex, origin, healAmt){
   waves.push({ mesh, r:1, maxR, speed, dmg, hit:new Set(), ox:o.x, oy:o.y, oz:o.z, heal:healAmt||0 });
 }
 /* ===== スキルエンジン（データ駆動・決定論フック式・スキル空時はベースライン一致） ===== */
+function passiveSkillBoostOf(S){ return (S&&S.def&&S.def.type==='passive') ? ((Number(game.passiveSkillMul)||1)) : 1; }
+function passiveAmp(S,v){ return v*passiveSkillBoostOf(S); }
+function passiveMul(S,m){ return Math.max(0, 1 + (m - 1) * passiveSkillBoostOf(S)); }
+function passiveReduceMul(S,m){ return Math.max(0.05, 1 - (1 - m) * passiveSkillBoostOf(S)); }
+function upMul(S,base=0.12,lv=0.018,pot=0.035){ return passiveMul(S,1+base+lv*(S.lv-1)+pot*S.pot); }
+function upAdd(S,base,lv,pot){ return passiveAmp(S,base+lv*(S.lv-1)+pot*S.pot); }
 const SKILLS = [
 /* ===== 赤 ===== */
 {id:'oohi',color:'red',name:'大火',desc:'起点から球状の波動。範囲の敵に大ダメージ（自動）',type:'active',autofire:true,potMax:5,maxLv:12,lvBase:30,lvR:2.0,
@@ -1470,15 +1589,27 @@ const SKILLS = [
     for(let i=0;i<c.MAXE;i++){ const e=c.E[i]; if(!e.active||e.orbitDead) continue; if(Math.hypot(e.x-cx,e.y-cy,e.z-cz)<=aoeR){ c.hurtEnemy(e,dmg,true); if(e.hp<=0&&!e.boss&&!e.orbit&&!e.plasma) onEnemyDeath(e); } }
     if(RENDER) burst(cx,cy,cz,[.6,.85,1],70,2.2); } } },
 {id:'glass',color:'red',name:'ガラス',desc:'HP・防御・回復が半減するが攻撃2.5倍',type:'passive',potMax:5,maxLv:10,lvBase:50,lvR:2.0,
-  hooks:{ modifyStats:(S,c)=>{ const g=c.game,atk=2.5+0.15*(S.lv-1)+0.10*S.pot,frail=Math.min(1,0.5+0.04*(S.lv-1)+0.04*S.pot); g.maxhp*=frail; g.hp=g.maxhp; g.armor*=frail; g.regen*=frail; g.dr*=frail; g.dmg*=atk; g.dmgTakenMul*=(2-frail); } } },
+  hooks:{ modifyStats:(S,c)=>{ const g=c.game,atk=passiveMul(S,2.5+0.15*(S.lv-1)+0.10*S.pot),frail=Math.min(1,0.5+0.04*(S.lv-1)+0.04*S.pot); g.maxhp*=frail; g.hp=g.maxhp; g.armor*=frail; g.regen*=frail; g.dr*=frail; g.dmg*=atk; g.dmgTakenMul*=(2-frail); } } },
+{id:'dmgup',color:'red',name:'ダメージアップ',desc:'攻撃ダメージが上昇',type:'passive',potMax:5,maxLv:12,lvBase:28,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.dmg*=upMul(S,0.14,0.018,0.035); } } },
+{id:'fireup',color:'red',name:'連射速度アップ',desc:'通常攻撃の連射速度が上昇',type:'passive',potMax:5,maxLv:12,lvBase:30,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.fireRate*=upMul(S,0.10,0.014,0.03); } } },
+{id:'rangeup',color:'red',name:'射程アップ',desc:'通常攻撃の射程が上昇',type:'passive',potMax:5,maxLv:12,lvBase:24,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.range*=upMul(S,0.10,0.014,0.03); } } },
+{id:'multiup',color:'red',name:'多重弾アップ',desc:'通常攻撃の同時発射数が増える',type:'passive',potMax:5,maxLv:8,lvBase:80,lvR:2.2,
+  hooks:{ modifyStats:(S,c)=>{ c.game.multishot=Math.min(8,c.game.multishot+1+Math.floor((S.lv-1)/5)+Math.floor(S.pot/3)); } } },
+{id:'critrateup',color:'red',name:'クリ率アップ',desc:'クリティカル率が上昇',type:'passive',potMax:5,maxLv:10,lvBase:36,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.critChance=Math.min(1,c.game.critChance+upAdd(S,0.04,0.005,0.01)); } } },
+{id:'critdmgup',color:'red',name:'クリ倍率アップ',desc:'クリティカル倍率が上昇',type:'passive',potMax:5,maxLv:12,lvBase:34,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.critPower+=upAdd(S,0.25,0.025,0.05); } } },
 /* ===== 青 ===== */
 {id:'tetsupeki',color:'blue',name:'鉄壁',desc:'最大HP・防御力・防御率を強化',type:'passive',potMax:5,maxLv:20,lvBase:24,lvR:2.0,
-  hooks:{ modifyStats:(S,c)=>{ const g=c.game,r=g.maxhp>0?g.hp/g.maxhp:1; g.maxhp*=1.20+0.04*(S.lv-1)+0.05*S.pot; g.hp=g.maxhp*r; g.armor*=1.25+0.05*(S.lv-1)+0.05*S.pot; g.dr=Math.min(0.6,g.dr+0.04+0.005*(S.lv-1)+0.005*S.pot); } } },
+  hooks:{ modifyStats:(S,c)=>{ const g=c.game,r=g.maxhp>0?g.hp/g.maxhp:1; g.maxhp*=passiveMul(S,1.20+0.04*(S.lv-1)+0.05*S.pot); g.hp=g.maxhp*r; g.armor*=passiveMul(S,1.25+0.05*(S.lv-1)+0.05*S.pot); g.dr=Math.min(0.6,g.dr+passiveAmp(S,0.04+0.005*(S.lv-1)+0.005*S.pot)); } } },
 {id:'tekiou',color:'blue',name:'適応形防壁',desc:'防御力倍率の減衰開始を遅らせる（被弾耐性）',type:'passive',potMax:5,maxLv:20,lvBase:28,lvR:2.0,
-  hooks:{ modifyStats:(S,c)=>{ c.game.armorDecayBoost+=0.20+0.03*(S.lv-1)+0.04*S.pot; } } },
+  hooks:{ modifyStats:(S,c)=>{ c.game.armorDecayBoost+=passiveAmp(S,0.20+0.03*(S.lv-1)+0.04*S.pot); } } },
 {id:'kobou',color:'blue',name:'防御は最大の攻撃なり',desc:'防御力/バリアを攻撃に、防御率を連射に転化',type:'passive',potMax:5,maxLv:20,lvBase:34,lvR:2.0,
   st0:()=>({dDmg:0,fMul:1}),
-  hooks:{ onTickPre:(S,c)=>{ const g=c.game,scale=1+0.10*(S.lv-1)+0.10*S.pot; g.dmg-=S.st.dDmg; if(S.st.fMul!==1) g.fireRate/=S.st.fMul; S.st.dDmg=(g.armor/10+g.barrier/100)*scale; S.st.fMul=1+g.dr*0.5*scale; g.dmg+=S.st.dDmg; g.fireRate*=S.st.fMul; } } },
+  hooks:{ onTickPre:(S,c)=>{ const g=c.game,scale=passiveMul(S,1+0.10*(S.lv-1)+0.10*S.pot); g.dmg-=S.st.dDmg; if(S.st.fMul!==1) g.fireRate/=S.st.fMul; S.st.dDmg=(g.armor/10+g.barrier/100)*scale; S.st.fMul=1+g.dr*0.5*scale; g.dmg+=S.st.dDmg; g.fireRate*=S.st.fMul; } } },
 {id:'zetteki',color:'blue',name:'絶敵の誓い',desc:'一定間隔でHP回復＋巨大バリア（超過は徐々に減衰）',type:'timer',potMax:5,maxLv:20,lvBase:40,lvR:2.0,
   period:(l,p)=>Math.max(8,50-2*(l-1)-3*p),
   hooks:{ onTimer:(S,c)=>{ const g=c.game; g.hp=Math.min(g.maxhp,g.hp+g.maxhp*(0.20+0.01*(S.lv-1))); if(g.barrier<=0) g.barrier=Math.max(1,g.maxhp*0.05); g.shield=Math.max(g.shield,g.barrier)+g.barrier*10; if(RENDER) burst(CORE.x,CORE.y,CORE.z,[.4,.7,1],120,2.4); },
@@ -1487,12 +1618,26 @@ const SKILLS = [
   cost:(l,p)=>Math.max(300,3600-120*(l-1)-200*p), st0:(l,p)=>({revives:1+(p>=3?1:0)+(p>=5?1:0),charge:Math.max(300,3600-120*(l-1)-200*p)}),
   hooks:{ onTickPre:(S,c)=>{ const cst=S.def.cost(S.lv,S.pot); S.st.charge=Math.min(cst,(S.st.charge||0)+c.dt); },
     onDeath:(S,c)=>{ const g=c.game,cst=S.def.cost(S.lv,S.pot); if(S.st.revives>0&&S.st.charge>=cst){ S.st.revives--; S.st.charge=0; g.hp=g.maxhp*0.5; g.shield=Math.max(g.shield,g.barrier*0.5); for(const O of g.skillRT){ if(O===S) continue; if(O.def.hooks.active){ const oc=O.def.cost?O.def.cost(O.lv,O.pot):0; if((O.st.charge||0)>=oc){O.st.charge=0;O.def.hooks.active(O,c);} } else if(O.def.hooks.onTimer){ O.def.hooks.onTimer(O,c); } } if(RENDER) burst(CORE.x,CORE.y,CORE.z,[1,1,.7],300,3); return true; } return false; } } },
+{id:'hpup',color:'blue',name:'最大HPアップ',desc:'最大HPが上昇',type:'passive',potMax:5,maxLv:12,lvBase:28,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ const g=c.game,r=g.maxhp>0?g.hp/g.maxhp:1; g.maxhp*=upMul(S,0.14,0.018,0.035); g.hp=g.maxhp*r; } } },
+{id:'regenup',color:'blue',name:'HP再生アップ',desc:'HP再生が上昇',type:'passive',potMax:5,maxLv:12,lvBase:26,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.regen+=upAdd(S,12,2.0,4.0); } } },
+{id:'armorup',color:'blue',name:'防御力アップ',desc:'防御力が上昇',type:'passive',potMax:5,maxLv:12,lvBase:30,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.armor+=upAdd(S,55,7,14); } } },
+{id:'drup',color:'blue',name:'防御率アップ',desc:'防御率が上昇',type:'passive',potMax:5,maxLv:10,lvBase:48,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.dr=Math.min(0.6,c.game.dr+upAdd(S,0.035,0.004,0.008)); } } },
+{id:'barrierup',color:'blue',name:'バリアアップ',desc:'バリアと現在シールドが上昇',type:'passive',potMax:5,maxLv:12,lvBase:32,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ const v=upAdd(S,180,22,45); c.game.barrier+=v; c.game.shield+=v; } } },
+{id:'shockup',color:'blue',name:'衝撃波威力アップ',desc:'バリア衝撃波の威力が上昇',type:'passive',potMax:5,maxLv:10,lvBase:38,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.swPow+=upAdd(S,0.35,0.04,0.08); } } },
+{id:'shockintup',color:'blue',name:'衝撃波間隔アップ',desc:'バリア衝撃波の発生間隔が短縮',type:'passive',potMax:5,maxLv:10,lvBase:44,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.swInterval=Math.max(1,c.game.swInterval*passiveReduceMul(S,0.90-0.01*(S.lv-1)-0.015*S.pot)); } } },
 /* ===== 緑 ===== */
 {id:'flametower',color:'green',name:'火炎タワー',desc:'通常弾が確率で雑魚に炎上付与。被炎上耐性も得る',type:'passive',potMax:5,maxLv:20,lvBase:30,lvR:2.0,
-  hooks:{ modifyStats:(S,c)=>{ c.game.burnResist*=(S.pot>=3?0.35:0.5); },
-    onTowerHit:(S,c,t,ddR)=>{ if(t.boss) return; const ch=Math.min(1,0.10+0.01*(S.lv-1)+0.02*S.pot); if(!c.game.rng.chance(ch)) return; const dpsFrac=0.18+0.03*(S.lv-1)+0.05*S.pot,dur=3+0.25*(S.lv-1)+0.5*S.pot; t.ebDmg=Math.max(t.ebDmg||0,ddR.dd*dpsFrac); t.eb=Math.max(t.eb||0,dur); if(RENDER) emitP(t.x,t.y,t.z,0,.3,0,10,1,.4,.12,1.8); } } },
+  hooks:{ modifyStats:(S,c)=>{ c.game.burnResist*=passiveReduceMul(S,S.pot>=3?0.35:0.5); },
+    onTowerHit:(S,c,t,ddR)=>{ if(t.boss) return; const ch=Math.min(1,passiveAmp(S,0.10+0.01*(S.lv-1)+0.02*S.pot)); if(!c.game.rng.chance(ch)) return; const dpsFrac=passiveAmp(S,0.18+0.03*(S.lv-1)+0.05*S.pot),dur=passiveAmp(S,3+0.25*(S.lv-1)+0.5*S.pot); t.ebDmg=Math.max(t.ebDmg||0,ddR.dd*dpsFrac); t.eb=Math.max(t.eb||0,dur); if(RENDER) emitP(t.x,t.y,t.z,0,.3,0,10,1,.4,.12,1.8); } } },
 {id:'coinup',color:'green',name:'コインアップ',desc:'Spark獲得量が増加',type:'passive',potMax:5,maxLv:15,lvBase:25,lvR:2.0,
-  hooks:{ modifyStats:(S,c)=>{ c.game.sparkMul*=1.20+0.05*(S.lv-1)+0.04*S.pot; } } },
+  hooks:{ modifyStats:(S,c)=>{ c.game.sparkMul*=passiveMul(S,1.20+0.05*(S.lv-1)+0.04*S.pot); } } },
 {id:'bloodfield',color:'green',name:'血塗られし戦場',desc:'撃破で永続スタック蓄積。HP/攻撃/回復が上昇',type:'trigger',potMax:5,maxLv:20,lvBase:40,lvR:2.0,
   st0:()=>({stacks:0,dHp:0,dDmg:0,dReg:0,baseHp:0}),
   hooks:{ onKill:(S,c)=>{ const cap=8000+1000*(S.lv-1)+1000*S.pot,gain=1+(S.pot>=4?1:0); S.st.stacks=Math.min(cap,S.st.stacks+gain); },
@@ -1507,6 +1652,12 @@ const SKILLS = [
   hooks:{ onTimer:(S,c)=>{ const cap=50+10*(S.lv-1)+20*S.pot; S.st.stacks=Math.min(cap,S.st.stacks+1); },
     onKill:(S,c)=>{ const cap=50+10*(S.lv-1)+20*S.pot; S.st.stacks=Math.min(cap,S.st.stacks+1); },
     onTowerHurt:(S,c,dR)=>{ const g=c.game; if(g.invuln>0){ dR.d=0; return; } if(S.st.stacks>0){ S.st.stacks--; const nc=Math.min(0.6,0.03+0.005*(S.lv-1)+0.02*S.pot); if(g.rng.chance(nc)){ dR.d=0; g.invuln=0.3+0.05*(S.lv-1)+0.1*S.pot; } } } } },
+{id:'harvestup',color:'green',name:'採取効率アップ',desc:'資源採取効率が上昇',type:'passive',potMax:5,maxLv:12,lvBase:24,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.harvestMul*=upMul(S,0.12,0.016,0.035); } } },
+{id:'cashup',color:'green',name:'$獲得アップ',desc:'敵撃破時の$獲得量が上昇',type:'passive',potMax:5,maxLv:12,lvBase:28,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.cashMul*=upMul(S,0.12,0.016,0.035); } } },
+{id:'statusup',color:'green',name:'状態異常効果アップ',desc:'減速や脆弱化などの状態異常効果が上昇',type:'passive',potMax:5,maxLv:10,lvBase:42,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.statusEffectMul*=upMul(S,0.10,0.012,0.025); } } },
 /* ===== 黄 ===== */
 {id:'accelerate',color:'yellow',name:'スキルアクセレレイト',desc:'他スキルのリチャージを定期的に進める',type:'timer',potMax:5,maxLv:10,lvBase:6,lvR:2.0,
   period:(l,p)=>15*Math.pow(0.95,p),
@@ -1520,19 +1671,27 @@ const SKILLS = [
   hooks:{ onWaveStart:(S,c,w)=>{ const g=c.game,chance=Math.min(0.30,0.03+0.005*(S.lv-1)+0.02*S.pot),rew=1+0.10*S.pot,skips=1+(S.pot>=4?1:0);
     const earnedThis=g.cashEarned-S.st.lastEarned; S.st.lastEarned=g.cashEarned;
     if(!g.rng.chance(chance)) return; const bonus=Math.max(0,earnedThis)*rew; g.cash+=bonus; g.cashEarned+=bonus; g._waveBias+=skips; if(g.wave+skips>g.lastBossWave) g.lastBossWave=Math.max(g.lastBossWave,g.wave); if(RENDER) toast('ウェーブスキップ！ +$'+Math.round(bonus)); } } },
+{id:'skillpowup',color:'yellow',name:'スキル威力アップ',desc:'スキル威力が上昇',type:'passive',potMax:5,maxLv:12,lvBase:28,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.skillPow*=upMul(S,0.14,0.018,0.035); } } },
+{id:'chargeup',color:'yellow',name:'チャージ速度アップ',desc:'スキルチャージ速度が上昇',type:'passive',potMax:5,maxLv:10,lvBase:34,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.skillChargeRateMul=(c.game.skillChargeRateMul||1)*upMul(S,0.12,0.014,0.03); } } },
+{id:'moduleup',color:'yellow',name:'モジュール効果アップ',desc:'スイートスポットのモジュール効果が上昇',type:'passive',potMax:5,maxLv:10,lvBase:48,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.moduleEffectMul*=upMul(S,0.08,0.01,0.02); c.game.moduleRewardMul*=upMul(S,0.08,0.01,0.02); } } },
+{id:'passiveup',color:'yellow',name:'パッシブアップ',desc:'パッシブスキルの効果が上昇',type:'passive',potMax:5,maxLv:10,lvBase:46,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.passiveSkillMul*=upMul(S,0.08,0.01,0.02); } } },
 /* ===== 紫 ===== */
 {id:'bloodthirst',color:'purple',name:'血の渇望',desc:'撃破で回復＋連射上昇、ただし毎秒HP減少（下限あり）',type:'passive',potMax:5,maxLv:10,lvBase:40,lvR:2.0,
   st0:()=>({asStacks:0}),
-  hooks:{ onKill:(S,c)=>{ const g=c.game; g.hp=Math.min(g.maxhp,g.hp+g.maxhp*(0.0025+0.0005*(S.lv-1)+0.0005*S.pot)); S.st.asStacks=Math.min(4+(S.lv-1)+S.pot,S.st.asStacks+1); if(RENDER&&(g.tick&7)===0) emitP(CORE.x,CORE.y,CORE.z,0,.2,0,8,1,.2,.3,1.5); },
-    onTickPre:(S,c)=>{ const g=c.game,dec=Math.max(0.3,1.0-0.06*(S.lv-1)-0.05*S.pot); S.st.asStacks=Math.max(0,S.st.asStacks-dec*c.dt); g.skillBuffs.rofMul*=Math.pow(1.2,Math.min(S.st.asStacks,4+(S.lv-1)+S.pot)); const drain=g.maxhp*0.01*Math.max(0.4,1-0.05*(S.lv-1)-0.04*S.pot)*c.dt; g.hp=Math.max(g.maxhp*0.10,g.hp-drain); } } },
+  hooks:{ onKill:(S,c)=>{ const g=c.game; g.hp=Math.min(g.maxhp,g.hp+g.maxhp*passiveAmp(S,0.0025+0.0005*(S.lv-1)+0.0005*S.pot)); S.st.asStacks=Math.min(4+(S.lv-1)+S.pot,S.st.asStacks+1); if(RENDER&&(g.tick&7)===0) emitP(CORE.x,CORE.y,CORE.z,0,.2,0,8,1,.2,.3,1.5); },
+    onTickPre:(S,c)=>{ const g=c.game,dec=Math.max(0.3,1.0-0.06*(S.lv-1)-0.05*S.pot); S.st.asStacks=Math.max(0,S.st.asStacks-dec*c.dt); g.skillBuffs.rofMul*=Math.pow(passiveMul(S,1.2),Math.min(S.st.asStacks,4+(S.lv-1)+S.pot)); const drain=g.maxhp*0.01*Math.max(0.4,1-0.05*(S.lv-1)-0.04*S.pot)*c.dt; g.hp=Math.max(g.maxhp*0.10,g.hp-drain); } } },
 {id:'originspark',color:'purple',name:'オリジンスパーク',desc:'定期的にHPを払い紫の大火を連射（撃破で回復）',type:'timer',potMax:5,maxLv:10,lvBase:55,lvR:2.0,
   period:(l,p)=>35*Math.pow(0.95,p)*Math.pow(0.97,l-1), st0:()=>({killWindow:0}),
   hooks:{ onTimer:(S,c)=>{ const g=c.game; if(g.phase==='boss') return; const costFrac=0.5*Math.max(0.5,1-0.04*(S.lv-1)-0.03*S.pot); g.hp=Math.max(g.maxhp*0.15,g.hp*(1-costFrac)); S.st.killWindow=3.0+0.3*(S.lv-1); const wc=4+Math.floor(S.pot/2),dm=1+0.10*(S.lv-1); for(let i=0;i<wc;i++) c.spawnWave(1250,900,70*g.skillPow*dm,0xB46BFF); if(RENDER) burst(WAVE_ORIGIN.x,WAVE_ORIGIN.y,WAVE_ORIGIN.z,[.7,.3,1],160,2.6); },
     onTickPre:(S,c)=>{ if(S.st.killWindow>0) S.st.killWindow-=c.dt; },
     onKill:(S,c)=>{ if(S.st.killWindow>0){ const g=c.game; g.hp=Math.min(g.maxhp,g.hp+g.maxhp*(0.004+0.0005*(S.lv-1)+0.0005*S.pot)); } } } },
 {id:'battlegong',color:'purple',name:'戦いのゴング',desc:'出現量・連射・収益が増える代わり敵も増速',type:'passive',potMax:5,maxLv:8,lvBase:60,lvR:2.0,
-  hooks:{ modifyStats:(S,c)=>{ const g=c.game,k=1.5+0.05*(S.lv-1)+0.05*S.pot; g.spawnMul*=k; g.fireRate*=k; g.cashMul*=k; g.harvestMul*=k; },
-    onTickPre:(S,c)=>{ const k=1.5+0.05*(S.lv-1)+0.05*S.pot; c.game.enemySpdMul*=k; } } },
+  hooks:{ modifyStats:(S,c)=>{ const g=c.game,k=passiveMul(S,1.5+0.05*(S.lv-1)+0.05*S.pot); g.spawnMul*=k; g.fireRate*=k; g.cashMul*=k; g.harvestMul*=k; },
+    onTickPre:(S,c)=>{ const k=passiveMul(S,1.5+0.05*(S.lv-1)+0.05*S.pot); c.game.enemySpdMul*=k; } } },
   {id:'tenchi',color:'purple',name:'天地開明',desc:'4waveごとにHPを50%にリセット。増減で敵増or自強化',type:'trigger',potMax:5,maxLv:8,lvBase:96,lvR:2.0,
   st0:()=>({windowUntilWave:0,mode:0,mag:0}),
   hooks:{ modifyStats:(S,c)=>{ c.game.shieldDecayMul*=Math.max(0.5,0.85-0.03*(S.lv-1)-0.02*S.pot); },
@@ -1555,7 +1714,11 @@ const SKILLS = [
     const life= 6 + 0.5*(S.lv-1) + 1.0*S.pot;                                       // 持続秒
     g.skillZones.push({ x:CORE.x, y:CORE.y, z:CORE.z, r, dps, spdMul:0.5, atkMul:1, dmgMul:1.15+0.03*S.pot, life });   // 持続フィールド（当たり判定は updateSkillZones）
     if(RENDER){ for(let k=0;k<90;k++){ const a=Math.random()*6.283, rr=Math.sqrt(Math.random())*r; emitP(CORE.x+Math.cos(a)*rr, CORE.y+rand(-30,140), CORE.z+Math.sin(a)*rr, -Math.sin(a)*120+rand(-15,15), rand(-10,30), Math.cos(a)*120+rand(-15,15), 1.2, .72,.86,1.0, 2.0); } burst(CORE.x,CORE.y,CORE.z,[.7,.86,1],160,2.6); } } } },
-];   // 24スキル（決定論：乱数は g.rng、演出は RENDER ゲート、手動アクティブは acts ログ）
+{id:'slowup',color:'purple',name:'敵減速アップ',desc:'敵減速の効果が上昇',type:'passive',potMax:5,maxLv:10,lvBase:58,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.slowLv+=upAdd(S,1,0.12,0.25); } } },
+{id:'vulnup',color:'purple',name:'脆弱化アップ',desc:'敵への脆弱化倍率が上昇',type:'passive',potMax:5,maxLv:10,lvBase:60,lvR:2.0,
+  hooks:{ modifyStats:(S,c)=>{ c.game.vuln+=upAdd(S,0.10,0.012,0.025); } } },
+];   // スキル（決定論：乱数は g.rng、演出は RENDER ゲート、手動アクティブは acts ログ）
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map(s=>[s.id,s]));
 const DUP_THRESH=[0,1,3,6,10,15];
 function potFromDup(dup,potMax){ let p=0; for(let i=1;i<DUP_THRESH.length;i++) if(dup>=DUP_THRESH[i]) p=i; return Math.min(p,potMax); }
@@ -1568,7 +1731,15 @@ function castFx(def){ if(!RENDER||!def||def.id==='windgrace') return; const t=pe
   layer.appendChild(el); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 1100); }
 function dispatchTimers(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],h=S.def.hooks; if(!h||!h.onTimer) continue; const per=S.def.period(S.lv,S.pot); if(S.st.cd===undefined)S.st.cd=per; S.st.cd-=dt; let g=0; while(S.st.cd<=0&&g++<10000){ S.st.cd+=per; h.onTimer(S,ctx); castFx(S.def); } } }
 function dispatchOnTickPre(dt){ game.skillBuffs.dmgMul=1; game.skillBuffs.rofMul=1; game.enemyAtkMul=1; game.enemySpdMul=1; if(game.skillStun>0)game.skillStun-=dt; if(game.invuln>0)game.invuln-=dt; const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.onTickPre; if(fn) fn(S,ctx); } }
-function dispatchModifyStats(){ const rt=game.skillRT,ctx=skillCtx(DT); for(let i=0;i<rt.length;i++){ const S=rt[i],fn=S.def.hooks&&S.def.hooks.modifyStats; if(fn) fn(S,ctx); } }
+function dispatchModifyStats(){
+  const rt=game.skillRT,ctx=skillCtx(DT);
+  for(let pass=0; pass<2; pass++){
+    for(let i=0;i<rt.length;i++){
+      const S=rt[i],fn=S.def.hooks&&S.def.hooks.modifyStats,isPassiveBoost=S.def.id==='passiveup';
+      if(fn && (pass===0)===isPassiveBoost) fn(S,ctx);
+    }
+  }
+}
 function dispatchAutoActives(dt){ const rt=game.skillRT,ctx=skillCtx(dt); for(let i=0;i<rt.length;i++){ const S=rt[i],d=S.def; if(!d.hooks||!d.hooks.active||!d.cost) continue; const c=d.cost(S.lv,S.pot); S.st.charge=Math.min(c,(S.st.charge||0)+dt); if(d.autofire && S.st.charge>=c){ S.st.charge=0; d.hooks.active(S,ctx); castFx(d); } }   /* 手動アクティブも charge を貯める（capで保持・自動発火せずタップ待ち） */ }
 function snapshotSkills(){ game.skillRT=(meta.skillEquip||[]).filter(Boolean).map(id=>{ const o=meta.skillOwned[id],def=SKILL_BY_ID[id]; if(!o||!def)return null; const lv=o.level,pot=o.pot; return {def,lv,pot,st:Object.assign({charge:0,stacks:0},def.st0?def.st0(lv,pot):{})}; }).filter(Boolean).slice(0,3+resLv('extraSlot')); }
 function skillLevelCost(def,lv){ return Math.floor(def.lvBase*Math.pow(def.lvR||2, lv-1)); }
@@ -1665,7 +1836,8 @@ function updateHUD(dt){
 }
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
-const meta = { spark:0, blackPowder:0, towerSlots:1, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false };
+const meta = { spark:0, blackPowder:0, towerSlots:1, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false, mapSupply:{claims:{},lastDay:'',streak:0,task:null},
+  towerMods:{owned:{}, equip:{turret:null,barrier:null,armor:null,transmitter:null,reactor:null}, addons:{}, addonEquip:{turret:[null,null,null],barrier:[null,null,null],armor:[null,null,null],transmitter:[null,null,null],reactor:[null,null,null]}, dust:0, catDust:{turret:0,barrier:0,armor:0,transmitter:0,reactor:0}, addonTokens:0, pity:0, legendPity:0, seed:0, walkBank:0} };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -1753,7 +1925,7 @@ function refreshCurrencyDisplays(){
   refreshSparkDisplays();
   refreshBlackPowderDisplays();
 }
-const VIEW_STATES=['state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop'];
+const VIEW_STATES=['state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop','state-mod'];
 function isRunLive(){ return !!game.runLive && !game.ended; }
 function setViewState(state, keepRun=false){
   document.body.classList.remove(...VIEW_STATES);
@@ -1790,7 +1962,7 @@ function buildHome(){ try{
   el.appendChild(grid);
   }catch(e){ const pl=document.getElementById('permlist'); if(pl) pl.textContent='buildHome ERR: '+(e&&e.message); console.log('buildHome error', e); }
 }
-function setTab(id){ if(typeof closeDetail==='function') closeDetail(); ['mode-combat','mode-base','mode-skill','mode-research','mode-shop','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); const cb=$('mode-combat'); if(cb) cb.disabled=!isRunLive(); }
+function setTab(id){ if(typeof closeDetail==='function') closeDetail(); ['mode-combat','mode-base','mode-skill','mode-mod','mode-research','mode-shop','mode-deploy','mode-map'].forEach(t=>{ const el=$(t); if(el) el.classList.toggle('on', t===id); }); const cb=$('mode-combat'); if(cb) cb.disabled=!isRunLive(); }
 /* ===== スキル画面（ガチャ/Lv上げ/装備） ===== */
 let skillCat='red', lastGacha=null, skResearchView=false;
 function gachaCost(){ return Math.max(200, Math.round(1000*(1-0.05*resLv('gachaDiscount')))); }
@@ -1814,6 +1986,350 @@ function equipSkill(id){ const max=3+resLv('extraSlot'); while(meta.skillEquip.l
 function enterSkillPanel(research){ skResearchView=!!research; game.state='skills'; setOverlayView('state-skill'); controls.autoRotate=!REDUCED; setTab(research?'mode-research':'mode-skill'); buildSkills(); }
 function showSkills(){ enterSkillPanel(false); }
 function showResearch(){ enterSkillPanel(true); }
+/* ===== タワー改装（The Tower風モジュール） ===== */
+const TOWER_MOD_CATS=[
+  {id:'turret',name:'砲台',color:'red',icon:'i-tower',desc:'攻撃・通常DPS'},
+  {id:'barrier',name:'バリア装置',color:'blue',icon:'i-hex',desc:'防御・バリア'},
+  {id:'armor',name:'装甲',color:'blue',icon:'i-shield',desc:'HP・防御'},
+  {id:'transmitter',name:'発信装置',color:'purple',icon:'i-swirl',desc:'スキル・トリッキー'},
+  {id:'reactor',name:'リアクター',color:'green',icon:'i-spark',desc:'自由枠・ビルド軸'},
+];
+const TOWER_MOD_CAT_BY_ID=Object.fromEntries(TOWER_MOD_CATS.map(c=>[c.id,c]));
+const TOWER_MOD_RARITIES={
+  rare:{id:'rare',label:'Rare',rank:0,color:'#8A93AD',mul:1,dust:1,catDust:1},
+  epic:{id:'epic',label:'Epic',rank:1,color:'#B46BFF',mul:1.35,dust:4,catDust:2},
+  legend:{id:'legend',label:'Legend',rank:2,color:'#FFD66B',mul:1.85,dust:16,catDust:5},
+  mythic:{id:'mythic',label:'Mythic',rank:3,color:'#FF4A4A',mul:2.5,dust:64,catDust:12},
+  celestial:{id:'celestial',label:'Celestial',rank:4,color:'#3CF0FF',mul:3.4,dust:256,catDust:30},
+};
+const TOWER_MOD_DEFS=[
+  {id:'turret_pulse',cat:'turret',rarity:'rare',name:'パルス砲身',stats:[['dmgPct',0.12],['fireRatePct',0.05]],desc:'基礎火力を底上げする標準砲台。'},
+  {id:'turret_rail',cat:'turret',rarity:'epic',name:'レール砲列',stats:[['rangePct',0.10],['critChanceFlat',0.025],['critPowerFlat',0.12]],desc:'長射程とクリティカルで削る砲台。'},
+  {id:'turret_star',cat:'turret',rarity:'legend',name:'星穿ち砲',stats:[['dmgPct',0.20],['bossDmgPct',0.20]],desc:'ボス戦で火力が伸びる重砲台。'},
+  {id:'turret_prism',cat:'turret',rarity:'mythic',name:'プリズム連装砲',stats:[['dmgPct',0.16],['fireRatePct',0.12],['multiFlat',1]],desc:'多重弾を増やす高密度砲台。'},
+  {id:'barrier_kinetic',cat:'barrier',rarity:'rare',name:'運動バリア',stats:[['barrierFlat',160],['shieldFlat',120]],desc:'初期バリアとシールドを増やす。'},
+  {id:'barrier_aegis',cat:'barrier',rarity:'epic',name:'再展開障壁',stats:[['barrierFlat',220],['regenFlat',18]],desc:'バリアと回復の両方を補強する。'},
+  {id:'barrier_mirror',cat:'barrier',rarity:'legend',name:'ミラー防壁',stats:[['shieldFlat',360],['drFlat',0.025]],desc:'高いシールドと軽減を得る。'},
+  {id:'barrier_void',cat:'barrier',rarity:'mythic',name:'虚空バリア',stats:[['barrierFlat',520],['dmgTakenMul',-0.06]],desc:'被ダメージを直接下げる異常防壁。'},
+  {id:'armor_alloy',cat:'armor',rarity:'rare',name:'合金装甲',stats:[['hpPct',0.15],['armorFlat',45]],desc:'HPと防御力の基本装甲。'},
+  {id:'armor_fortress',cat:'armor',rarity:'epic',name:'要塞骨格',stats:[['hpPct',0.22],['armorFlat',80],['drFlat',0.015]],desc:'長期戦向きの重装甲。'},
+  {id:'armor_autorepair',cat:'armor',rarity:'legend',name:'自律修復装甲',stats:[['hpPct',0.18],['regenFlat',55]],desc:'再生に寄せた装甲。'},
+  {id:'armor_oath',cat:'armor',rarity:'mythic',name:'絶対防衛殻',stats:[['hpPct',0.30],['drFlat',0.035],['armorFlat',120]],desc:'重いが硬い終盤装甲。'},
+  {id:'trans_focus',cat:'transmitter',rarity:'rare',name:'集中発信器',stats:[['skillPowPct',0.12],['skillChargePct',0.06]],desc:'スキル威力とチャージを補助する。'},
+  {id:'trans_slow',cat:'transmitter',rarity:'epic',name:'遅延ビーコン',stats:[['slowFlat',1],['vulnFlat',0.04]],desc:'敵を遅らせ、被ダメを増やす。'},
+  {id:'trans_overclock',cat:'transmitter',rarity:'legend',name:'過負荷発信塔',stats:[['skillPowPct',0.22],['skillChargePct',0.12],['dmgTakenMul',0.04]],desc:'被弾リスクと引き換えにスキルを強める。'},
+  {id:'trans_tenchi',cat:'transmitter',rarity:'mythic',name:'天地同期器',stats:[['skillPowPct',0.18],['vulnFlat',0.08],['spawnRewardPct',0.18]],desc:'敵量リスクを報酬へ変えるトリッキー発信器。'},
+  {id:'reactor_green',cat:'reactor',rarity:'rare',name:'緑色炉心',stats:[['cashPct',0.10],['harvestPct',0.10]],desc:'経済と採取を伸ばす自由枠。'},
+  {id:'reactor_spark',cat:'reactor',rarity:'epic',name:'残光リアクター',stats:[['sparkPct',0.12],['cashPct',0.08]],desc:'SPARKと$を増やす。'},
+  {id:'reactor_conversion',cat:'reactor',rarity:'legend',name:'変換炉',stats:[['dmgPct',0.12],['hpPct',0.12],['harvestPct',0.16]],desc:'攻防経済を広く支える中心炉。'},
+  {id:'reactor_black',cat:'reactor',rarity:'mythic',name:'黒色火薬炉',stats:[['dmgPct',0.18],['sparkPct',0.18],['dmgTakenMul',0.05]],desc:'危険を抱えて報酬と火力を伸ばす炉心。'},
+  {id:'reactor_celestial',cat:'reactor',rarity:'celestial',name:'天穹リアクター',stats:[['dmgPct',0.22],['hpPct',0.22],['skillPowPct',0.22],['sparkPct',0.25]],desc:'ビルド全体を押し上げる超高位リアクター。'},
+];
+const TOWER_MOD_DEF_BY_ID=Object.fromEntries(TOWER_MOD_DEFS.map(m=>[m.id,m]));
+const TOWER_MOD_DRAW_COST=25, TOWER_MOD_CAT_DRAW_COST=60, TOWER_MOD_WALK_DUST=500;
+const TOWER_ADDON_SLOTS=3;
+const TOWER_ADDON_SUBS={rare:1,epic:2,legend:3,mythic:4,celestial:5};
+const TOWER_ADDON_TOKEN_BY_RARITY={rare:8,epic:28,legend:95,mythic:320,celestial:1200};
+const TOWER_ADDON_STATS={
+  turret:['dmgPct','fireRatePct','rangePct','critChanceFlat','critPowerFlat','bossDmgPct'],
+  barrier:['barrierFlat','shieldFlat','regenFlat','drFlat','dmgTakenMul'],
+  armor:['hpPct','armorFlat','drFlat','regenFlat','dmgTakenMul'],
+  transmitter:['skillPowPct','skillChargePct','slowFlat','vulnFlat','spawnRewardPct'],
+  reactor:['cashPct','harvestPct','sparkPct','dmgPct','hpPct','skillPowPct'],
+};
+const TOWER_ADDON_STAT_BASE={
+  dmgPct:0.035,fireRatePct:0.025,rangePct:0.035,critChanceFlat:0.008,critPowerFlat:0.045,bossDmgPct:0.05,
+  barrierFlat:60,shieldFlat:70,regenFlat:8,drFlat:0.006,dmgTakenMul:-0.012,
+  hpPct:0.045,armorFlat:18,skillPowPct:0.04,skillChargePct:0.025,slowFlat:0.35,vulnFlat:0.014,spawnRewardPct:0.035,
+  cashPct:0.04,harvestPct:0.04,sparkPct:0.035,
+};
+let modCat='turret', lastModReveal='';
+function ensureTowerMods(){
+  if(!meta.towerMods||typeof meta.towerMods!=='object') meta.towerMods={};
+  const tm=meta.towerMods;
+  if(!tm.owned||typeof tm.owned!=='object') tm.owned={};
+  if(!tm.addons||typeof tm.addons!=='object') tm.addons={};
+  if(!tm.equip||typeof tm.equip!=='object') tm.equip={};
+  if(!tm.addonEquip||typeof tm.addonEquip!=='object') tm.addonEquip={};
+  for(const c of TOWER_MOD_CATS) if(!(c.id in tm.equip)) tm.equip[c.id]=null;
+  for(const c of TOWER_MOD_CATS){ if(!Array.isArray(tm.addonEquip[c.id])) tm.addonEquip[c.id]=[null,null,null]; while(tm.addonEquip[c.id].length<TOWER_ADDON_SLOTS) tm.addonEquip[c.id].push(null); if(tm.addonEquip[c.id].length>TOWER_ADDON_SLOTS) tm.addonEquip[c.id].length=TOWER_ADDON_SLOTS; }
+  if(!tm.catDust||typeof tm.catDust!=='object') tm.catDust={};
+  for(const c of TOWER_MOD_CATS) tm.catDust[c.id]=Math.max(0, Number(tm.catDust[c.id])||0);
+  tm.dust=Math.max(0, Number(tm.dust)||0);
+  tm.addonTokens=Math.max(0, Number(tm.addonTokens)||0);
+  tm.pity=Math.max(0, tm.pity|0);
+  tm.legendPity=Math.max(0, tm.legendPity|0);
+  tm.seed=(tm.seed>>>0)||hash32('mods',Date.now());
+  tm.walkBank=Math.max(0, Number(tm.walkBank)||0);
+  for(const uid of Object.keys(tm.owned)){
+    const inst=tm.owned[uid], def=inst&&TOWER_MOD_DEF_BY_ID[inst.defId];
+    if(!def){ delete tm.owned[uid]; continue; }
+    inst.uid=uid; inst.defId=def.id; inst.cat=def.cat; inst.rarity=def.rarity;
+    inst.level=Math.max(1, Math.min(60, inst.level|0));
+    inst.stars=Math.max(0, Math.min(5, inst.stars|0));
+  }
+  for(const c of TOWER_MOD_CATS) if(tm.equip[c.id]&&!tm.owned[tm.equip[c.id]]) tm.equip[c.id]=null;
+  for(const uid of Object.keys(tm.addons)){
+    const ad=tm.addons[uid], cat=ad&&TOWER_MOD_CAT_BY_ID[ad.cat], rr=ad&&TOWER_MOD_RARITIES[ad.rarity];
+    if(!ad||!cat||!rr||!ad.main||!Array.isArray(ad.subs)){ delete tm.addons[uid]; continue; }
+    ad.uid=uid; ad.lockedSubCount=Math.max(0,Math.min(ad.subs.length,ad.lockedSubCount|0));
+    ad.subs=ad.subs.slice(0,TOWER_ADDON_SUBS[ad.rarity]||1).filter(e=>e&&TOWER_ADDON_STAT_BASE[e.stat]!==undefined&&TOWER_MOD_RARITIES[e.rarity]);
+    while(ad.subs.length<(TOWER_ADDON_SUBS[ad.rarity]||1)){ const st=(TOWER_ADDON_STATS[ad.cat]||TOWER_ADDON_STATS.reactor)[0]; ad.subs.push({stat:st,rarity:'rare',value:TOWER_ADDON_STAT_BASE[st]}); }
+  }
+  for(const c of TOWER_MOD_CATS){ tm.addonEquip[c.id]=tm.addonEquip[c.id].map(uid=>tm.addons[uid]?uid:null); }
+}
+function addonMulForCat(cat){
+  ensureTowerMods();
+  const uid=meta.towerMods.equip[cat], inst=uid&&meta.towerMods.owned[uid], def=inst&&TOWER_MOD_DEF_BY_ID[inst.defId], rr=def&&TOWER_MOD_RARITIES[def.rarity];
+  return addonMulFromBody(inst, rr);
+}
+function addonMulFromBody(inst, rr){
+  if(!inst) return 1;
+  const r=rr || TOWER_MOD_RARITIES[inst.rarity] || TOWER_MOD_RARITIES.rare;
+  return 1 + r.rank*0.08 + (inst.level-1)*0.012 + (inst.stars||0)*0.04;
+}
+function modRng(){ ensureTowerMods(); const r=makeRNG(meta.towerMods.seed); const v=r.next(); meta.towerMods.seed=r.getState(); return v; }
+function modRandInt(a,b){ return a+Math.floor(modRng()*(b-a+1)); }
+function modWeightedPick(items, weights){ let total=0; for(const w of weights) total+=Math.max(0,w||0); if(total<=0) return items[Math.floor(modRng()*items.length)]; let r=modRng()*total; for(let i=0;i<items.length;i++){ r-=Math.max(0,weights[i]||0); if(r<=0) return items[i]; } return items[items.length-1]; }
+function modRollRarity(minRank=0){
+  ensureTowerMods();
+  const p=meta.towerMods.pity||0, lp=meta.towerMods.legendPity||0;
+  if(lp>=39) return 'legend';
+  if(p>=9) return 'epic';
+  const r=modRng();
+  if(r<0.002 && minRank<=4) return 'celestial';
+  if(r<0.022 && minRank<=3) return 'mythic';
+  if(r<0.092 && minRank<=2) return 'legend';
+  if(r<0.342 && minRank<=1) return 'epic';
+  return minRank>=1?'epic':'rare';
+}
+function rollAddonEffectRarity(){
+  const r=modRng();
+  if(r<0.01) return 'celestial';
+  if(r<0.05) return 'mythic';
+  if(r<0.17) return 'legend';
+  if(r<0.45) return 'epic';
+  return 'rare';
+}
+function randomAddonEffect(cat, main){
+  const pool=TOWER_ADDON_STATS[cat]||TOWER_ADDON_STATS.reactor;
+  const stat=pool[Math.floor(modRng()*pool.length)];
+  const rarity=main?null:rollAddonEffectRarity();
+  return {stat, rarity:rarity||'main', value:TOWER_ADDON_STAT_BASE[stat]};
+}
+function createTowerAddon(cat=null, minRank=0){
+  ensureTowerMods();
+  const c=cat||TOWER_MOD_CATS[Math.floor(modRng()*TOWER_MOD_CATS.length)].id;
+  const rarity=modRollRarity(minRank), n=TOWER_ADDON_SUBS[rarity]||1;
+  const uid='ta-'+hash32(c,rarity,Date.now(),meta.towerMods.seed,Object.keys(meta.towerMods.addons).length).toString(36)+'-'+modRandInt(1000,9999);
+  const ad={uid,cat:c,rarity,main:randomAddonEffect(c,true),subs:[],lockedSubCount:0};
+  for(let i=0;i<n;i++) ad.subs.push(randomAddonEffect(c,false));
+  meta.towerMods.addons[uid]=ad;
+  return ad;
+}
+function grantTowerAddon(cat=null, minRank=0, reason='アドオン'){
+  const ad=createTowerAddon(cat,minRank), rr=TOWER_MOD_RARITIES[ad.rarity], ci=TOWER_MOD_CAT_BY_ID[ad.cat];
+  lastModReveal=reason+' '+ci.name+'アドオン '+rr.label+' 入手';
+  if(RENDER) toast(lastModReveal);
+  saveMeta();
+  if(game.state==='mod') buildMods();
+  return ad;
+}
+function createTowerMod(def){
+  ensureTowerMods();
+  const uid='tm-'+hash32(def.id,Date.now(),meta.towerMods.seed,Object.keys(meta.towerMods.owned).length).toString(36)+'-'+modRandInt(1000,9999);
+  meta.towerMods.owned[uid]={uid,defId:def.id,cat:def.cat,rarity:def.rarity,level:1,stars:0};
+  return meta.towerMods.owned[uid];
+}
+function grantTowerMod(def, reason){
+  const inst=createTowerMod(def);
+  lastModReveal=(reason?reason+' ':'')+def.name+' 入手';
+  if(RENDER) toast(lastModReveal);
+  saveMeta();
+  if(game.state==='mod') buildMods();
+  return inst;
+}
+function pickTowerModDef(cat=null, minRank=0){
+  const rarity=modRollRarity(minRank), rank=TOWER_MOD_RARITIES[rarity].rank;
+  const pool=TOWER_MOD_DEFS.filter(d=>(!cat||d.cat===cat) && TOWER_MOD_RARITIES[d.rarity].rank<=Math.max(rank,0));
+  const exact=pool.filter(d=>TOWER_MOD_RARITIES[d.rarity].rank===rank);
+  const src=exact.length?exact:pool;
+  return modWeightedPick(src, src.map(d=>1+TOWER_MOD_RARITIES[d.rarity].rank*0.25));
+}
+function drawTowerMod(cat=null, cost=TOWER_MOD_DRAW_COST){
+  ensureTowerMods();
+  if(meta.blackPowder<cost){ lastModReveal='黒色火薬不足'; buildMods(); return; }
+  meta.blackPowder-=cost;
+  const def=pickTowerModDef(cat,0), rr=TOWER_MOD_RARITIES[def.rarity];
+  meta.towerMods.pity = rr.rank>=1 ? 0 : (meta.towerMods.pity||0)+1;
+  meta.towerMods.legendPity = rr.rank>=2 ? 0 : (meta.towerMods.legendPity||0)+1;
+  grantTowerMod(def, cat?'カテゴリ箱':'通常箱');
+}
+function modPower(inst){ const def=TOWER_MOD_DEF_BY_ID[inst.defId], rr=TOWER_MOD_RARITIES[def.rarity]; return rr.mul*(1+0.12*(inst.level-1))*(1+0.18*(inst.stars||0)); }
+function modStatValue(inst, stat){ return stat[1]*modPower(inst); }
+function modStatText(inst){
+  const def=TOWER_MOD_DEF_BY_ID[inst.defId];
+  return def.stats.map(s=>{
+    const v=modStatValue(inst,s), pct=['dmgPct','fireRatePct','rangePct','hpPct','skillPowPct','skillChargePct','cashPct','harvestPct','sparkPct','bossDmgPct','spawnRewardPct','dmgTakenMul'].includes(s[0]);
+    const sign=v>=0?'+':'';
+    const name={dmgPct:'攻撃',fireRatePct:'連射',rangePct:'射程',critChanceFlat:'クリ率',critPowerFlat:'クリ倍率',bossDmgPct:'対ボス',multiFlat:'多重弾',barrierFlat:'バリア',shieldFlat:'シールド',regenFlat:'再生',drFlat:'防御率',dmgTakenMul:'被ダメ',hpPct:'HP',armorFlat:'防御',skillPowPct:'スキル威力',skillChargePct:'チャージ',slowFlat:'減速',vulnFlat:'脆弱',spawnRewardPct:'報酬変換',cashPct:'$獲得',harvestPct:'採取',sparkPct:'SPARK'}[s[0]]||s[0];
+    return name+' '+(pct?sign+Math.round(v*100)+'%':sign+(s[0].endsWith('Flat')?v.toFixed(s[0]==='drFlat'||s[0]==='vulnFlat'||s[0]==='critChanceFlat'?3:0):v.toFixed(2)));
+  }).join('\n');
+}
+function modStatName(k){ return {dmgPct:'攻撃',fireRatePct:'連射',rangePct:'射程',critChanceFlat:'クリ率',critPowerFlat:'クリ倍率',bossDmgPct:'対ボス',multiFlat:'多重弾',barrierFlat:'バリア',shieldFlat:'シールド',regenFlat:'再生',drFlat:'防御率',dmgTakenMul:'被ダメ',hpPct:'HP',armorFlat:'防御',skillPowPct:'スキル威力',skillChargePct:'チャージ',slowFlat:'減速',vulnFlat:'脆弱',spawnRewardPct:'報酬変換',cashPct:'$獲得',harvestPct:'採取',sparkPct:'SPARK'}[k]||k; }
+function addonEffectValue(ad,e,main=false, bodyMul=null){
+  const rr=TOWER_MOD_RARITIES[main?ad.rarity:e.rarity]||TOWER_MOD_RARITIES.rare;
+  const base=Number(e.value)||TOWER_ADDON_STAT_BASE[e.stat]||0;
+  const role=main?2.35:1;
+  return base*rr.mul*role*(bodyMul===null?addonMulForCat(ad.cat):bodyMul);
+}
+function addonEffectText(ad,e,main=false){
+  const v=addonEffectValue(ad,e,main), pct=['dmgPct','fireRatePct','rangePct','hpPct','skillPowPct','skillChargePct','cashPct','harvestPct','sparkPct','bossDmgPct','spawnRewardPct','dmgTakenMul'].includes(e.stat);
+  const sign=v>=0?'+':'', rr=main?TOWER_MOD_RARITIES[ad.rarity]:TOWER_MOD_RARITIES[e.rarity];
+  const val=pct?(sign+Math.round(v*100)+'%'):(sign+(e.stat.endsWith('Flat')?v.toFixed(e.stat==='drFlat'||e.stat==='vulnFlat'||e.stat==='critChanceFlat'?3:0):v.toFixed(2)));
+  return (main?'MAIN':'SUB '+(rr?rr.label:'Rare'))+' '+modStatName(e.stat)+' '+val;
+}
+function addonText(ad){ return [addonEffectText(ad,ad.main,true)].concat((ad.subs||[]).map((e,i)=>(i<(ad.lockedSubCount||0)?'🔒 ':'')+addonEffectText(ad,e,false))).join('\n'); }
+function towerModLevelCost(inst){ const rr=TOWER_MOD_RARITIES[inst.rarity]; return Math.ceil((8+rr.rank*8)*Math.pow(inst.level,1.35)); }
+function towerModStarCost(inst){ const rr=TOWER_MOD_RARITIES[inst.rarity]; return Math.ceil((12+rr.rank*12)*Math.pow((inst.stars||0)+1,2)); }
+function equipTowerMod(uid){ ensureTowerMods(); const inst=meta.towerMods.owned[uid]; if(!inst) return; meta.towerMods.equip[inst.cat]=uid; saveMeta(); buildMods(); }
+function unequipTowerMod(cat){ ensureTowerMods(); if(meta.towerMods.equip[cat]){ meta.towerMods.equip[cat]=null; saveMeta(); buildMods(); } }
+function levelTowerMod(uid){ ensureTowerMods(); const inst=meta.towerMods.owned[uid]; if(!inst) return; const cost=towerModLevelCost(inst); if(meta.towerMods.dust<cost) return; meta.towerMods.dust-=cost; inst.level++; saveMeta(); openTowerModDetail(uid); buildMods(); }
+function starTowerMod(uid){ ensureTowerMods(); const inst=meta.towerMods.owned[uid]; if(!inst||inst.stars>=5) return; const cost=towerModStarCost(inst); if((meta.towerMods.catDust[inst.cat]||0)<cost) return; meta.towerMods.catDust[inst.cat]-=cost; inst.stars++; saveMeta(); openTowerModDetail(uid); buildMods(); }
+function dismantleTowerMod(uid){ ensureTowerMods(); const inst=meta.towerMods.owned[uid]; if(!inst) return; const rr=TOWER_MOD_RARITIES[inst.rarity]; meta.towerMods.dust+=Math.ceil(rr.dust*(1+0.65*(inst.level-1)+1.5*(inst.stars||0))); meta.towerMods.catDust[inst.cat]=(meta.towerMods.catDust[inst.cat]||0)+Math.ceil(rr.catDust*(1+(inst.stars||0))); if(meta.towerMods.equip[inst.cat]===uid) meta.towerMods.equip[inst.cat]=null; delete meta.towerMods.owned[uid]; saveMeta(); closeDetail(); buildMods(); }
+function equipTowerAddon(uid, slot=null){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const arr=meta.towerMods.addonEquip[ad.cat]; for(let i=0;i<arr.length;i++) if(arr[i]===uid) arr[i]=null; let s=slot; if(s===null||s===undefined) s=arr.indexOf(null); if(s<0) s=0; arr[s]=uid; saveMeta(); buildMods(); }
+function unequipTowerAddon(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const arr=meta.towerMods.addonEquip[ad.cat]; for(let i=0;i<arr.length;i++) if(arr[i]===uid) arr[i]=null; saveMeta(); buildMods(); }
+function dismantleTowerAddon(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const rr=TOWER_MOD_RARITIES[ad.rarity]||TOWER_MOD_RARITIES.rare; const subBonus=(ad.subs||[]).reduce((a,e)=>a+((TOWER_MOD_RARITIES[e.rarity]||TOWER_MOD_RARITIES.rare).rank+1)*2,0); meta.towerMods.addonTokens+=TOWER_ADDON_TOKEN_BY_RARITY[ad.rarity]+subBonus; const arr=meta.towerMods.addonEquip[ad.cat]||[]; for(let i=0;i<arr.length;i++) if(arr[i]===uid) arr[i]=null; delete meta.towerMods.addons[uid]; saveMeta(); closeDetail(); buildMods(); }
+function addonRerollCost(ad){ const keep=Math.max(0,Math.min((ad.subs||[]).length,ad.lockedSubCount|0)), reroll=Math.max(0,(ad.subs||[]).length-keep); return Math.pow(keep*2+1,2)*reroll*10; }
+function changeAddonKeep(uid, delta){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; ad.lockedSubCount=Math.max(0,Math.min((ad.subs||[]).length,(ad.lockedSubCount||0)+delta)); saveMeta(); openTowerAddonDetail(uid); buildMods(); }
+function rerollAddonSubs(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const cost=addonRerollCost(ad); if(cost<=0||meta.towerMods.addonTokens<cost) return; meta.towerMods.addonTokens-=cost; for(let i=ad.lockedSubCount||0;i<ad.subs.length;i++) ad.subs[i]=randomAddonEffect(ad.cat,false); saveMeta(); openTowerAddonDetail(uid); buildMods(); }
+function cloneEquippedTowerMods(){ ensureTowerMods(); const bodies=TOWER_MOD_CATS.map(c=>meta.towerMods.equip[c.id]).filter(Boolean).map(uid=>Object.assign({}, meta.towerMods.owned[uid])).filter(Boolean); const addons=[]; for(const c of TOWER_MOD_CATS){ for(const uid of meta.towerMods.addonEquip[c.id]||[]){ if(uid&&meta.towerMods.addons[uid]) addons.push(JSON.parse(JSON.stringify(meta.towerMods.addons[uid]))); } } return {bodies,addons}; }
+function applyTowerModStat(k,v){
+  if(k==='dmgPct') game.dmg*=1+v;
+  else if(k==='fireRatePct') game.fireRate*=1+v;
+  else if(k==='rangePct') game.range*=1+v;
+  else if(k==='critChanceFlat') game.critChance=Math.min(1, game.critChance+v);
+  else if(k==='critPowerFlat') game.critPower+=v;
+  else if(k==='bossDmgPct') game.bossDmgMul=(game.bossDmgMul||1)*(1+v);
+  else if(k==='multiFlat') game.multishot=Math.min(12, game.multishot+Math.floor(v));
+  else if(k==='barrierFlat') game.barrier+=v;
+  else if(k==='shieldFlat') game.shield+=v;
+  else if(k==='regenFlat') game.regen+=v;
+  else if(k==='drFlat') game.dr=Math.min(0.8, game.dr+v);
+  else if(k==='dmgTakenMul') game.dmgTakenMul*=Math.max(0.2,1+v);
+  else if(k==='hpPct'){ const r=game.maxhp>0?game.hp/game.maxhp:1; game.maxhp*=1+v; game.hp=game.maxhp*r; }
+  else if(k==='armorFlat') game.armor+=v;
+  else if(k==='skillPowPct') game.skillPow*=1+v;
+  else if(k==='skillChargePct') game.skillChargeRateMul=(game.skillChargeRateMul||1)*(1+v);
+  else if(k==='slowFlat') game.slowLv+=v;
+  else if(k==='vulnFlat') game.vuln+=v;
+  else if(k==='spawnRewardPct') game.moduleRewardMul*=1+v;
+  else if(k==='cashPct') game.cashMul*=1+v;
+  else if(k==='harvestPct') game.harvestMul*=1+v;
+  else if(k==='sparkPct') game.sparkMul*=1+v;
+}
+function applyTowerMods(list){
+  const loadout=Array.isArray(list)?{bodies:list,addons:[]}:(list&&typeof list==='object'?list:{bodies:[],addons:[]});
+  game.towerModLoadout={bodies:(loadout.bodies||[]).map(x=>Object.assign({},x)),addons:(loadout.addons||[]).map(x=>JSON.parse(JSON.stringify(x)))};
+  const bodyMulByCat={};
+  for(const inst of game.towerModLoadout.bodies){ const def=TOWER_MOD_DEF_BY_ID[inst.defId]; if(!def) continue; for(const stat of def.stats) applyTowerModStat(stat[0], modStatValue(inst,stat)); }
+  for(const inst of game.towerModLoadout.bodies){ const def=TOWER_MOD_DEF_BY_ID[inst.defId]; if(def) bodyMulByCat[def.cat]=addonMulFromBody(inst,TOWER_MOD_RARITIES[def.rarity]); }
+  for(const ad of game.towerModLoadout.addons){ if(!ad||!ad.main||bodyMulByCat[ad.cat]===undefined) continue; const bm=bodyMulByCat[ad.cat]; applyTowerModStat(ad.main.stat, addonEffectValue(ad,ad.main,true,bm)); for(const e of ad.subs||[]) applyTowerModStat(e.stat, addonEffectValue(ad,e,false,bm)); }
+}
+function grantTowerModDust(amount, cat=null, reason=null){
+  ensureTowerMods(); const v=Math.max(0,Math.floor(Number(amount)||0)); if(v<=0) return;
+  meta.towerMods.dust+=v;
+  if(cat&&meta.towerMods.catDust) meta.towerMods.catDust[cat]=(meta.towerMods.catDust[cat]||0)+Math.max(1,Math.floor(v/2));
+  if(reason&&RENDER) toast(reason+' 改装片+'+fmt(v));
+  saveMeta();
+  if(game.state==='mod') buildMods();
+}
+function accrueTowerModWalk(m){
+  ensureTowerMods(); meta.towerMods.walkBank+=m; let changed=false;
+  while(meta.towerMods.walkBank>=TOWER_MOD_WALK_DUST){ meta.towerMods.walkBank-=TOWER_MOD_WALK_DUST; meta.towerMods.addonTokens+=5; changed=true; }
+  if(changed) saveMeta();
+  if(game.state==='mod') buildMods();
+}
+function grantTowerModBattleReward(kind){
+  ensureTowerMods();
+  if(kind==='boss'){
+    meta.towerMods.addonTokens+=10+Math.floor(game.wave/100);
+    const chance=Math.min(0.28,0.035+game.wave/20000);
+    if(modRng()<chance) grantTowerAddon(null, game.wave>=1500?1:0,'ボス撃破');
+    else saveMeta();
+  }
+}
+function grantTowerModResultReward(clear,wave){
+  ensureTowerMods();
+  const base=Math.max(5,Math.floor(Math.sqrt(Math.max(1,wave))*2))*(clear?2:1);
+  meta.towerMods.addonTokens+=base;
+  if(RENDER) toast('戦闘精算 アドオントークン+'+fmt(base));
+  saveMeta();
+  if(clear || wave>=1000){ if(modRng()<Math.min(0.45,0.08+wave/18000)) grantTowerAddon(null,wave>=2500?1:0,'到達報酬'); }
+}
+function showMods(){ ensureTowerMods(); game.state='mod'; setOverlayView('state-mod'); controls.autoRotate=!REDUCED; setTab('mode-mod'); buildMods(); }
+function buildMods(){ try{
+  ensureTowerMods(); refreshCurrencyDisplays();
+  const tm=meta.towerMods;
+  $('modpowder').textContent=fmt(meta.blackPowder); $('moddust').textContent=fmt(tm.dust); $('modtokens').textContent=fmt(tm.addonTokens); $('modpity').textContent=fmt(tm.pity)+'/10';
+  $('moddraw').textContent='素体箱 黒色火薬'+fmt(TOWER_MOD_DRAW_COST); $('moddraw').disabled=meta.blackPowder<TOWER_MOD_DRAW_COST;
+  const catInfo=TOWER_MOD_CAT_BY_ID[modCat]; $('moddrawcat').textContent=catInfo.name+'素体箱 黒色火薬'+fmt(TOWER_MOD_CAT_DRAW_COST); $('moddrawcat').disabled=meta.blackPowder<TOWER_MOD_CAT_DRAW_COST;
+  $('modreveal').textContent=lastModReveal||'';
+  const slots=$('modslots'); slots.textContent='';
+  for(const c of TOWER_MOD_CATS){ const uid=tm.equip[c.id], inst=uid&&tm.owned[uid], def=inst&&TOWER_MOD_DEF_BY_ID[inst.defId], rr=def&&TOWER_MOD_RARITIES[def.rarity];
+    const adCount=(tm.addonEquip[c.id]||[]).filter(Boolean).length;
+    const d=document.createElement('div'); d.className='modslot'+(inst?' on':''); d.style.setProperty('--ac', rr?rr.color:COLORHEX[c.color]);
+    const b=document.createElement('b'); b.textContent=c.name; const s=document.createElement('span'); s.textContent=(inst?(def.name+' Lv'+inst.level+' ★'+(inst.stars||0)):'素体なし')+' / アドオン '+adCount+'/'+TOWER_ADDON_SLOTS;
+    d.appendChild(b); d.appendChild(s); d.addEventListener('click',()=>{ modCat=c.id; if(inst) openTowerModDetail(inst.uid); else buildMods(); }); slots.appendChild(d);
+  }
+  const cats=$('modcats'); cats.textContent='';
+  for(const c of TOWER_MOD_CATS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c.id===modCat?' on':''); t.style.color=COLORHEX[c.color]; t.textContent=c.name+'片 '+fmt(tm.catDust[c.id]||0); if(c.id===modCat)t.style.borderColor=COLORHEX[c.color]; t.addEventListener('click',()=>{modCat=c.id; buildMods();}); cats.appendChild(t); }
+  const list=$('modlist'); list.textContent='';
+  const bodyHead=document.createElement('div'); bodyHead.className='skcard'; bodyHead.style.setProperty('--ac',COLORHEX[catInfo.color]); bodyHead.innerHTML='<div class="skhd"><div class="skn">'+catInfo.name+' 素体</div><span class="skbadge">アドオン倍率 ×'+addonMulForCat(modCat).toFixed(2)+'</span></div><div class="skd">素体は特殊効果と、対応アドオンの強化倍率を持ちます。</div>'; list.appendChild(bodyHead);
+  const owned=Object.values(tm.owned).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || b.level-a.level);
+  if(!owned.length){ const card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac',COLORHEX[catInfo.color]); card.textContent=catInfo.name+'素体未所持。黒色火薬の改装箱で入手できます。'; list.appendChild(card); }
+  for(const inst of owned){ const def=TOWER_MOD_DEF_BY_ID[inst.defId], rr=TOWER_MOD_RARITIES[def.rarity], eq=tm.equip[def.cat]===inst.uid;
+    const tile=document.createElement('div'); tile.className='modtile'+(eq?' eqd':''); tile.style.setProperty('--ac',rr.color);
+    const top=document.createElement('div'); top.className='mtop'; const nm=document.createElement('div'); nm.className='mname'; nm.textContent=def.name; const rb=document.createElement('div'); rb.className='mrare'; rb.textContent=rr.label; top.appendChild(nm); top.appendChild(rb);
+    const st=document.createElement('div'); st.className='mstats'; st.textContent=modStatText(inst)+'\n'+def.desc;
+    const foot=document.createElement('div'); foot.className='mfoot'; foot.innerHTML='<span>Lv '+fmt(inst.level)+' / ★'+fmt(inst.stars||0)+'</span><b>'+(eq?'装備中':'未装備')+'</b>';
+    tile.appendChild(top); tile.appendChild(st); tile.appendChild(foot); tile.addEventListener('click',()=>openTowerModDetail(inst.uid)); list.appendChild(tile);
+  }
+  const adHead=document.createElement('div'); adHead.className='skcard'; adHead.style.setProperty('--ac',COLORHEX[catInfo.color]); adHead.innerHTML='<div class="skhd"><div class="skn">'+catInfo.name+' アドオン</div><span class="skbadge">装備 '+fmt((tm.addonEquip[modCat]||[]).filter(Boolean).length)+'/'+TOWER_ADDON_SLOTS+'</span></div><div class="skd">道端や戦闘で拾う小型パーツ。メイン効果1つと、レア度別サブ効果を持ちます。</div>'; list.appendChild(adHead);
+  const addons=Object.values(tm.addons).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || (b.subs||[]).length-(a.subs||[]).length);
+  if(!addons.length){ const card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac',COLORHEX[catInfo.color]); card.textContent=catInfo.name+'アドオン未所持。補給スポット、ボス撃破、戦闘精算で入手できます。'; list.appendChild(card); }
+  for(const ad of addons){ const rr=TOWER_MOD_RARITIES[ad.rarity], eq=(tm.addonEquip[ad.cat]||[]).indexOf(ad.uid)>=0;
+    const tile=document.createElement('div'); tile.className='modtile'+(eq?' eqd':''); tile.style.setProperty('--ac',rr.color);
+    const top=document.createElement('div'); top.className='mtop'; const nm=document.createElement('div'); nm.className='mname'; nm.textContent=catInfo.name+'アドオン'; const rb=document.createElement('div'); rb.className='mrare'; rb.textContent=rr.label; top.appendChild(nm); top.appendChild(rb);
+    const st=document.createElement('div'); st.className='mstats'; st.textContent=addonText(ad);
+    const foot=document.createElement('div'); foot.className='mfoot'; foot.innerHTML='<span>SUB '+fmt((ad.subs||[]).length)+' / 保持 '+fmt(ad.lockedSubCount||0)+'</span><b>'+(eq?'装備中':'未装備')+'</b>';
+    tile.appendChild(top); tile.appendChild(st); tile.appendChild(foot); tile.addEventListener('click',()=>openTowerAddonDetail(ad.uid)); list.appendChild(tile);
+  }
+}catch(e){ const el=$('modlist'); if(el) el.textContent='buildMods ERR: '+(e&&e.message); console.log('buildMods',e); } }
+function openTowerModDetail(uid){ ensureTowerMods(); const inst=meta.towerMods.owned[uid], def=inst&&TOWER_MOD_DEF_BY_ID[inst.defId]; if(!def) return; const rr=TOWER_MOD_RARITIES[def.rarity], cat=TOWER_MOD_CAT_BY_ID[def.cat], eq=meta.towerMods.equip[def.cat]===uid;
+  $('sdcard').style.setProperty('--ac', rr.color); { const si=$('sdicon'); si.textContent=''; si.appendChild(iconEl(cat.icon)); } $('sdname').textContent=def.name;
+  $('sdbadge').textContent=cat.name+' / '+rr.label+' / Lv '+inst.level; setStars($('sdstars'), inst.stars||0, 5);
+  $('sddesc').textContent=modStatText(inst)+'\n\n'+def.desc+'\n分解: 改装片+'+fmt(TOWER_MOD_RARITIES[def.rarity].dust)+' / '+cat.name+'片+'+fmt(TOWER_MOD_RARITIES[def.rarity].catDust);
+  const bt=$('sdbtns'); bt.textContent='';
+  const eqb=document.createElement('button'); eqb.textContent=eq?'装備解除':'装備する'; if(eq) eqb.className='eq'; eqb.addEventListener('click',()=>{ if(eq) unequipTowerMod(def.cat); else equipTowerMod(uid); openTowerModDetail(uid); }); bt.appendChild(eqb);
+  const lvb=document.createElement('button'); const lc=towerModLevelCost(inst); lvb.textContent='Lv↑ '+fmt(lc); lvb.disabled=meta.towerMods.dust<lc; lvb.addEventListener('click',()=>levelTowerMod(uid)); bt.appendChild(lvb);
+  const stb=document.createElement('button'); const sc=towerModStarCost(inst); stb.textContent=inst.stars>=5?'★MAX':'★↑ '+fmt(sc); stb.disabled=inst.stars>=5 || (meta.towerMods.catDust[def.cat]||0)<sc; stb.addEventListener('click',()=>starTowerMod(uid)); bt.appendChild(stb);
+  const dis=document.createElement('button'); dis.textContent='分解'; dis.addEventListener('click',()=>dismantleTowerMod(uid)); bt.appendChild(dis);
+  $('skdetail').classList.add('on');
+}
+function openTowerAddonDetail(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const rr=TOWER_MOD_RARITIES[ad.rarity], cat=TOWER_MOD_CAT_BY_ID[ad.cat], eq=(meta.towerMods.addonEquip[ad.cat]||[]).indexOf(uid)>=0, cost=addonRerollCost(ad);
+  $('sdcard').style.setProperty('--ac', rr.color); { const si=$('sdicon'); si.textContent=''; si.appendChild(iconEl(cat.icon)); } $('sdname').textContent=cat.name+'アドオン';
+  $('sdbadge').textContent=rr.label+' / SUB '+(ad.subs||[]).length+' / 保持 '+(ad.lockedSubCount||0);
+  setStars($('sdstars'), Math.min(5,(ad.subs||[]).length), 5);
+  $('sddesc').textContent=addonText(ad)+'\n\nリロール費用: (保持'+fmt(ad.lockedSubCount||0)+'×2+1)^2 × リロール'+fmt(Math.max(0,(ad.subs||[]).length-(ad.lockedSubCount||0)))+' ×10 = '+fmt(cost)+'トークン\n分解: アドオントークン+'+fmt(TOWER_ADDON_TOKEN_BY_RARITY[ad.rarity]||0);
+  const bt=$('sdbtns'); bt.textContent='';
+  const eqb=document.createElement('button'); eqb.textContent=eq?'装備解除':'装備'; if(eq) eqb.className='eq'; eqb.addEventListener('click',()=>{ if(eq) unequipTowerAddon(uid); else equipTowerAddon(uid); openTowerAddonDetail(uid); }); bt.appendChild(eqb);
+  const keepMinus=document.createElement('button'); keepMinus.textContent='保持-'; keepMinus.disabled=(ad.lockedSubCount||0)<=0; keepMinus.addEventListener('click',()=>changeAddonKeep(uid,-1)); bt.appendChild(keepMinus);
+  const keepPlus=document.createElement('button'); keepPlus.textContent='保持+'; keepPlus.disabled=(ad.lockedSubCount||0)>=(ad.subs||[]).length; keepPlus.addEventListener('click',()=>changeAddonKeep(uid,1)); bt.appendChild(keepPlus);
+  const reroll=document.createElement('button'); reroll.textContent='リロール '+fmt(cost); reroll.disabled=cost<=0||meta.towerMods.addonTokens<cost; reroll.addEventListener('click',()=>rerollAddonSubs(uid)); bt.appendChild(reroll);
+  const dis=document.createElement('button'); dis.textContent='分解'; dis.addEventListener('click',()=>dismantleTowerAddon(uid)); bt.appendChild(dis);
+  $('skdetail').classList.add('on');
+}
 /* ===== アイテムショップ ===== */
 const TOWER_SLOT_RESEARCH_KEY='parallelTower';
 const TOWER_SLOT_COST=100;
@@ -2080,9 +2596,10 @@ function buildSkills(){ try{
   }
 }catch(e){ const el=$('sklist'); if(el) el.textContent='buildSkills ERR: '+(e&&e.message); console.log('buildSkills',e); } }
 
-/* ===== 位置情報マップ（出撃画面）：Leaflet＋GPS＋DEV移動＋セルoverlay＋ノーマップfallback ===== */
-let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0;
+/* ===== 位置情報マップ（探索画面）：Leaflet＋GPS＋DEV移動＋施設補給＋スイートスポット ===== */
+let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], supplySpots=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
+const SUPPLY_FETCH_RADIUS=900, SUPPLY_FAST_RADIUS=1800, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 function classifyMode(sp, hist){   // sp: m/s
   if(sp<0.6) return 'stop';
   if(sp<2.2) return 'walk';        // 〜約8km/h
@@ -2091,10 +2608,92 @@ function classifyMode(sp, hist){   // sp: m/s
   return 'car';
 }
 function modeFast(){ return moveMode==='car'||moveMode==='train'; }
-function modeLabel(){ return ({stop:'🛑 停止',walk:'🚶 徒歩',bike:'🚲 自転車',car:'🚗 車(推定)',train:'🚆 電車(推定)'})[moveMode]||'🛑 停止'; }
+function modeLabel(){ return ({stop:'停止',walk:'徒歩',bike:'自転車',car:'車(推定)',train:'電車(推定)'})[moveMode]||'停止'; }
+function ensureMapSupply(){
+  if(!meta.mapSupply||typeof meta.mapSupply!=='object') meta.mapSupply={claims:{},lastDay:'',streak:0,task:null};
+  if(!meta.mapSupply.claims||typeof meta.mapSupply.claims!=='object') meta.mapSupply.claims={};
+  if(typeof meta.mapSupply.lastDay!=='string') meta.mapSupply.lastDay='';
+  meta.mapSupply.streak=Math.max(0, Number(meta.mapSupply.streak)||0);
+  if(meta.mapSupply.task && typeof meta.mapSupply.task!=='object') meta.mapSupply.task=null;
+  return meta.mapSupply;
+}
+function supplyClaimAt(id){ const ms=ensureMapSupply(); return Math.max(0, Number(ms.claims[id])||0); }
+function supplyCooldownLeft(spot){ return Math.max(0, supplyClaimAt(spot.id)+SUPPLY_COOLDOWN_MS-Date.now()); }
+function supplyReady(spot){ return supplyCooldownLeft(spot)<=0; }
+function supplySpotDistance(spot){ return (avatarLL&&spot)?haversine(avatarLL[0],avatarLL[1],spot.lat,spot.lng):0; }
+function supplyDayKey(ms){
+  const d=new Date(ms||Date.now());
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function supplyYesterdayKey(){ return supplyDayKey(Date.now()-86400000); }
+function makeSupplyTask(spot,rng){
+  const pool=[
+    {name:'次の戦闘でWave '+rng.int(40,120)+' 到達', reward:'黒色火薬+2'},
+    {name:'補給スポットをもう1回回収', reward:'アドオントークン+10'},
+    {name:'スイートスポットを1つ確認', reward:'改装片+6'},
+    {name:'徒歩探索を'+rng.int(200,600)+'m進める', reward:'カテゴリ片+2'},
+  ];
+  const t=rng.pick(pool);
+  return {name:t.name,reward:t.reward,spot:spot&&spot.name?spot.name:'補給スポット',day:supplyDayKey(Date.now()),done:false};
+}
+function supplyTypeLabel(tags){
+  tags=tags||{};
+  const table={park:'公園',school:'学校',university:'大学',library:'図書館',museum:'資料館',place_of_worship:'施設',cafe:'カフェ',restaurant:'飲食店',convenience:'店舗',supermarket:'店舗',station:'駅',bus_stop:'停留所',hotel:'宿泊施設',attraction:'名所',memorial:'記念地点',viewpoint:'展望地点',sports_centre:'運動施設'};
+  return table[tags.amenity]||table[tags.shop]||table[tags.tourism]||table[tags.leisure]||table[tags.historic]||table[tags.public_transport]||'施設';
+}
+function fallbackSupplySpots(lat,lng,cell){
+  const names=['公園入口','駅前広場','資料館前','商店街灯台','図書館端末','神社参道','カフェスタンド','案内板','記念碑','高架下端末','広場ビーコン','交差点ポスト','水辺観測点','施設ゲート','ベンチ端末','時計塔'];
+  const rng=makeRNG(hash32('fallback-supply',cell));
+  const out=[]; const cos=Math.max(0.2,Math.cos(lat*Math.PI/180));
+  for(let i=0;i<16;i++){
+    const a=rng.range(0,Math.PI*2), d=rng.range(80,modeFast()?1500:760);
+    out.push({id:'local:'+cell+':'+i, name:names[i%names.length], type:names[i%names.length], lat:lat+Math.sin(a)*d/111320, lng:lng+Math.cos(a)*d/(111320*cos), source:'local'});
+  }
+  return out;
+}
+async function fetchFacilitySupplySpots(lat,lng,cell){
+  const radius=modeFast()?SUPPLY_FAST_RADIUS:SUPPLY_FETCH_RADIUS;
+  const q='[out:json][timeout:7];('
+    +'node(around:'+radius+','+lat+','+lng+')[amenity];'
+    +'node(around:'+radius+','+lat+','+lng+')[tourism];'
+    +'node(around:'+radius+','+lat+','+lng+')[leisure];'
+    +'node(around:'+radius+','+lat+','+lng+')[shop];'
+    +'node(around:'+radius+','+lat+','+lng+')[historic];'
+    +'node(around:'+radius+','+lat+','+lng+')[public_transport];'
+    +');out 80;';
+  const ctrl=new AbortController(), to=setTimeout(()=>ctrl.abort(),8000);
+  try{
+    const res=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q),{signal:ctrl.signal});
+    if(!res.ok) throw new Error('overpass '+res.status);
+    const json=await res.json(), seen=new Set(), out=[];
+    for(const e of (json.elements||[])){
+      if(typeof e.lat!=='number'||typeof e.lon!=='number') continue;
+      const tags=e.tags||{}, id='osm:'+e.type+':'+e.id; if(seen.has(id)) continue; seen.add(id);
+      const name=tags['name:ja']||tags.name||supplyTypeLabel(tags);
+      out.push({id,name,type:supplyTypeLabel(tags),lat:e.lat,lng:e.lon,source:'osm',tags});
+    }
+    out.sort((a,b)=>haversine(lat,lng,a.lat,a.lng)-haversine(lat,lng,b.lat,b.lng));
+    return out.slice(0,36);
+  }finally{ clearTimeout(to); }
+}
+function requestSupplySpots(){
+  if(!avatarLL) return;
+  const cell=GeoCell.latLngToCell(avatarLL[0],avatarLL[1]), key=cell+'|'+(modeFast()?1:0);
+  if(key===_supplyCenterCell || _supplyFetchBusy) return;
+  _supplyCenterCell=key;
+  supplySpots=fallbackSupplySpots(avatarLL[0],avatarLL[1],cell);
+  drawSupplyMarkers();
+  const seq=++_supplySeq; _supplyFetchBusy=true;
+  fetchFacilitySupplySpots(avatarLL[0],avatarLL[1],cell).then(spots=>{
+    if(seq!==_supplySeq) return;
+    if(spots&&spots.length) supplySpots=spots;
+    drawSupplyMarkers(); updateMapWalkHud(); renderCellCard();
+  }).catch(()=>{ drawSupplyMarkers(); updateMapWalkHud(); renderCellCard(); })
+    .finally(()=>{ if(seq===_supplySeq) _supplyFetchBusy=false; });
+}
 function leafletReady(){ return !window.__leafletFailed && typeof L!=='undefined'; }
 function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
-  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],16);
+  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],17);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19, subdomains:'abcd'}).addTo(LMAP);
   LMAP.on('click', e=>{ if(devMode) setAvatar(e.latlng.lat, e.latlng.lng); });
   return LMAP; }
@@ -2104,13 +2703,89 @@ function accrueWalk(lat,lng,gpsSpeed){ const now=performance.now();
   if(_lastFix){ const m=haversine(_lastFix[0],_lastFix[1],lat,lng); const dt=Math.max(0.3,(now-_lastFix[2])/1000);
     moveSpeed=(typeof gpsSpeed==='number'&&gpsSpeed>=0)?gpsSpeed:(m/dt);   // m/s（端末speed優先、無ければ距離/時間）
     _speedHist.push(moveSpeed); if(_speedHist.length>6)_speedHist.shift(); moveMode=classifyMode(moveSpeed,_speedHist);
-    if(m>1 && m<500 && moveMode==='walk'){ meta.research.dist+=m; checkResearchComplete(); saveMeta(); }   // 研究は徒歩のみ加算（自転車/車/電車は0）
-    if(game.state==='map') renderCellCard(); if(game.state==='skills') buildSkills();
+    if(m>1 && m<500 && moveMode==='walk'){ meta.research.dist+=m; checkResearchComplete(); accrueTowerModWalk(m); saveMeta(); }   // 研究と改装探索は徒歩のみ加算（自転車/車/電車は0）
+    if(game.state==='map') renderCellCard(); if(game.state==='skills') buildSkills(); if(game.state==='mod') buildMods();
   } _lastFix=[lat,lng,now]; }
-function setAvatar(lat,lng){ avatarLL=[lat,lng];
-  if(LMAP){ if(!avatarMarker){ avatarMarker=L.circleMarker(avatarLL,{radius:7,color:'#3CF0FF',fillColor:'#3CF0FF',fillOpacity:.9,weight:2}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
+function updateMapWalkHud(){
+  const mode=$('walkmode'), spots=$('walkspots'), dist=$('walkdist');
+  if(mode) mode.innerHTML=htmlEsc(modeLabel())+' <b>'+Math.max(0,moveSpeed||0).toFixed(1)+'m/s</b>';
+  if(spots) spots.innerHTML='補給 <b>'+fmt(nearbySupplyCount)+'</b>'+(nearestSupplyDist>0?' <span>'+fmt(Math.round(nearestSupplyDist))+'m</span>':'');
+  if(dist) dist.innerHTML='歩行 <b>'+fmt(Math.floor(meta.research.dist||0))+'m</b>';
+}
+function avatarIcon(){
+  return L.divIcon({className:'',iconSize:[48,56],iconAnchor:[24,24],html:'<div class="map-avatar"><i class="ring"></i><i class="core"></i></div>'});
+}
+function sweetSpotIcon(f, dist){
+  const near=dist>0&&dist<180;
+  return L.divIcon({className:'',iconSize:[56,72],iconAnchor:[28,64],html:'<div class="sweet-marker '+(near?'near':'')+'"><i class="orb"></i><i class="stem"></i><i class="base"></i><b class="cost">C'+fmt(f.moduleCost||0)+'</b></div>'});
+}
+function supplySpotIcon(spot){
+  const ready=supplyReady(spot), near=supplySpotDistance(spot)<=SUPPLY_INTERACT_RANGE;
+  return L.divIcon({className:'',iconSize:[52,70],iconAnchor:[26,62],html:'<div class="supply-marker '+(ready&&near?'ready':'')+(ready?'':' cooling')+'"><i class="cube"></i><i class="core"></i><i class="stem"></i><i class="base"></i><b class="tag">'+(ready?'補給':'待機')+'</b></div>'});
+}
+function setAvatar(lat,lng){ avatarLL=[lat,lng]; mapSpotCell=null; selectedSupplySpot=null;
+  if(LMAP){ if(!avatarMarker){ avatarMarker=L.marker(avatarLL,{icon:avatarIcon(),interactive:false,zIndexOffset:700}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
 function htmlEsc(s){ return String(s).replace(/[&<>"']/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch])); }
+function supplyPopupHtml(spot){
+  const dist=Math.round(supplySpotDistance(spot)), left=supplyCooldownLeft(spot);
+  return '<div class="sweet-pop">'
+    + '<div class="sweet-pop-title"><b>'+htmlEsc(spot.name)+'</b><span>'+htmlEsc(spot.type)+'</span></div>'
+    + '<div class="sweet-pop-row"><span>距離</span><b>'+fmt(dist)+'m</b></div>'
+    + '<div class="sweet-pop-row"><span>状態</span><b>'+(left>0?('再補給 '+Math.ceil(left/60000)+'分'):(dist<=SUPPLY_INTERACT_RANGE?'補給可能':'近づく必要あり'))+'</b></div>'
+    + '<div class="sweet-pop-row"><span>回収範囲</span><b>'+fmt(SUPPLY_INTERACT_RANGE)+'m</b></div>'
+    + '<div class="sweet-pop-row"><span>報酬</span><b>黒色火薬 / 改装素材 / 依頼</b></div>'
+    + '</div>';
+}
+function drawSupplyMarkers(){
+  if(!LMAP||!avatarLL) return;
+  supplyMarkers.forEach(m=>LMAP.removeLayer(m)); supplyMarkers=[];
+  nearbySupplyCount=0; nearestSupplyDist=0;
+  for(const spot of supplySpots){
+    const dist=supplySpotDistance(spot); nearbySupplyCount++;
+    if(dist>0 && (!nearestSupplyDist||dist<nearestSupplyDist)) nearestSupplyDist=dist;
+    const marker=L.marker([spot.lat,spot.lng],{icon:supplySpotIcon(spot),zIndexOffset:620,bubblingMouseEvents:false});
+    marker.bindPopup(supplyPopupHtml(spot),{className:'sweet-popup',maxWidth:260});
+    marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); selectedSupplySpot=spot; mapSpotCell=null; renderCellCard(); marker.openPopup(); });
+    marker.addTo(LMAP); supplyMarkers.push(marker);
+  }
+}
+function claimSupplySpot(spot){
+  if(!spot) return;
+  const ms=ensureMapSupply(); ensureTowerMods();
+  const dist=supplySpotDistance(spot);
+  if(dist>SUPPLY_INTERACT_RANGE && !devMode){ toast('もう少し近づく必要があります'); renderCellCard(); return; }
+  const left=supplyCooldownLeft(spot);
+  if(left>0){ toast('再補給まで '+Math.ceil(left/60000)+'分'); renderCellCard(); return; }
+  const rng=makeRNG(hash32('supply-claim',spot.id,Math.floor(Date.now()/SUPPLY_COOLDOWN_MS),supplyClaimAt(spot.id)));
+  let powder=rng.chance(0.55)?rng.int(1,3):0;
+  let tokens=rng.int(5,12);
+  let dust=rng.int(1,5);
+  const cat=TOWER_MOD_CATS[rng.int(0,TOWER_MOD_CATS.length-1)].id;
+  const catDust=rng.chance(0.45)?1:0;
+  let addon=null;
+  const today=supplyDayKey(Date.now()), yesterday=supplyYesterdayKey();
+  let dailyBonus=false, streakBonus=false;
+  if(ms.lastDay!==today){
+    dailyBonus=true;
+    ms.streak=ms.lastDay===yesterday?Math.min(7,(Number(ms.streak)||0)+1):1;
+    ms.lastDay=today;
+    if(ms.streak>=7){ streakBonus=true; ms.streak=0; }
+    powder+=1; tokens+=5; dust+=2;
+    if(streakBonus){ powder+=5; tokens+=30; dust+=12; }
+  }
+  ms.task=makeSupplyTask(spot,rng);
+  meta.blackPowder+=powder;
+  meta.towerMods.addonTokens+=tokens;
+  meta.towerMods.dust+=dust;
+  if(catDust) meta.towerMods.catDust[cat]=(meta.towerMods.catDust[cat]||0)+catDust;
+  if(rng.chance(0.08)) addon=createTowerAddon(null,0);
+  ms.claims[spot.id]=Date.now();
+  saveMeta(); refreshCurrencyDisplays();
+  const bits=[]; if(powder) bits.push('黒色火薬+'+powder); bits.push('トークン+'+tokens); bits.push('改装片+'+dust); if(catDust) bits.push((TOWER_MOD_CAT_BY_ID[cat]||{}).name+'片+'+catDust); if(addon) bits.push('アドオン入手'); if(dailyBonus) bits.push('初回補給'); if(streakBonus) bits.push('7日連続'); if(ms.task) bits.push('依頼更新');
+  toast('施設補給: '+bits.join(' / '));
+  drawSupplyMarkers(); renderCellCard();
+}
 function sweetSpotPopupHtml(cellId){
   const ll=GeoCell.cellToLatLng(cellId), f=fieldFromCell(cellId, todBucketAt(Date.now(),ll[1]), Date.now());
   const mods=(f.modules||[]).map(m=>'<div class="sweet-pop-mod" style="border-color:'+(MODULE_THEME[m.family]||'rgba(234,240,255,.16)')+'"><b>'+htmlEsc(m.name)+'</b><br><span>'+htmlEsc(m.desc)+'</span></div>').join('');
@@ -2125,30 +2800,34 @@ function sweetSpotPopupHtml(cellId){
     + '</div>';
 }
 function drawCells(){
-  selCell = avatarLL ? GeoCell.latLngToCell(avatarLL[0],avatarLL[1]) : GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
+  const avatarCell = avatarLL ? GeoCell.latLngToCell(avatarLL[0],avatarLL[1]) : GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
+  selCell = mapSpotCell || avatarCell;
   // 現在地はアバター点のみ。近傍のスイートスポットを金色の点で表示（高速移動中は探索半径を拡大）
   const wantK = modeFast()?48:16;   // 徒歩 約1.2km / 車・電車 約3.6km
   const _now=performance.now();
-  if(LMAP && avatarLL && (selCell!==_sweetCenterCell || wantK!==_sweetK) && _now-_sweetT>1000){   // セル/モード変化時のみ・最大1秒に1回（高速移動の再計算暴走を防ぐ）
-    _sweetCenterCell=selCell; _sweetK=wantK; _sweetT=_now;
+  if(LMAP && avatarLL && (avatarCell!==_sweetCenterCell || wantK!==_sweetK) && _now-_sweetT>1000){   // セル/モード変化時のみ・最大1秒に1回（高速移動の再計算暴走を防ぐ）
+    _sweetCenterCell=avatarCell; _sweetK=wantK; _sweetT=_now;
     sweetMarkers.forEach(m=>LMAP.removeLayer(m)); sweetMarkers=[];
+    nearbySweetCount=0; nearestSweetDist=0;
     const jpOf=(cid)=>{ const a=GeoCell.cellToAxial(cid); return fieldNoise(a[0],a[1],999); };   // 豊穣度ノイズ
-    for(const cid of GeoCell.gridDisk(selCell, wantK)){
+    for(const cid of GeoCell.gridDisk(avatarCell, wantK)){
       const jp=jpOf(cid); if(jp<=JP_THRESH) continue;         // スイートスポット域のみ
       let peak=true; for(const nb of GeoCell.neighbors(cid)){ if(jpOf(nb) > jp){ peak=false; break; } }   // 塊の頂点(局所最大)＝1点だけ表示
       if(!peak) continue;
       const ll=GeoCell.cellToLatLng(cid);
+      const f=fieldFromCell(cid, todBucketAt(Date.now(),ll[1]), Date.now());
+      const dist=avatarLL?haversine(avatarLL[0],avatarLL[1],ll[0],ll[1]):0;
+      nearbySweetCount++;
+      if(dist>0 && (!nearestSweetDist || dist<nearestSweetDist)) nearestSweetDist=dist;
       const popup=sweetSpotPopupHtml(cid);
-      const halo=L.circleMarker(ll,{radius:16, weight:0, fillColor:'#FFD66B', fillOpacity:.16, interactive:false});
-      const dot =L.circleMarker(ll,{radius:7, color:'#FFE9A8', weight:2, fillColor:'#FFD66B', fillOpacity:.95, bubblingMouseEvents:false});
-      const touch=L.circleMarker(ll,{radius:36, weight:0, fillColor:'#FFD66B', fillOpacity:.001, opacity:0, interactive:true, bubblingMouseEvents:false});
-      dot.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
-      touch.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
-      dot.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); dot.openPopup(); });
-      touch.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); touch.openPopup(); });
-      halo.addTo(LMAP); touch.addTo(LMAP); dot.addTo(LMAP); sweetMarkers.push(halo,touch,dot);
+      const marker=L.marker(ll,{icon:sweetSpotIcon(f,dist),zIndexOffset:500,bubblingMouseEvents:false});
+      marker.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
+      marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=cid; selCell=cid; renderCellCard(); marker.openPopup(); });
+      marker.addTo(LMAP); sweetMarkers.push(marker);
     }
   }
+  requestSupplySpots();
+  updateMapWalkHud();
   renderCellCard(); }
 function refreshCurrentPosition(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで移動してください'); return; }
@@ -2163,20 +2842,64 @@ function refreshCurrentPosition(){
 }
 function refreshSweetSpotCoords(){
   _sweetCenterCell = null;
+  _supplyCenterCell = null;
   _sweetT = 0;
   drawCells();
-  toast('⭐ スイートスポット座標を再計算しました');
+  toast('スポットを更新しました');
+}
+function renderSupplySpotCard(card, spot){
+  const ms=ensureMapSupply();
+  const dist=Math.round(supplySpotDistance(spot)), left=supplyCooldownLeft(spot), near=dist<=SUPPLY_INTERACT_RANGE || devMode;
+  const top=document.createElement('div'); top.className='mc-top';
+  const title=document.createElement('div'); title.className='mc-title';
+  const st=document.createElement('strong'); st.textContent=spot.name;
+  const sub=document.createElement('span'); sub.textContent=spot.type+' / '+(spot.source==='osm'?'施設データ':'仮施設')+' / 約'+fmt(dist)+'m';
+  title.appendChild(st); title.appendChild(sub);
+  const badges=document.createElement('div'); badges.className='mc-badges';
+  const b1=document.createElement('span'); b1.className='mc-badge green'; b1.textContent=left>0?('再補給 '+Math.ceil(left/60000)+'分'):(near?'補給可能':'範囲外'); badges.appendChild(b1);
+  const b2=document.createElement('span'); b2.className='mc-badge'; b2.textContent='範囲 '+SUPPLY_INTERACT_RANGE+'m'; badges.appendChild(b2);
+  top.appendChild(title); top.appendChild(badges); card.appendChild(top);
+  const rewards=document.createElement('div'); rewards.className='supply-rewards';
+  [['黒色火薬','0〜3'],['トークン','5〜12'],['改装片','1〜5']].forEach(x=>{ const d=document.createElement('div'); d.className='supply-reward'; d.innerHTML='<b>'+x[1]+'</b>'+x[0]; rewards.appendChild(d); });
+  const task=document.createElement('div'); task.className='supply-task';
+  if(ms.task&&ms.task.name) task.innerHTML='<b>探索依頼</b> '+htmlEsc(ms.task.name)+' <span>/ 報酬: '+htmlEsc(ms.task.reward||'未定')+'</span>';
+  else task.innerHTML='<b>探索依頼</b> 補給ディスクを回すと施設由来の依頼を受け取ります';
+  rewards.appendChild(task);
+  card.appendChild(rewards);
+  const claim=document.createElement('button'); claim.className='mapgo'; claim.type='button';
+  claim.textContent=left>0?'再補給待ち':near?'補給ディスクを回す':'100m以内へ';
+  claim.disabled=left>0||!near;
+  claim.addEventListener('click',()=>claimSupplySpot(spot));
+  card.appendChild(claim);
+  const ctrls=document.createElement('div'); ctrls.className='mapbtns';
+  const updatePos=document.createElement('button'); updatePos.type='button'; updatePos.textContent='位置更新'; updatePos.addEventListener('click', refreshCurrentPosition); ctrls.appendChild(updatePos);
+  const updateSpots=document.createElement('button'); updateSpots.type='button'; updateSpots.textContent='スポット更新'; updateSpots.addEventListener('click', refreshSweetSpotCoords); ctrls.appendChild(updateSpots);
+  const back=document.createElement('button'); back.type='button'; back.textContent='現在地へ'; back.addEventListener('click',()=>{ selectedSupplySpot=null; renderCellCard(); }); ctrls.appendChild(back);
+  card.appendChild(ctrls);
+  const hint=document.createElement('div'); hint.className='maphint'; hint.textContent='補給スポットはスイートスポットとは別枠。100m以内で回収、5分ごとに再補給できます。'; card.appendChild(hint);
 }
 function renderCellCard(){
+  updateMapWalkHud();
   const card=$('mapcard'); if(!card) return; card.textContent='';
+  if(selectedSupplySpot){ renderSupplySpotCard(card, selectedSupplySpot); return; }
   const cell=selCell||GeoCell.latLngToCell(VENUE.lat,VENUE.lng), lng=avatarLL?avatarLL[1]:VENUE.lng;
   const f=fieldFromCell(cell, todBucketAt(Date.now(),lng), Date.now());
   const hellOn=!!meta.armedShibuya;                                  // シブヤ装備中はこのカードに地獄の値をプレビュー
   const dTotal=hellOn?500:f.TOTAL, dELv=hellOn?(1+500/300)*5:f.eLvMul, dDens=c=>hellOn?100:f.DENS[c];
+  const selectedSpot=!hellOn && !!mapSpotCell && cell===mapSpotCell;
+  const cellLL=GeoCell.cellToLatLng(cell);
+  const dist=avatarLL?haversine(avatarLL[0],avatarLL[1],cellLL[0],cellLL[1]):0;
   const top=document.createElement('div'); top.className='mc-top';
-  const left=document.createElement('span'); left.textContent=(hellOn?'🌀 シブヤ地獄（敵量×2）':(f.jackpot?'★ スイートスポット':'現在地'))+'　総密度 '+dTotal; if(hellOn) left.style.color='#FF6BB0';
-  const right=document.createElement('span'); right.textContent='敵Lv '; const bb=document.createElement('b'); bb.textContent='×'+dELv.toFixed(2); if(hellOn) bb.style.color='#FF6BB0'; right.appendChild(bb);
-  top.appendChild(left); top.appendChild(right); card.appendChild(top);
+  const title=document.createElement('div'); title.className='mc-title';
+  const st=document.createElement('strong'); st.textContent=hellOn?'シブヤ地獄':selectedSpot?'スイートスポット':'探索フィールド';
+  const sub=document.createElement('span'); sub.textContent=selectedSpot?('現在地から約'+fmt(Math.round(dist))+'m / 選択中の高密度地点'):(f.jackpot?'この地点はスイートスポット':'歩くと補給施設と高密度地点が更新されます');
+  if(hellOn){ st.style.color='#FF6BB0'; sub.textContent='全鉱石密度100・敵HP/攻撃×5・敵量×2'; }
+  title.appendChild(st); title.appendChild(sub);
+  const badges=document.createElement('div'); badges.className='mc-badges';
+  const b1=document.createElement('span'); b1.className='mc-badge'+((f.jackpot&&!hellOn)?' gold':''); b1.textContent='総密度 '+fmt(dTotal); badges.appendChild(b1);
+  const b2=document.createElement('span'); b2.className='mc-badge'; b2.textContent='敵Lv ×'+dELv.toFixed(2); if(hellOn)b2.style.color='#FF6BB0'; badges.appendChild(b2);
+  if(f.jackpot&&!hellOn){ const b3=document.createElement('span'); b3.className='mc-badge gold'; b3.textContent=(f.rarityLabel||'レア')+' C'+fmt(f.moduleCost||0)+'/'+fmt(f.moduleBudget||0); badges.appendChild(b3); }
+  top.appendChild(title); top.appendChild(badges); card.appendChild(top);
   const bars=document.createElement('div'); bars.className='mapbars';
   for(const c of COLORS){ const col=document.createElement('div'); col.className='mb';
     const num=document.createElement('div'); num.className='mb-num'; num.style.color=COLORHEX[c]; num.textContent=dDens(c);
@@ -2191,18 +2914,20 @@ function renderCellCard(){
   }
   const go=document.createElement('button'); go.className='mapgo'; go.type='button';
   const canParallel=isRunLive() && canStartParallelTower();
-  go.textContent=canParallel?'第二塔をここに出撃':(isRunLive()?'戦闘へ戻る':(hellOn?'シブヤ地獄へ出撃':'ここに出撃'));
+  go.textContent=canParallel?'第二塔をこの地点へ':(isRunLive()?'戦闘へ戻る':(hellOn?'シブヤ地獄へ出撃':'この地点へ出撃'));
   go.addEventListener('click', ()=>{ if(canParallel) startParallelTowerRun(cell); else if(isRunLive()) showCombat(); else deployFromCell(cell); }); card.appendChild(go);
   const ctrls=document.createElement('div'); ctrls.className='mapbtns';
-  const updatePos=document.createElement('button'); updatePos.type='button'; updatePos.textContent='📍 位置更新';
+  const updatePos=document.createElement('button'); updatePos.type='button'; updatePos.textContent='位置更新';
   updatePos.addEventListener('click', refreshCurrentPosition);
-  const updateSpots=document.createElement('button'); updateSpots.type='button'; updateSpots.textContent='⭐ スポット再計算';
+  const updateSpots=document.createElement('button'); updateSpots.type='button'; updateSpots.textContent='スポット更新';
   updateSpots.addEventListener('click', refreshSweetSpotCoords);
-  ctrls.appendChild(updatePos); ctrls.appendChild(updateSpots); card.appendChild(ctrls);
+  ctrls.appendChild(updatePos); ctrls.appendChild(updateSpots);
+  if(selectedSpot){ const clear=document.createElement('button'); clear.type='button'; clear.textContent='現在地へ'; clear.addEventListener('click',()=>{ mapSpotCell=null; selCell=avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):GeoCell.latLngToCell(VENUE.lat,VENUE.lng); renderCellCard(); }); ctrls.appendChild(clear); }
+  card.appendChild(ctrls);
   const hint=document.createElement('div'); hint.className='maphint';
   hint.textContent = hellOn ? '⚠ シブヤテレポート発動：全鉱石密度100・敵HP/攻撃×5・敵量×2（資源は最大）'
     : devMode ? 'DEVモード：地図クリック / 矢印キーで移動'
-    : (modeLabel()+'  '+(moveMode==='walk'?'▶ 研究 加算中':modeFast()?'▶ 探索範囲 拡大中（研究は徒歩のみ）':'研究は徒歩のみ加算'));
+    : (modeLabel()+'  '+(moveMode==='walk'?'研究・改装探索 加算中':modeFast()?'探索範囲 拡大中（研究は徒歩のみ）':'研究は徒歩のみ加算'));
   card.appendChild(hint);
 }
 function startGPS(){
@@ -2213,7 +2938,7 @@ function startGPS(){
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
 function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
-  if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('セルをタップ→「ここに出撃」 ／ 密度↑=報酬↑･難度↑ ／ ★=スイートスポット'), 500); }   // 初回のみガイド
+  if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('探索: 補給施設で素材回収 / 高密度地点で出撃'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
   if(!avatarLL) setAvatar(VENUE.lat, VENUE.lng);   // 即・既定地点を表示（GPS/Leaflet失敗でも常に出撃可能）
   else drawCells();
@@ -2286,6 +3011,7 @@ function runStep(dt){
 function finishRun(clear, retreat){ if(!isRunLive()) return; game.state='result'; game.runLive=false; game.ended=true;
   const sc=Math.round(8*Math.sqrt(Math.max(1,game.wave))) * (clear?1.5:1) * (1+0.12*(TOTAL/100)) * (game.sparkMul||1) * (1+0.07*resLv('r_spark')) * (game.moduleRewardMul||1);
   meta.spark += Math.round(sc); for(const c of COLORS) meta.bank[c]+=Math.floor(game.res[c]);   // 持ち帰り（撤退でも全額キープ）
+  grantTowerModResultReward(clear, game.wave);
   game.result = { clear, retreat:!!retreat, wave:game.wave, kills:game.kills, sc:Math.round(sc),
     haul:{red:Math.floor(game.res.red),blue:Math.floor(game.res.blue),green:Math.floor(game.res.green),yellow:Math.floor(game.res.yellow),purple:Math.floor(game.res.purple)} };
   saveMeta(); clearRun();
@@ -2440,7 +3166,7 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya})); }catch(e){} }
+function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,towerMods:meta.towerMods,mapSupply:meta.mapSupply})); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
   meta.blackPowder=Math.max(0, Number(m.blackPowder)||0);
@@ -2455,6 +3181,9 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
       if(n && isFinite(st) && st>=0 && !(n.max&&(meta.research.node[sl.key]||0)>=n.max) && !seen[sl.key]){ seen[sl.key]=1; meta.research.slots.push({key:sl.key, start:Math.min(st, meta.research.dist)}); } else { meta.research.slots.push(null); } } }
   meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1); meta.free10Done=!!m.free10Done;
   meta.items=(m.items&&typeof m.items==='object')?m.items:{}; meta.armedShibuya=!!m.armedShibuya;
+  meta.mapSupply=(m.mapSupply&&typeof m.mapSupply==='object')?m.mapSupply:{claims:{}};
+  ensureMapSupply();
+  meta.towerMods=(m.towerMods&&typeof m.towerMods==='object')?m.towerMods:meta.towerMods; ensureTowerMods();
   meta.skillOwned=(m.skillOwned&&typeof m.skillOwned==='object')?m.skillOwned:{};
   for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; if(!o||typeof o!=='object'){ delete meta.skillOwned[id]; continue; }   // null/プリミティブ値で TypeError→サニタイズ中断を防ぐ
     o.level=Math.max(1,Math.min(def.maxLv,o.level|0)); o.dup=Math.max(0,o.dup|0); o.pot=potFromDup(o.dup,def.potMax); }
@@ -2462,7 +3191,7 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,N):[]; while(meta.skillEquip.length<N)meta.skillEquip.push(null);
   meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
   }catch(e){ console.log('loadMeta',e); } }
-function saveRun(){ try{ if(!game.seedInfo || !isRunLive()) return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell })); }catch(e){} }
+function saveRun(){ try{ if(!game.seedInfo || !isRunLive()) return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), towerMods:game.towerModLoadout||{bodies:[],addons:[]}, wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell })); }catch(e){} }
 function loadRun(){ try{ const s=localStorage.getItem(RUN_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
 function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
 
@@ -2501,6 +3230,7 @@ function restoreRun(sv){
   if(sv.hell){ game.hell=true; applyHell(); }   // 追いつき再生でも地獄補正を再現
   game.moduleState = currentField ? buildModuleState(currentField) : null;
   applyModuleFieldStats();
+  applyTowerMods(sv.towerMods||[]);
   game.wave = game.startWave || 1;
   game._skillDispatchWave = Math.max(0, game.wave - 1);
   game.lastBossWave = Math.floor(Math.max(0, game.wave - 1)/BOSS_EVERY)*BOSS_EVERY;
@@ -2554,6 +3284,7 @@ function startGame(opts){
   applyMeta(); applyResearch();
   game.moduleState = currentField ? buildModuleState(currentField) : null;
   applyModuleFieldStats();
+  applyTowerMods(cloneEquippedTowerMods());
   game.wave = game.startWave || 1;
   game._skillDispatchWave = Math.max(0, game.wave - 1);
   game.lastBossWave = Math.floor(Math.max(0, game.wave - 1)/BOSS_EVERY)*BOSS_EVERY;
@@ -2569,12 +3300,15 @@ $('mode-combat').addEventListener('click', showCombat);
 $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
 $('mode-skill').addEventListener('click', showSkills);
+$('mode-mod').addEventListener('click', showMods);
 $('mode-research').addEventListener('click', showResearch);
 $('mode-shop').addEventListener('click', showShop);
 $('rewardad').addEventListener('click', ()=>{ showRewardedAd('result_reward_black_powder'); });
 $('shoprewardad').addEventListener('click', ()=>{ showRewardedAd('shop_reward_black_powder'); });
 $('skgacha').addEventListener('click', gachaPull);
 $('skfree10').addEventListener('click', gachaFree10);
+$('moddraw').addEventListener('click', ()=>drawTowerMod(null,TOWER_MOD_DRAW_COST));
+$('moddrawcat').addEventListener('click', ()=>drawTowerMod(modCat,TOWER_MOD_CAT_DRAW_COST));
 $('sdclose').addEventListener('click', closeDetail);
 $('skdetail').addEventListener('click', (e)=>{ if(e.target===$('skdetail')) closeDetail(); });
 $('mode-title').addEventListener('click', ()=>{ catchup.token++; catchup.active=false; RENDER=true; showCatchup(false); game.runLive=false; game.ended=true; clearRun(); game.state='title'; setViewState('state-title', false); controls.autoRotate=!REDUCED; });
