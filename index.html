@@ -112,6 +112,8 @@ body.state-home .title, body.state-home .meta, body.state-home .hint{display:non
 .home-top{display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center; font-family:"DotGothic16",monospace; font-size:.78rem; color:var(--ink);}
 .home-top .hcur b{color:var(--gold);}
 .home-top .hcur.powder b{color:var(--powder); text-shadow:0 0 12px rgba(214,218,232,.28);}
+.home-top .hcur.iconcur{display:inline-flex;align-items:center;gap:.34rem;font-variant-numeric:tabular-nums;}
+.home-top .hcur.iconcur svg{width:1rem;height:1rem;color:currentColor;filter:drop-shadow(0 0 7px currentColor);}
 #hbank .hb, #skbank .hb{display:inline-flex; align-items:center; gap:.25rem; margin-right:.6rem;}
 #hbank .hb i, #skbank .hb i{width:10px; height:10px; border-radius:2px; display:inline-block; flex:none;}
 .home-title{font-family:"Reggae One",sans-serif; font-size:clamp(1.3rem,4vw,2rem); color:#fff; text-shadow:0 0 16px rgba(60,240,255,.4);}
@@ -160,6 +162,9 @@ body.state-mod #modebar{display:flex;}
 .modslot b{font-family:"Reggae One",sans-serif; font-size:.72rem; color:var(--ac);}
 .modslot span{font-size:.58rem; line-height:1.25;}
 #modcats{width:min(980px,96vw);display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
+#modcats .ctab{display:flex;align-items:center;justify-content:center;gap:.45rem;min-height:44px;font-size:.9rem;font-variant-numeric:tabular-nums;}
+#modcats .ctab svg{width:1.25rem;height:1.25rem;display:block;filter:drop-shadow(0 0 8px currentColor);}
+#modcats .ctab .ctab-count{line-height:1;}
 #modlist{width:min(980px,96vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.55rem;align-content:start;}
 .modtile{--ac:#3CF0FF; position:relative; cursor:pointer; pointer-events:auto; min-height:168px; display:flex; flex-direction:column; gap:.32rem; border-radius:10px; padding:.7rem .75rem .75rem; font-family:"DotGothic16",monospace; color:var(--ink); overflow:hidden; border:1px solid color-mix(in srgb,var(--ac) 48%, rgba(234,240,255,.16)); background:linear-gradient(155deg,color-mix(in srgb,var(--ac) 13%,rgba(13,18,38,.9)),rgba(8,10,20,.96));}
 .modtile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac);box-shadow:0 0 12px var(--ac);}
@@ -287,9 +292,9 @@ body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-co
 .mapcenter::before{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;background:var(--cyan);box-shadow:0 0 18px var(--cyan);}
 .mapcenter::after{content:'';position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(60,240,255,.35);}
 body.state-map .mapcenter{display:block;}
-#mapui{display:none; position:fixed; left:50%; bottom:70px; transform:translateX(-50%); z-index:10; width:min(560px,94vw);}
-body.state-map #mapui{display:flex; flex-direction:column;}
-.mapcard{background:linear-gradient(180deg,rgba(17,25,46,.94),rgba(5,6,14,.92)); border:1px solid rgba(60,240,255,.42); border-radius:14px 14px 10px 10px; padding:.72rem .85rem .8rem; box-shadow:0 -10px 26px rgba(0,0,0,.4),0 0 22px rgba(60,240,255,.16),inset 0 1px 0 rgba(255,255,255,.07); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); transform:perspective(900px) rotateX(2deg); transform-origin:bottom center;}
+#mapui{display:none; position:fixed; top:calc(env(safe-area-inset-top,0px) + 4.75rem); right:1rem; z-index:20; width:min(520px,calc(100vw - 2rem)); pointer-events:none;}
+body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;}
+.mapcard{pointer-events:auto; max-height:calc(100vh - 7rem); overflow:auto; background:linear-gradient(180deg,rgba(17,25,46,.95),rgba(5,6,14,.94)); border:1px solid rgba(60,240,255,.42); border-radius:16px; padding:.82rem .9rem .85rem; box-shadow:0 18px 34px rgba(0,0,0,.36),0 0 26px rgba(60,240,255,.16),inset 0 1px 0 rgba(255,255,255,.07); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); transform:perspective(900px) rotateX(1deg); transform-origin:top right;}
 .mapcard .mc-top{display:flex; justify-content:space-between; align-items:flex-start; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--ink); gap:.65rem;}
 .mapcard .mc-top b{color:var(--cyan); font-size:.92rem;}
 .mc-title{display:flex;flex-direction:column;gap:.1rem;min-width:0;}
@@ -298,7 +303,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 .mc-badges{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;}
 .mc-badge{font-size:.58rem;line-height:1.2;padding:.15rem .42rem;border-radius:999px;border:1px solid rgba(234,240,255,.18);background:rgba(234,240,255,.07);color:var(--ink);white-space:nowrap;}
 .mc-badge.gold{color:var(--gold);border-color:rgba(255,214,107,.5);background:rgba(255,214,107,.12);}
-.mapbars{display:flex; gap:.4rem; margin:.55rem 0 .15rem; align-items:flex-end;}
+.mapbars{display:flex; gap:.4rem; margin:.55rem 0 .15rem; align-items:flex-end; min-height:62px;}
 .mapbars .mb{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;}
 .mapbars .mb-num{font-family:"DotGothic16",monospace; font-size:.84rem; font-weight:bold; line-height:1;}
 .mapbars .mb-track{width:100%; height:44px; display:flex; flex-direction:column-reverse; background:rgba(234,240,255,.06); border-radius:4px; overflow:hidden; box-shadow:inset 0 0 10px rgba(0,0,0,.38),0 5px 12px rgba(0,0,0,.22);}
@@ -351,7 +356,7 @@ body.state-map #mapui{display:flex; flex-direction:column;}
 .mc-badge.green{color:var(--green);border-color:rgba(107,224,107,.5);background:rgba(107,224,107,.12);}
 @keyframes spotPulse{0%{box-shadow:0 0 0 0 rgba(255,214,107,.35),0 0 20px rgba(255,214,107,.55);}70%{box-shadow:0 0 0 17px rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}100%{box-shadow:0 0 0 0 rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}}
 @keyframes supplyPulse{0%{box-shadow:0 0 0 0 rgba(60,240,255,.32),0 0 18px rgba(60,240,255,.65);}70%{box-shadow:0 0 0 16px rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}100%{box-shadow:0 0 0 0 rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}}
-@media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}.mapcard{padding:.65rem .7rem .74rem;}.mapbars .mb-track{height:36px;}.mc-title strong{font-size:.9rem;}}
+@media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}.mapcard{width:min(100vw - 1rem,420px);max-height:calc(100vh - 6.3rem);padding:.65rem .7rem .74rem;}.mapbars .mb-track{height:36px;}.mc-title strong{font-size:.9rem;}}
 /* 放置追いつきオーバーレイ */
 #catchup{display:none; position:fixed; left:50%; bottom:78px; transform:translateX(-50%); z-index:30; pointer-events:none;}
 .cu-box{background:rgba(5,6,14,.88); border:1px solid var(--cyan); border-radius:8px; padding:.7rem 1.1rem; text-align:center; box-shadow:0 0 24px rgba(60,240,255,.25);}
@@ -489,7 +494,12 @@ body.state-map #mapui{display:flex; flex-direction:column;}
   <div id="shoplist"></div>
 </div>
 <div id="mods">
-  <div class="home-top"><span class="hcur powder">黒色火薬 <b id="modpowder">0</b></span><span class="hcur">改装片 <b id="moddust">0</b></span><span class="hcur">アドオントークン <b id="modtokens">0</b></span><span class="hcur">天井 <b id="modpity">0</b></span></div>
+  <div class="home-top">
+    <span class="hcur powder iconcur" title="黒色火薬" aria-label="黒色火薬"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flame"></use></svg><b id="modpowder">0</b></span>
+    <span class="hcur iconcur" title="改装片" aria-label="改装片"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-crystal"></use></svg><b id="moddust">0</b></span>
+    <span class="hcur iconcur" title="アドオントークン" aria-label="アドオントークン"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ticket"></use></svg><b id="modtokens">0</b></span>
+    <span class="hcur iconcur" title="天井" aria-label="天井"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hourglass"></use></svg><b id="modpity">0</b></span>
+  </div>
   <div class="home-title">タワー改装 ／ TOWER MOD</div>
   <div class="home-sub" id="modsub">各カテゴリは素体＋アドオン3枠。戦闘開始時のロードアウトがそのランに固定されます。</div>
   <div class="modactions">
@@ -2286,11 +2296,10 @@ function buildMods(){ try{
     d.appendChild(b); d.appendChild(s); d.addEventListener('click',()=>{ modCat=c.id; if(inst) openTowerModDetail(inst.uid); else buildMods(); }); slots.appendChild(d);
   }
   const cats=$('modcats'); cats.textContent='';
-  for(const c of TOWER_MOD_CATS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c.id===modCat?' on':''); t.style.color=COLORHEX[c.color]; t.textContent=c.name+'片 '+fmt(tm.catDust[c.id]||0); if(c.id===modCat)t.style.borderColor=COLORHEX[c.color]; t.addEventListener('click',()=>{modCat=c.id; buildMods();}); cats.appendChild(t); }
+  for(const c of TOWER_MOD_CATS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c.id===modCat?' on':''); t.style.color=COLORHEX[c.color]; const count=fmt(tm.catDust[c.id]||0); t.title=c.name+'片 '+count; t.setAttribute('aria-label',c.name+'片 '+count); const ic=document.createElement('span'); ic.className='ctab-icon'; ic.appendChild(iconEl(c.icon)); const num=document.createElement('span'); num.className='ctab-count'; num.textContent=count; t.append(ic,num); if(c.id===modCat)t.style.borderColor=COLORHEX[c.color]; t.addEventListener('click',()=>{modCat=c.id; buildMods();}); cats.appendChild(t); }
   const list=$('modlist'); list.textContent='';
   const bodyHead=document.createElement('div'); bodyHead.className='skcard'; bodyHead.style.setProperty('--ac',COLORHEX[catInfo.color]); bodyHead.innerHTML='<div class="skhd"><div class="skn">'+catInfo.name+' 素体</div><span class="skbadge">アドオン倍率 ×'+addonMulForCat(modCat).toFixed(2)+'</span></div><div class="skd">素体は特殊効果と、対応アドオンの強化倍率を持ちます。</div>'; list.appendChild(bodyHead);
   const owned=Object.values(tm.owned).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || b.level-a.level);
-  if(!owned.length){ const card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac',COLORHEX[catInfo.color]); card.textContent=catInfo.name+'素体未所持。黒色火薬の改装箱で入手できます。'; list.appendChild(card); }
   for(const inst of owned){ const def=TOWER_MOD_DEF_BY_ID[inst.defId], rr=TOWER_MOD_RARITIES[def.rarity], eq=tm.equip[def.cat]===inst.uid;
     const tile=document.createElement('div'); tile.className='modtile'+(eq?' eqd':''); tile.style.setProperty('--ac',rr.color);
     const top=document.createElement('div'); top.className='mtop'; const nm=document.createElement('div'); nm.className='mname'; nm.textContent=def.name; const rb=document.createElement('div'); rb.className='mrare'; rb.textContent=rr.label; top.appendChild(nm); top.appendChild(rb);
@@ -2300,7 +2309,6 @@ function buildMods(){ try{
   }
   const adHead=document.createElement('div'); adHead.className='skcard'; adHead.style.setProperty('--ac',COLORHEX[catInfo.color]); adHead.innerHTML='<div class="skhd"><div class="skn">'+catInfo.name+' アドオン</div><span class="skbadge">装備 '+fmt((tm.addonEquip[modCat]||[]).filter(Boolean).length)+'/'+TOWER_ADDON_SLOTS+'</span></div><div class="skd">道端や戦闘で拾う小型パーツ。メイン効果1つと、レア度別サブ効果を持ちます。</div>'; list.appendChild(adHead);
   const addons=Object.values(tm.addons).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || (b.subs||[]).length-(a.subs||[]).length);
-  if(!addons.length){ const card=document.createElement('div'); card.className='skcard'; card.style.setProperty('--ac',COLORHEX[catInfo.color]); card.textContent=catInfo.name+'アドオン未所持。補給スポット、ボス撃破、戦闘精算で入手できます。'; list.appendChild(card); }
   for(const ad of addons){ const rr=TOWER_MOD_RARITIES[ad.rarity], eq=(tm.addonEquip[ad.cat]||[]).indexOf(ad.uid)>=0;
     const tile=document.createElement('div'); tile.className='modtile'+(eq?' eqd':''); tile.style.setProperty('--ac',rr.color);
     const top=document.createElement('div'); top.className='mtop'; const nm=document.createElement('div'); nm.className='mname'; nm.textContent=catInfo.name+'アドオン'; const rb=document.createElement('div'); rb.className='mrare'; rb.textContent=rr.label; top.appendChild(nm); top.appendChild(rb);
@@ -2604,7 +2612,7 @@ let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, se
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
 const SUPPLY_FETCH_RADIUS=900, SUPPLY_FAST_RADIUS=1800, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
-const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=100;
+const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=220;
 const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
 map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.combat); scene.add(map3D.root);
 const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
@@ -2615,8 +2623,8 @@ function setExploreView(on){
     camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+560, MAP_ORIGIN.z+680);
     controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+18, MAP_ORIGIN.z-120);
     camera.lookAt(controls.target);
-    renderer.setClearColor(0x77EFD4,1);
-    scene.fog.color.set(0x77EFD4); scene.fog.density=0.00095;
+    renderer.setClearColor(0x50D4C6,1);
+    scene.fog.color.set(0x50D4C6); scene.fog.density=0.00078;
   }else{
     controls.enabled=true;
     if(camera.position.distanceTo(CORE)>5000) camera.position.set(0,220,660);
@@ -2732,21 +2740,31 @@ function updateExploreCombat(){
   if(game.state!=='map'||!avatarLL) return;
   clearObj(map3D.combat);
   const near=nearestTower(MAP_COMBAT_VISIBLE_M); if(!near) return;
-  const p=map3D.towerPos[near.id]||mapLocalPos(near.lat,near.lng), dist=near.dist, detail=dist<=MAP_COMBAT_DETAIL_M, live=mapMode()==='live'&&near.kind==='main'&&detail;
+  const p=map3D.towerPos[near.id]||mapLocalPos(near.lat,near.lng), dist=near.dist, detail=dist<=MAP_COMBAT_DETAIL_M, live=mapMode()==='live'&&near.kind==='main'&&isRunLive();
   const rangeM=near.kind==='main'?Math.max(24,(Number(game.range)||0)*MAP_RANGE_UNIT_M):120;
   const rangeRing=new THREE.Mesh(new THREE.RingGeometry(Math.max(2,rangeM-2), rangeM+2, 96), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:dist<=MAP_COMBAT_DETAIL_M?.30:.13,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
   rangeRing.rotation.x=-Math.PI/2; rangeRing.position.set(p.x,4,p.z); map3D.combat.add(rangeRing);
   const enemies=[];
   if(live && typeof E!=='undefined'){
-    for(const e of E){ if(e&&e.active){ enemies.push({x:e.x*MAP_RANGE_UNIT_M,z:e.z*MAP_RANGE_UNIT_M,y:8+(e.size||8)*.12,size:Math.max(3,(e.size||7)*.55),color:e.boss?0xFF4A4A:0xEAF0FF}); if(enemies.length>=90) break; } }
+    for(const e of E){ if(e&&e.active){
+      const kind=e.kind||'', scale=dist>180?1.05:.82, color=e.boss?0xFF4A4A:(e.beamer||kind==='beamer'?0xFF64D8:(e.shooter?0x7DFF9D:(kind==='firerun'?0xFF9A48:0xEAF0FF)));
+      enemies.push({x:e.x*MAP_RANGE_UNIT_M,z:e.z*MAP_RANGE_UNIT_M,y:10+(e.size||8)*.16,size:Math.max(dist>180?6:4,(e.size||7)*scale),color,live:true,boss:!!e.boss});
+      if(enemies.length>=MAP_LIVE_ENEMY_LIMIT) break;
+    } }
   }
   if(!enemies.length){
     const count=detail?Math.min(60,12+Math.floor((near.wave||1)/35)):Math.min(24,4+Math.floor((near.wave||1)/100));
     for(let i=0;i<count;i++){ const a=tval*0.8+i*2.399, r=detail?(45+(i%8)*10):(80+(i%8)*22); enemies.push({x:Math.cos(a)*r,z:Math.sin(a*1.13)*r,y:8,size:detail?5:4,color:near.boss?0xFF4A4A:(i%3?0xEAF0FF:0xFF9AD0)}); }
   }
   for(let i=0;i<enemies.length;i++){
-    const e=enemies[i], m=new THREE.Mesh(new THREE.BoxGeometry(e.size,e.size,e.size), new THREE.MeshBasicMaterial({color:e.color,transparent:true,opacity:dist<=120?.82:.35,blending:THREE.AdditiveBlending}));
+    const e=enemies[i], opacity=e.live?(detail?.96:.74):(dist<=120?.82:.35);
+    const m=new THREE.Mesh(new THREE.BoxGeometry(e.size,e.size,e.size), new THREE.MeshBasicMaterial({color:e.color,transparent:true,opacity,blending:THREE.AdditiveBlending}));
     m.position.set(p.x+e.x,p.y+e.y,p.z+e.z); m.rotation.set(tval+i,tval*.7+i*.3,tval*.4); map3D.combat.add(m);
+    if(e.live && (e.boss || i<96)){
+      const beamH=e.boss?96:(dist>180?68:46), beamColor=e.boss?0xFF4A4A:0x3CF0FF;
+      const geo=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute([m.position.x,6,m.position.z,m.position.x,beamH,m.position.z],3));
+      map3D.combat.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:beamColor,transparent:true,opacity:dist>180?.34:.20,blending:THREE.AdditiveBlending})));
+    }
     if(i<10&&detail){ const geo=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute([p.x,36,p.z,m.position.x,m.position.y,m.position.z],3)); map3D.combat.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.28,blending:THREE.AdditiveBlending}))); }
   }
 }
