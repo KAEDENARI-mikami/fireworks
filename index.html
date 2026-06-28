@@ -28,7 +28,7 @@
 html,body{height:100%;}
 body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monospace; overflow:hidden; -webkit-font-smoothing:antialiased; }
 
-#bg{position:fixed; inset:0; width:100%; height:100%; display:block; z-index:0; touch-action:none;}
+#bg{position:fixed; inset:0; width:100%; height:100%; display:block; z-index:1; touch-action:none;}
 .grain{ position:fixed; inset:-50%; z-index:1; pointer-events:none; opacity:.04; mix-blend-mode:screen;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 #flash{position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0;
@@ -279,8 +279,8 @@ body.state-result #result{ display:flex; }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;} }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
 /* 位置情報マップ（探索画面） */
-#map{display:none; position:fixed; inset:0; z-index:-1; background:#05060E; opacity:0; pointer-events:none;}
-body.state-map #map{display:none;}
+#map{display:none; position:fixed; inset:0; z-index:0; background:#05060E; opacity:0; pointer-events:none;}
+body.state-map #map{display:block; opacity:1;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
 #map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 52%,rgba(5,6,14,.18),rgba(5,6,14,.64) 100%);z-index:400;}
@@ -292,7 +292,7 @@ body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-co
 .mapcenter{display:none;position:fixed;left:50%;top:47%;transform:translate(-50%,-50%) rotateX(62deg);z-index:9;pointer-events:none;width:54px;height:54px;border-radius:50%;border:1px solid rgba(60,240,255,.28);background:radial-gradient(circle,rgba(60,240,255,.09),rgba(60,240,255,.025) 48%,transparent 68%);box-shadow:0 0 22px rgba(60,240,255,.16), inset 0 0 18px rgba(60,240,255,.08);}
 .mapcenter::before{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;background:var(--cyan);box-shadow:0 0 18px var(--cyan);}
 .mapcenter::after{content:'';position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(60,240,255,.32);}
-body.state-map .mapcenter{display:block;}
+body.state-map .mapcenter{display:none;}
 #mapui{display:none; position:fixed; right:.75rem; bottom:calc(58px + .75rem); z-index:20; width:min(340px,calc(100vw - 1.5rem)); pointer-events:none; gap:.45rem;}
 body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;}
 #mapui.collapsed{width:auto;}
@@ -834,7 +834,7 @@ function speedWaveMul(){ return Math.pow(SPEED_PER_WAVE, Math.max(0, (game.wave 
 /* ===== レンダラ / シーン / カメラ ===== */
 const canvas = document.getElementById('bg');
 let renderer;
-try{ renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' }); }
+try{ renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true, powerPreference:'high-performance' }); }
 catch(e){ document.body.style.background='#05060E'; throw e; }
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -2685,10 +2685,10 @@ function setExploreView(on){
   map3D.active=!!on; map3D.root.visible=!!on;
   if(on){
     controls.enabled=true; controls.autoRotate=false; controls.enablePan=true;
-    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+300, MAP_ORIGIN.z+340);
-    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+12, MAP_ORIGIN.z-90);
+    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+620, MAP_ORIGIN.z+120);
+    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+18, MAP_ORIGIN.z);
     camera.lookAt(controls.target);
-    renderer.setClearColor(0x05060E,1);
+    renderer.setClearColor(0x05060E,0);
     scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
   }else{
     controls.enabled=true; controls.enablePan=false;
@@ -2783,27 +2783,6 @@ function buildFallbackMapField(){
 }
 function buildMapField(){
   clearObj(map3D.field); clearObj(map3D.labels);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(MAP_FIELD_SIZE,MAP_FIELD_SIZE), new THREE.MeshBasicMaterial({color:0x070914,transparent:true,opacity:.96,side:THREE.DoubleSide}));
-  ground.rotation.x=-Math.PI/2; ground.position.copy(MAP_ORIGIN); map3D.field.add(ground);
-  const zone=new THREE.Mesh(new THREE.RingGeometry(100,104,128), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.28,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
-  zone.rotation.x=-Math.PI/2; zone.position.set(MAP_ORIGIN.x,3,MAP_ORIGIN.z); map3D.field.add(zone);
-  const mf=mapFeatureState, hasOsm=(mf.roads&&mf.roads.length)||(mf.buildings&&mf.buildings.length);
-  if(hasOsm){
-    for(const rd of mf.roads.slice(0,90)){
-      const geom=rd.geometry||[], st=roadStyle(rd.tags||{});
-      for(let i=1;i<geom.length;i++) addRoadSegment(map3D.field, geom[i-1], geom[i], st);
-    }
-    for(const b of mf.buildings.slice(0,80)) addOsmBuilding(map3D.field,b);
-  }else{
-    buildFallbackMapField();
-  }
-  const drone=new THREE.Group(); drone.name='map-drone'; drone.position.copy(MAP_ORIGIN);
-  addGroundRing(drone, 24, 0x3CF0FF, .45, 1.4);
-  const core=new THREE.Mesh(new THREE.SphereGeometry(9,18,12), new THREE.MeshBasicMaterial({color:0xEAF0FF,transparent:true,opacity:.95,blending:THREE.AdditiveBlending}));
-  core.position.y=24; drone.add(core);
-  const shadow=new THREE.Mesh(new THREE.RingGeometry(8,18,32), new THREE.MeshBasicMaterial({color:0x05060E,transparent:true,opacity:.22,side:THREE.DoubleSide}));
-  shadow.rotation.x=-Math.PI/2; shadow.position.y=1; drone.add(shadow);
-  map3D.field.add(drone);
 }
 function mapTowerAnchors(){
   const arr=[];
@@ -2824,11 +2803,6 @@ function updateExplore3D(force=false){
   if(!force && key===map3D.builtKey) return; map3D.builtKey=key;
   buildMapField(); clearObj(map3D.spots); clearObj(map3D.towers); map3D.interactives=[]; map3D.towerPos={};
   let labelCount=0;
-  const featureLabels=(mapFeatureState.labels||[]).filter(l=>avatarLL&&haversine(avatarLL[0],avatarLL[1],l.lat,l.lng)<=MAP_RENDER_RADIUS).slice(0,MAP_LABEL_LIMIT);
-  for(const lab of featureLabels){
-    const p=mapLocalPos(lab.lat,lab.lng);
-    const g=new THREE.Group(); g.position.copy(p); addMapLabel(g, lab.name, 0x9ED8FF, 46); map3D.labels.add(g); labelCount++;
-  }
   const visibleSupply=supplySpots.filter(s=>supplySpotDistance(s)<=MAP_RENDER_RADIUS).sort((a,b)=>supplySpotDistance(a)-supplySpotDistance(b)).slice(0,28);
   for(const spot of visibleSupply){
     const p=mapLocalPos(spot.lat,spot.lng), dist=supplySpotDistance(spot), ready=supplyReady(spot), near=dist<=SUPPLY_INTERACT_RANGE;
@@ -3177,7 +3151,6 @@ function drawCells(){
       marker.addTo(LMAP); sweetMarkers.push(marker);
     }
   }
-  requestMapFeatures();
   requestSupplySpots();
   updateMapWalkHud();
   const force3D = (_now-_lastMap3DRedrawAt) >= MAP_3D_REFRESH_MS;
