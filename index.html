@@ -2674,7 +2674,9 @@ const SUPPLY_FETCH_RADIUS=520, SUPPLY_FAST_RADIUS=900, SUPPLY_INTERACT_RANGE=100
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
 const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=300;
 const MAP_FEATURE_RADIUS=430, MAP_FIELD_SIZE=980, MAP_RENDER_RADIUS=520, MAP_LABEL_LIMIT=12;
+const MAP_3D_REFRESH_MS=220, MAP_FEATURE_REFRESH_MS=1400, MAP_SUPPLY_REFRESH_MS=900;
 let mapFeatureState={key:'',roads:[],buildings:[],labels:[],busy:false,seq:0};
+let _lastMap3DRedrawAt=0, _lastFeatureFetchAt=0, _lastSupplyFetchAt=0;
 const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), labels:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
 map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.labels,map3D.combat); scene.add(map3D.root);
 const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
@@ -3010,6 +3012,8 @@ function requestMapFeatures(){
   if(!avatarLL) return;
   const cell=GeoCell.latLngToCell(avatarLL[0],avatarLL[1]), key=cell+'|'+MAP_FEATURE_RADIUS;
   if(key===mapFeatureState.key || mapFeatureState.busy) return;
+  if(performance.now()-_lastFeatureFetchAt < MAP_FEATURE_REFRESH_MS) return;
+  _lastFeatureFetchAt = performance.now();
   mapFeatureState.key=key; mapFeatureState.roads=[]; mapFeatureState.buildings=[]; mapFeatureState.labels=[];
   const seq=++mapFeatureState.seq; mapFeatureState.busy=true;
   fetchMapFeatures(avatarLL[0],avatarLL[1],cell).then(features=>{
@@ -3022,6 +3026,8 @@ function requestSupplySpots(){
   if(!avatarLL) return;
   const cell=GeoCell.latLngToCell(avatarLL[0],avatarLL[1]), key=cell+'|'+(modeFast()?1:0);
   if(key===_supplyCenterCell || _supplyFetchBusy) return;
+  if(performance.now()-_lastSupplyFetchAt < MAP_SUPPLY_REFRESH_MS) return;
+  _lastSupplyFetchAt = performance.now();
   _supplyCenterCell=key;
   supplySpots=fallbackSupplySpots(avatarLL[0],avatarLL[1],cell);
   drawSupplyMarkers();
@@ -3173,7 +3179,9 @@ function drawCells(){
   requestMapFeatures();
   requestSupplySpots();
   updateMapWalkHud();
-  updateExplore3D(true);
+  const force3D = (_now-_lastMap3DRedrawAt) >= MAP_3D_REFRESH_MS;
+  updateExplore3D(force3D);
+  if(force3D) _lastMap3DRedrawAt=_now;
   renderCellCard(); }
 function refreshCurrentPosition(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで移動してください'); return; }
