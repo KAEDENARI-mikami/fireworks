@@ -270,7 +270,7 @@ body.state-mod #modebar{display:flex;}
 /* 状態によって表示切替 */
 body.state-playing .title, body.state-playing .meta, body.state-playing .hint{ display:none; }
 body.state-playing #hud{ display:block; }
-body.state-home #hud, body.state-skill #hud, body.state-shop #hud, body.state-mod #hud, body.state-map #hud{ display:none; }
+body.state-home #hud, body.state-skill #hud, body.state-shop #hud, body.state-mod #hud, body.state-map #hud, body.state-catchup #hud{ display:none; }
 body.state-playing .hpwrap{bottom:calc(58px + .9rem);}
 body.state-playing #skillacts{bottom:calc(58px + 1rem + 66px);}
 body.state-result #result{ display:flex; }
@@ -358,8 +358,12 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 @keyframes supplyPulse{0%{box-shadow:0 0 0 0 rgba(60,240,255,.32),0 0 18px rgba(60,240,255,.65);}70%{box-shadow:0 0 0 16px rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}100%{box-shadow:0 0 0 0 rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}}
 @media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}.mapcard{width:min(100vw - 1rem,420px);max-height:calc(100vh - 6.3rem);padding:.65rem .7rem .74rem;}.mapbars .mb-track{height:36px;}.mc-title strong{font-size:.9rem;}}
 /* 放置追いつきオーバーレイ */
-#catchup{display:none; position:fixed; left:50%; bottom:78px; transform:translateX(-50%); z-index:30; pointer-events:none;}
-.cu-box{background:rgba(5,6,14,.88); border:1px solid var(--cyan); border-radius:8px; padding:.7rem 1.1rem; text-align:center; box-shadow:0 0 24px rgba(60,240,255,.25);}
+body.state-catchup #catchup,
+body.state-catchup #modebar{ display:none; }
+body.state-catchup #map, body.state-catchup .title, body.state-catchup .meta, body.state-catchup .hint{ display:none; }
+#catchup{display:none; position:fixed; inset:0; z-index:30; pointer-events:none; background:rgba(5,6,14,.78); align-items:center; justify-content:center; }
+body.state-catchup #catchup{display:flex;}
+.cu-box{max-width:min(560px,94vw); width:min(560px,94vw); background:rgba(5,6,14,.9); border:1px solid var(--cyan); border-radius:12px; padding:1rem 1.2rem; text-align:center; box-shadow:0 0 40px rgba(60,240,255,.35);}
 .cu-title{font-family:"DotGothic16",monospace; font-size:.8rem; color:var(--cyan); letter-spacing:.12em;}
 .cu-sub{font-family:"DotGothic16",monospace; font-size:.74rem; color:var(--ink); margin:.28rem 0;}
 .cu-bar{width:230px; height:5px; background:rgba(234,240,255,.12); border-radius:3px; overflow:hidden;}
@@ -367,7 +371,7 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 .cu-note{font-size:.58rem; color:var(--dim); margin-top:.32rem;}
 </style>
 </head>
-<body class="state-title">
+<body class="state-map">
 
 <canvas id="bg" aria-hidden="true"></canvas>
 <div class="grain" aria-hidden="true"></div>
@@ -1451,7 +1455,7 @@ function previewELvMul(){ return fieldBaseMul + Math.max(fieldColorBias.red||0,f
 function fieldMul(c){ return fieldBaseMul + ((fieldColorBias&&fieldColorBias[c])||0); }
 function applyField(){ if(currentField){ for(const c of COLORS) DENS[c]=currentField.DENS[c]; TOTAL=currentField.TOTAL; densityMul=currentField.densityMul; fieldBaseMul=currentField.baseMul|| (1+TOTAL/300); fieldColorBias=currentField.colorBias||colorBiasFromDens(DENS); } else { for(const c in BASE_DENS) DENS[c]=Math.round(BASE_DENS[c]*densityMul); TOTAL=Object.values(DENS).reduce((a,b)=>a+b,0); fieldBaseMul=1+TOTAL/300; fieldColorBias=colorBiasFromDens(DENS); } eLvMul=previewELvMul(); }
 const game = {
-  state:'title', runLive:false, t:0, fireCd:0,
+  state:'map', runLive:false, t:0, fireCd:0,
   hp:1000, maxhp:1000, regen:0,
   dmg:10, fireRate:2, range:520, multishot:1, multiCarry:0, critChance:0.05, critPower:1.8,
   harvestMul:1, skillPow:1, slowLv:0, slow:0, cash:0, dr:0, cashMul:1, vuln:1,
@@ -1937,7 +1941,7 @@ function refreshCurrencyDisplays(){
   refreshSparkDisplays();
   refreshBlackPowderDisplays();
 }
-const VIEW_STATES=['state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop','state-mod'];
+const VIEW_STATES=['state-title','state-playing','state-result','state-home','state-deploy','state-map','state-skill','state-shop','state-mod','state-catchup'];
 function isRunLive(){ return !!game.runLive && !game.ended; }
 function setViewState(state, keepRun=false){
   document.body.classList.remove(...VIEW_STATES);
@@ -3415,11 +3419,11 @@ function updateCatchup(target){ const sub=$('cu-sub'), fill=$('cu-fill'); const 
 function startCatchUp(targetTick){
   targetTick=Math.min(targetTick, MAX_CATCHUP_STEPS);
   if(targetTick<=game.tick){ catchup.active=false; showCatchup(false); RENDER=true; enterPlaying(); return; }   // 経過≒0→即ライブ
-  catchup.active=true; catchup.token++; const myToken=catchup.token; RENDER=false; showCatchup(true); updateCatchup(targetTick);
+  catchup.active=true; catchup.token++; const myToken=catchup.token; game.state='catchup'; setViewState('state-catchup', false); RENDER=false; showCatchup(true); updateCatchup(targetTick);
   (function slice(){
     if(catchup.token!==myToken){ return; }                              // 新ランに割り込まれた→中断
     const t0=performance.now();
-    while(game.tick<targetTick && game.state==='playing'){
+    while(game.tick<targetTick && isRunLive()){
       applyPurchasesUpTo(game.tick); runStep(DT); game.tick++;
       if((game.tick & 1023)===0 && performance.now()-t0>12) break;       // 12msでUIに返す
     }
@@ -3449,7 +3453,7 @@ function restoreRun(sv){
   game.purchases=Array.isArray(sv.purchases)?sv.purchases.slice():[]; game._pidx=0;
   game.acts=Array.isArray(sv.acts)?sv.acts.slice():[]; game._aidx=0;
   game.state='playing'; game.runLive=true; game.ended=false;
-  setViewState('state-playing', false); controls.autoRotate=false; controls.target.copy(CORE);   // 追いつき中はモードバー非表示＝誤操作で再生破損を防ぐ
+  controls.autoRotate=false; controls.target.copy(CORE);
   startCatchUp(Math.floor(Math.max(0, Date.now()-sv.deployTs)/1000/DT));
 }
 
@@ -3504,7 +3508,7 @@ function startGame(opts){
   controls.autoRotate=false; controls.target.copy(CORE); saveRun(); }
 // セル出撃：そのセルの手続きフィールドでランを開始（地図UIから呼ぶ）
 function deployFromCell(cellId){ if(!cellId) cellId=GeoCell.latLngToCell(VENUE.lat,VENUE.lng); const ts=Date.now(); const lng=GeoCell.cellToLatLng(cellId)[1]; currentField=fieldFromCell(cellId, todBucketAt(ts,lng), ts); startGame({cellId, deployTs:ts, runSeed:0}); }
-$('start').addEventListener('click', showHome);
+$('start').addEventListener('click', showMap);
 $('retry').addEventListener('click', ()=>startGame());
 $('tohome').addEventListener('click', showHome);
 $('mode-combat').addEventListener('click', showCombat);
@@ -3543,6 +3547,7 @@ if(!meta.skillOwned.snowstorm){ meta.skillOwned.snowstorm={level:5,dup:3,pot:2};
   if(meta.skillEquip.indexOf('snowstorm')<0){ let s=meta.skillEquip.indexOf(null); if(s<0)s=0; meta.skillEquip[s]='snowstorm'; }
   saveMeta(); }
 try{ const _sv=loadRun(); if(_sv && _sv.deployTs>1.5e12 && _sv.deployTs<=Date.now()+60000) restoreRun(_sv); else if(_sv) clearRun(); }catch(e){ clearRun(); console.log('restoreRun failed',e); }   // 進行中ランがあればレジューム（破損/異常なdeployTsは破棄）
+if(!isRunLive()){ showMap(); }
 window.addEventListener('pagehide', ()=>{ if(isRunLive()) saveRun(); saveParallelRuns(); });
 requestAnimationFrame(loop);   // ループは常時稼働（REDUCEDでも sim は進む／描画・演出のみ抑制）
 </script>
