@@ -279,8 +279,8 @@ body.state-result #result{ display:flex; }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;} }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
 /* 位置情報マップ（探索画面） */
-#map{display:none; position:fixed; inset:0; z-index:8; background:#05060E; opacity:1; pointer-events:none;}
-body.state-map #map{display:block;}
+#map{display:none; position:fixed; inset:0; z-index:-1; background:#05060E; opacity:0; pointer-events:none;}
+body.state-map #map{display:none;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
 #map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 52%,rgba(5,6,14,.18),rgba(5,6,14,.64) 100%);z-index:400;}
@@ -289,13 +289,13 @@ body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-co
 .walkpill{min-height:34px;display:flex;align-items:center;gap:.35rem;padding:.38rem .62rem;border:1px solid rgba(234,240,255,.18);border-radius:999px;background:linear-gradient(180deg,rgba(10,12,22,.88),rgba(5,6,14,.82));box-shadow:0 10px 22px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06);color:var(--ink);font-size:.68rem;white-space:nowrap;transform:rotateX(5deg);}
 .walkpill b{color:var(--cyan);font-size:.76rem;}
 .walkpill.spot b{color:var(--green);}
-.mapcenter{display:none;position:fixed;left:50%;top:46%;transform:translate(-50%,-50%) rotateX(62deg);z-index:9;pointer-events:none;width:92px;height:92px;border-radius:50%;border:1px solid rgba(60,240,255,.34);background:radial-gradient(circle,rgba(60,240,255,.12),rgba(60,240,255,.03) 48%,transparent 68%);box-shadow:0 0 34px rgba(60,240,255,.2), inset 0 0 26px rgba(60,240,255,.1);}
+.mapcenter{display:none;position:fixed;left:50%;top:47%;transform:translate(-50%,-50%) rotateX(62deg);z-index:9;pointer-events:none;width:54px;height:54px;border-radius:50%;border:1px solid rgba(60,240,255,.28);background:radial-gradient(circle,rgba(60,240,255,.09),rgba(60,240,255,.025) 48%,transparent 68%);box-shadow:0 0 22px rgba(60,240,255,.16), inset 0 0 18px rgba(60,240,255,.08);}
 .mapcenter::before{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;background:var(--cyan);box-shadow:0 0 18px var(--cyan);}
-.mapcenter::after{content:'';position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(60,240,255,.35);}
+.mapcenter::after{content:'';position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(60,240,255,.32);}
 body.state-map .mapcenter{display:block;}
-#mapui{display:none; position:fixed; top:calc(env(safe-area-inset-top,0px) + 4.75rem); right:1rem; z-index:20; width:min(520px,calc(100vw - 2rem)); pointer-events:none;}
+#mapui{display:none; position:fixed; right:.75rem; bottom:calc(58px + .75rem); z-index:20; width:min(340px,calc(100vw - 1.5rem)); pointer-events:none;}
 body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;}
-.mapcard{pointer-events:auto; max-height:calc(100vh - 7rem); overflow:auto; background:linear-gradient(180deg,rgba(5,6,14,.98),rgba(2,3,8,.98)); border:1px solid rgba(60,240,255,.28); border-radius:16px; padding:.82rem .9rem .85rem; box-shadow:0 18px 34px rgba(0,0,0,.54),0 0 20px rgba(60,240,255,.10),inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); transform:none; transform-origin:top right;}
+.mapcard{pointer-events:auto; max-height:min(42vh,360px); overflow:auto; background:linear-gradient(180deg,rgba(5,6,14,.93),rgba(2,3,8,.90)); border:1px solid rgba(60,240,255,.24); border-radius:8px; padding:.62rem .7rem .68rem; box-shadow:0 14px 28px rgba(0,0,0,.48),0 0 16px rgba(60,240,255,.08),inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); transform:none; transform-origin:bottom right;}
 .mapcard .mc-top{display:flex; justify-content:space-between; align-items:flex-start; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--ink); gap:.65rem;}
 .mapcard .mc-top b{color:var(--cyan); font-size:.92rem;}
 .mc-title{display:flex;flex-direction:column;gap:.1rem;min-width:0;}
@@ -304,10 +304,10 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 .mc-badges{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;}
 .mc-badge{font-size:.58rem;line-height:1.2;padding:.15rem .42rem;border-radius:999px;border:1px solid rgba(234,240,255,.18);background:rgba(234,240,255,.07);color:var(--ink);white-space:nowrap;}
 .mc-badge.gold{color:var(--gold);border-color:rgba(255,214,107,.5);background:rgba(255,214,107,.12);}
-.mapbars{display:flex; gap:.4rem; margin:.55rem 0 .15rem; align-items:flex-end; min-height:62px;}
+.mapbars{display:flex; gap:.32rem; margin:.42rem 0 .08rem; align-items:flex-end; min-height:48px;}
 .mapbars .mb{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;}
-.mapbars .mb-num{font-family:"DotGothic16",monospace; font-size:.84rem; font-weight:bold; line-height:1;}
-.mapbars .mb-track{width:100%; height:44px; display:flex; flex-direction:column-reverse; background:rgba(234,240,255,.06); border-radius:4px; overflow:hidden; box-shadow:inset 0 0 10px rgba(0,0,0,.38),0 5px 12px rgba(0,0,0,.22);}
+.mapbars .mb-num{font-family:"DotGothic16",monospace; font-size:.7rem; font-weight:bold; line-height:1;}
+.mapbars .mb-track{width:100%; height:32px; display:flex; flex-direction:column-reverse; background:rgba(234,240,255,.06); border-radius:4px; overflow:hidden; box-shadow:inset 0 0 10px rgba(0,0,0,.38),0 5px 12px rgba(0,0,0,.22);}
 .mapbars .mb-track i{display:block; width:100%; transition:height .25s; box-shadow:0 -5px 12px currentColor;}
 .mapgo{width:100%; cursor:pointer; font-family:"Reggae One",sans-serif; font-size:1.05rem; letter-spacing:.05em; padding:.6rem; color:var(--void); background:linear-gradient(135deg,var(--cyan),var(--gold)); border:none; border-radius:7px; box-shadow:0 0 20px rgba(60,240,255,.35); margin-top:.45rem;}
 .mapgo:disabled{opacity:.4; cursor:default;}
@@ -357,7 +357,7 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 .mc-badge.green{color:var(--green);border-color:rgba(107,224,107,.5);background:rgba(107,224,107,.12);}
 @keyframes spotPulse{0%{box-shadow:0 0 0 0 rgba(255,214,107,.35),0 0 20px rgba(255,214,107,.55);}70%{box-shadow:0 0 0 17px rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}100%{box-shadow:0 0 0 0 rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}}
 @keyframes supplyPulse{0%{box-shadow:0 0 0 0 rgba(60,240,255,.32),0 0 18px rgba(60,240,255,.65);}70%{box-shadow:0 0 0 16px rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}100%{box-shadow:0 0 0 0 rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}}
-@media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}.mapcard{width:min(100vw - 1rem,420px);max-height:calc(100vh - 6.3rem);padding:.65rem .7rem .74rem;}.mapbars .mb-track{height:36px;}.mc-title strong{font-size:.9rem;}}
+@media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}#mapui{left:.5rem;right:.5rem;bottom:calc(58px + .5rem);width:auto;}.mapcard{width:100%;max-height:34vh;padding:.58rem .62rem .64rem;}.mapbars .mb-track{height:28px;}.mc-title strong{font-size:.86rem;}}
 /* 放置追いつきオーバーレイ */
 body.state-catchup #catchup,
 body.state-catchup #modebar{ display:none; }
@@ -2655,16 +2655,18 @@ function addMapLabel(parent, text, color=0xEAF0FF, y=58){
   sp.position.y=y; sp.scale.set(82,20,1); parent.add(sp); return sp;
 }
 function addDiscMarker(parent, color, ready=true){
-  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:ready?.82:.32,blending:THREE.AdditiveBlending,depthWrite:false});
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(18,1.6,8,48), mat); ring.rotation.x=Math.PI/2; ring.position.y=4; parent.add(ring);
-  const stem=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,38,8), mat); stem.position.y=22; parent.add(stem);
-  const cube=new THREE.Mesh(new THREE.BoxGeometry(16,16,16), mat); cube.position.y=48; cube.rotation.set(.7,.3,.8); parent.add(cube);
+  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:ready?.78:.28,blending:THREE.AdditiveBlending,depthWrite:false});
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(9,1.0,8,36), mat); ring.rotation.x=Math.PI/2; ring.position.y=3; parent.add(ring);
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.65,.65,18,8), mat); stem.position.y=12; parent.add(stem);
+  const cube=new THREE.Mesh(new THREE.BoxGeometry(8,8,8), mat); cube.position.y=25; cube.rotation.set(.7,.3,.8); parent.add(cube);
   return cube;
 }
 function addBeaconMarker(parent, color, height=250){
   const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.42,blending:THREE.AdditiveBlending,depthWrite:false});
-  const beam=new THREE.Mesh(new THREE.CylinderGeometry(4,9,height,18,true), mat); beam.position.y=height/2; parent.add(beam);
-  const orb=new THREE.Mesh(new THREE.SphereGeometry(14,18,12), new THREE.MeshBasicMaterial({color,transparent:true,opacity:.86,blending:THREE.AdditiveBlending})); orb.position.y=20; parent.add(orb);
+  const beamRadius=Math.max(1.2, Math.min(6, height*.026));
+  const orbRadius=Math.max(5, Math.min(12, height*.06));
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(beamRadius*.55,beamRadius,height,16,true), mat); beam.position.y=height/2; parent.add(beam);
+  const orb=new THREE.Mesh(new THREE.SphereGeometry(orbRadius,18,12), new THREE.MeshBasicMaterial({color,transparent:true,opacity:.86,blending:THREE.AdditiveBlending})); orb.position.y=Math.max(14, height*.18); parent.add(orb);
   return orb;
 }
 function addGroundRing(parent, radius, color, opacity=.35, width=2){
@@ -2677,16 +2679,16 @@ function addRoad(parent, x,z,len,w,rot,color=0xCFFFD3,opacity=.42){
 }
 function buildMapField(){
   clearObj(map3D.field);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(2400,2400), new THREE.MeshBasicMaterial({color:0x6EF0AE,transparent:true,opacity:.72,side:THREE.DoubleSide}));
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(2400,2400), new THREE.MeshBasicMaterial({color:0x070914,transparent:true,opacity:.96,side:THREE.DoubleSide}));
   ground.rotation.x=-Math.PI/2; ground.position.copy(MAP_ORIGIN); map3D.field.add(ground);
-  const zone=new THREE.Mesh(new THREE.RingGeometry(100,104,128), new THREE.MeshBasicMaterial({color:0xB46BFF,transparent:true,opacity:.45,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const zone=new THREE.Mesh(new THREE.RingGeometry(100,104,128), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.28,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
   zone.rotation.x=-Math.PI/2; zone.position.set(MAP_ORIGIN.x,3,MAP_ORIGIN.z); map3D.field.add(zone);
   const rng=makeRNG(hash32('mapfield', avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'base'));
-  for(let i=-5;i<=5;i++){ addRoad(map3D.field, i*120+rng.range(-16,16), 0, 2300, i%3===0?34:18, rng.range(-.08,.08), 0xBFFFF1, .34); }
-  for(let i=-5;i<=5;i++){ addRoad(map3D.field, 0, i*120+rng.range(-16,16), 2300, i%3===0?36:20, Math.PI/2+rng.range(-.09,.09), 0xD8FFD2, .32); }
+  for(let i=-5;i<=5;i++){ addRoad(map3D.field, i*120+rng.range(-16,16), 0, 2300, i%3===0?22:12, rng.range(-.08,.08), 0x1C5F67, .32); }
+  for(let i=-5;i<=5;i++){ addRoad(map3D.field, 0, i*120+rng.range(-16,16), 2300, i%3===0?24:13, Math.PI/2+rng.range(-.09,.09), 0x304C5C, .30); }
   for(let i=0;i<34;i++){
     const bx=rng.range(-980,980), bz=rng.range(-980,980), bw=rng.range(48,140), bd=rng.range(32,110), bh=rng.range(3,24);
-    const block=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd), new THREE.MeshBasicMaterial({color:rng.chance(.5)?0x8FF2C0:0x83D9F0,transparent:true,opacity:.18}));
+    const block=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd), new THREE.MeshBasicMaterial({color:rng.chance(.5)?0x15333D:0x1C2638,transparent:true,opacity:.62}));
     block.position.set(MAP_ORIGIN.x+bx,bh/2,MAP_ORIGIN.z+bz); map3D.field.add(block);
   }
   const drone=new THREE.Group(); drone.name='map-drone'; drone.position.copy(MAP_ORIGIN);
@@ -2720,15 +2722,13 @@ function updateExplore3D(force=false){
     if(Math.abs(p.x-MAP_ORIGIN.x)>1250||Math.abs(p.z-MAP_ORIGIN.z)>1250) continue;
     const g=new THREE.Group(); g.position.copy(p);
     const mesh=addDiscMarker(g, near?0x3CF0FF:0x4FA8FF, ready); mesh.userData={kind:'supply',id:spot.id};
-    addMapLabel(g, ready?(near?'補給':'100m外'):'待機', near?0x3CF0FF:0x8A93AD, 76);
     map3D.spots.add(g); map3D.interactives.push(mesh);
   }
   for(const s of sweetSpotItems.slice(0,24)){
     const ll=GeoCell.cellToLatLng(s.cell), p=mapLocalPos(ll[0],ll[1]);
     if(Math.abs(p.x-MAP_ORIGIN.x)>1500||Math.abs(p.z-MAP_ORIGIN.z)>1500) continue;
     const g=new THREE.Group(); g.position.copy(p);
-    const mesh=addBeaconMarker(g, 0xFFD66B, 280+Math.min(160,(s.field.moduleCost||0)*16)); mesh.userData={kind:'sweet',cell:s.cell};
-    addMapLabel(g, 'C'+fmt(s.field.moduleCost||0), 0xFFD66B, 70);
+    const mesh=addBeaconMarker(g, 0xFFD66B, 70+Math.min(90,(s.field.moduleCost||0)*6)); mesh.userData={kind:'sweet',cell:s.cell};
     map3D.spots.add(g); map3D.interactives.push(mesh);
   }
   for(const t of mapTowerAnchors()){
@@ -2736,7 +2736,7 @@ function updateExplore3D(force=false){
     const g=new THREE.Group(); g.position.copy(p);
     const base=new THREE.Mesh(new THREE.CylinderGeometry(18,28,30,6), new THREE.MeshBasicMaterial({color:t.kind==='main'?0x3CF0FF:0xFFD66B,transparent:true,opacity:.8,blending:THREE.AdditiveBlending}));
     base.position.y=18; base.userData={kind:'tower',id:t.id}; g.add(base);
-    addBeaconMarker(g, t.boss?0xFF4A4A:0xB46BFF, t.boss?300:170);
+    addBeaconMarker(g, t.boss?0xFF4A4A:0xB46BFF, t.boss?220:130);
     addMapLabel(g, 'W'+fmt(Math.floor(t.wave||1)), t.boss?0xFF4A4A:0xEAF0FF, 96);
     map3D.towers.add(g); map3D.interactives.push(base);
   }
