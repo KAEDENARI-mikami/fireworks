@@ -29,7 +29,7 @@ html,body{height:100%;}
 body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monospace; overflow:hidden; -webkit-font-smoothing:antialiased; }
 
 #bg{position:fixed; inset:0; width:100%; height:100%; display:block; z-index:1; touch-action:none;}
-body.state-map #bg{opacity:0; pointer-events:none;}
+body.state-map #bg{opacity:1; pointer-events:auto;}
 .grain{ position:fixed; inset:-50%; z-index:1; pointer-events:none; opacity:.04; mix-blend-mode:screen;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 #flash{position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0;
@@ -281,7 +281,7 @@ body.state-result #result{ display:flex; }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
 /* 位置情報マップ（探索画面） */
 #map{display:none; position:fixed; inset:0; z-index:0; background:#05060E; opacity:0; pointer-events:none;}
-body.state-map #map{display:block; opacity:1; pointer-events:auto;}
+body.state-map #map{display:none;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
 #map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 52%,rgba(5,6,14,.18),rgba(5,6,14,.64) 100%);z-index:400;}
@@ -2677,19 +2677,21 @@ const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
 const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=300;
 const MAP_FEATURE_RADIUS=380, MAP_FIELD_SIZE=820, MAP_RENDER_RADIUS=430, MAP_LABEL_LIMIT=12;
 const MAP_3D_REFRESH_MS=220, MAP_FEATURE_REFRESH_MS=1400, MAP_SUPPLY_REFRESH_MS=900;
+const MAP_TILE_ZOOM=18, MAP_TILE_RADIUS=3;
 let mapFeatureState={key:'',roads:[],buildings:[],labels:[],busy:false,seq:0};
 let _lastMap3DRedrawAt=0, _lastFeatureFetchAt=-Infinity, _lastSupplyFetchAt=-Infinity;
 const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), labels:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
 map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.labels,map3D.combat); scene.add(map3D.root);
+const mapTileLoader=new THREE.TextureLoader(); mapTileLoader.setCrossOrigin('anonymous');
 const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
 function setExploreView(on){
-  map3D.active=false; map3D.root.visible=false;
+  map3D.active=!!on; map3D.root.visible=!!on;
   if(on){
-    controls.enabled=false; controls.autoRotate=false; controls.enablePan=false;
-    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+620, MAP_ORIGIN.z+120);
-    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+18, MAP_ORIGIN.z);
+    controls.enabled=true; controls.autoRotate=false; controls.enablePan=true;
+    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+420, MAP_ORIGIN.z+360);
+    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+12, MAP_ORIGIN.z-45);
     camera.lookAt(controls.target);
-    renderer.setClearColor(0x05060E,0);
+    renderer.setClearColor(0x05060E,1);
     scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
   }else{
     controls.enabled=true; controls.enablePan=false;
@@ -2782,8 +2784,38 @@ function buildFallbackMapField(){
     block.position.set(MAP_ORIGIN.x+bx,bh/2,MAP_ORIGIN.z+bz); map3D.field.add(block);
   }
 }
+function lonToTileX(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
+function latToTileY(lat,z){ const r=lat*Math.PI/180, n=Math.pow(2,z); return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n); }
+function tileXToLon(x,z){ return x/Math.pow(2,z)*360-180; }
+function tileYToLat(y,z){ const n=Math.PI-2*Math.PI*y/Math.pow(2,z); return 180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))); }
+function mapTileUrl(x,y,z){
+  const subs='abcd', s=subs[Math.abs(x+y)%subs.length];
+  return 'https://'+s+'.basemaps.cartocdn.com/dark_all/'+z+'/'+x+'/'+y+'.png';
+}
+function addMapTileFloor(){
+  if(!avatarLL) return;
+  const z=MAP_TILE_ZOOM, cx=lonToTileX(avatarLL[1],z), cy=latToTileY(avatarLL[0],z);
+  const n=Math.pow(2,z);
+  for(let tx=cx-MAP_TILE_RADIUS; tx<=cx+MAP_TILE_RADIUS; tx++){
+    for(let ty=cy-MAP_TILE_RADIUS; ty<=cy+MAP_TILE_RADIUS; ty++){
+      if(ty<0||ty>=n) continue;
+      const x=((tx%n)+n)%n, west=tileXToLon(tx,z), east=tileXToLon(tx+1,z), north=tileYToLat(ty,z), south=tileYToLat(ty+1,z);
+      const nw=mapLocalPos(north,west), se=mapLocalPos(south,east), center=mapLocalPos((north+south)/2,(west+east)/2);
+      const w=Math.abs(se.x-nw.x), d=Math.abs(se.z-nw.z);
+      const mat=new THREE.MeshBasicMaterial({color:0x0B101B,transparent:true,opacity:.94,side:THREE.DoubleSide});
+      const tile=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat);
+      tile.rotation.x=-Math.PI/2; tile.position.set(center.x, -0.2, center.z); map3D.field.add(tile);
+      mapTileLoader.load(mapTileUrl(x,ty,z), tex=>{ tex.colorSpace=THREE.SRGBColorSpace; mat.map=tex; mat.color.set(0xffffff); mat.needsUpdate=true; }, undefined, ()=>{ mat.color.set(0x101827); mat.opacity=.72; });
+    }
+  }
+}
 function buildMapField(){
   clearObj(map3D.field); clearObj(map3D.labels);
+  addMapTileFloor();
+  const self=new THREE.Group(); self.position.copy(MAP_ORIGIN);
+  addGroundRing(self, 18, 0x3CF0FF, .34, 1.2);
+  const core=new THREE.Mesh(new THREE.OctahedronGeometry(15,0), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.78,blending:THREE.AdditiveBlending,depthWrite:false}));
+  core.position.y=22; self.add(core); addMapLabel(self, '現在地', 0x3CF0FF, 52); map3D.field.add(self);
 }
 function mapTowerAnchors(){
   const arr=[];
@@ -2805,13 +2837,13 @@ function updateExplore3D(force=false){
   if(!force && key===map3D.builtKey) return; map3D.builtKey=key;
   buildMapField(); clearObj(map3D.spots); clearObj(map3D.towers); map3D.interactives=[]; map3D.towerPos={};
   let labelCount=0;
-  const visibleSupply=supplySpots.filter(s=>supplySpotDistance(s)<=MAP_RENDER_RADIUS).sort((a,b)=>supplySpotDistance(a)-supplySpotDistance(b)).slice(0,28);
+  const visibleSupply=supplySpots.filter(s=>supplySpotDistance(s)<=MAP_RENDER_RADIUS).sort((a,b)=>supplySpotDistance(a)-supplySpotDistance(b)).slice(0,20);
   for(const spot of visibleSupply){
     const p=mapLocalPos(spot.lat,spot.lng), dist=supplySpotDistance(spot), ready=supplyReady(spot), near=dist<=SUPPLY_INTERACT_RANGE;
     if(Math.abs(p.x-MAP_ORIGIN.x)>MAP_RENDER_RADIUS||Math.abs(p.z-MAP_ORIGIN.z)>MAP_RENDER_RADIUS) continue;
     const g=new THREE.Group(); g.position.copy(p);
     const mesh=addDiscMarker(g, near?0x3CF0FF:0x4FA8FF, ready); mesh.userData={kind:'supply',id:spot.id};
-    if(labelCount<MAP_LABEL_LIMIT+8 && (near || dist<260)){ addMapLabel(g, spot.name||spot.type||'補給', ready?0x3CF0FF:0x9ED8FF, 58); labelCount++; }
+    if(labelCount<MAP_LABEL_LIMIT && (near || dist<140)){ addMapLabel(g, spot.name||spot.type||'補給', ready?0x3CF0FF:0x9ED8FF, 58); labelCount++; }
     map3D.spots.add(g); map3D.interactives.push(mesh);
   }
   for(const s of sweetSpotItems.filter(s=>s.dist<=MAP_RENDER_RADIUS).sort((a,b)=>a.dist-b.dist).slice(0,12)){
@@ -3304,7 +3336,7 @@ function startGPS(){
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
-function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=false; controls.enablePan=false; setTab('mode-map');
+function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=true; controls.enablePan=true; setTab('mode-map');
   setMapPanelOpen(false);
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('探索: 補給施設で素材回収 / 高密度地点で出撃'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
