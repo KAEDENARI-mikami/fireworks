@@ -2672,7 +2672,7 @@ let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, se
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
 const SUPPLY_FETCH_RADIUS=520, SUPPLY_FAST_RADIUS=900, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
-const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=240, MAP_COMBAT_DETAIL_M=180, MAP_LIVE_ENEMY_LIMIT=180;
+const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=300;
 const MAP_FEATURE_RADIUS=430, MAP_FIELD_SIZE=980, MAP_RENDER_RADIUS=520, MAP_LABEL_LIMIT=12;
 let mapFeatureState={key:'',roads:[],buildings:[],labels:[],busy:false,seq:0};
 const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), labels:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
