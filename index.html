@@ -2688,8 +2688,8 @@ function setExploreView(on){
   map3D.active=!!on; map3D.root.visible=!!on;
   if(on){
     controls.enabled=true; controls.autoRotate=false; controls.enablePan=true;
-    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+420, MAP_ORIGIN.z+360);
-    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+12, MAP_ORIGIN.z-45);
+    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+560, MAP_ORIGIN.z+520);
+    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+10, MAP_ORIGIN.z-70);
     camera.lookAt(controls.target);
     renderer.setClearColor(0x05060E,1);
     scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
@@ -2709,14 +2709,14 @@ function mapLocalPos(lat,lng){
   const east=(lng-avatarLL[1])*111320*cos, north=(lat-avatarLL[0])*111320;
   return new THREE.Vector3(MAP_ORIGIN.x+east,0,MAP_ORIGIN.z-north);
 }
-function addMapLabel(parent, text, color=0xEAF0FF, y=58){
+function addMapLabel(parent, text, color=0xEAF0FF, y=58, sx=82, sy=20){
   text=trimMapLabel(text);
   const c=document.createElement('canvas'); c.width=256; c.height=64; const g=c.getContext('2d');
   g.font='24px DotGothic16, monospace'; g.textAlign='center'; g.textBaseline='middle';
   g.fillStyle='rgba(5,6,14,.72)'; g.fillRect(8,12,240,40); g.strokeStyle='rgba(234,240,255,.24)'; g.strokeRect(8,12,240,40);
   g.fillStyle='#'+color.toString(16).padStart(6,'0'); g.fillText(text,128,33);
   const tex=new THREE.CanvasTexture(c), sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
-  sp.position.y=y; sp.scale.set(82,20,1); parent.add(sp); return sp;
+  sp.position.y=y; sp.scale.set(sx,sy,1); parent.add(sp); return sp;
 }
 function trimMapLabel(s, max=12){
   s=String(s||'').replace(/\s+/g,' ').trim();
@@ -2813,9 +2813,9 @@ function buildMapField(){
   clearObj(map3D.field); clearObj(map3D.labels);
   addMapTileFloor();
   const self=new THREE.Group(); self.position.copy(MAP_ORIGIN);
-  addGroundRing(self, 18, 0x3CF0FF, .34, 1.2);
-  const core=new THREE.Mesh(new THREE.OctahedronGeometry(15,0), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.78,blending:THREE.AdditiveBlending,depthWrite:false}));
-  core.position.y=22; self.add(core); addMapLabel(self, '現在地', 0x3CF0FF, 52); map3D.field.add(self);
+  addGroundRing(self, 10, 0x3CF0FF, .30, .8);
+  const core=new THREE.Mesh(new THREE.OctahedronGeometry(8,0), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.78,blending:THREE.AdditiveBlending,depthWrite:false}));
+  core.position.y=13; self.add(core); addMapLabel(self, '現在地', 0x3CF0FF, 30, 46, 12); map3D.field.add(self);
 }
 function mapTowerAnchors(){
   const arr=[];
