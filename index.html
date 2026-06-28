@@ -953,7 +953,7 @@ const TIER2=[
   {key:'firerun', name:'ファイヤーラン', hp:600, spd:72, dmg:200, size:9,  col:[1,.5,.18],  split:true},                    // 撃破時にHP半分・再分裂不可の分身を2体召喚
   {key:'beamer',  name:'ビーマー',       hp:350, spd:72, dmg:200, size:7,  col:[1,.32,.9],  beamer:true, range:700},        // 射程700で停止→10秒毎にビーム（0.1秒毎×4＝攻撃力40%）
 ];
-function tier2Chance(w){ if(w<50) return 0; return Math.min(0.50, 0.02 + 0.005*Math.floor((w-50)/50)); }  // wave50=2% / 50waveごと+0.5% / 上限50%
+function tier2Chance(w){ if(w<50) return 0; return Math.min(0.35, 0.02 + 0.005*Math.floor((w-50)/50)); }  // wave50=2% / 50waveごと+0.5% / 上限35%
 function resetT2(e){
   e.skillDmgMul=1; e.split=false; e.noSplit=false; e.beamer=false; e.beamCd=0; e.beamT=0; e.beamTickAcc=0; e.beamTicksLeft=0;
   e.invincibleShieldHits=0; e.invincibleShieldIgnoresInstant=false; e.blessingShieldHits=0; e.blessingShieldIgnoresInstant=false;
