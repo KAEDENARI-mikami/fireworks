@@ -293,8 +293,13 @@ body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-co
 .mapcenter::before{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;background:var(--cyan);box-shadow:0 0 18px var(--cyan);}
 .mapcenter::after{content:'';position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(60,240,255,.32);}
 body.state-map .mapcenter{display:block;}
-#mapui{display:none; position:fixed; right:.75rem; bottom:calc(58px + .75rem); z-index:20; width:min(340px,calc(100vw - 1.5rem)); pointer-events:none;}
+#mapui{display:none; position:fixed; right:.75rem; bottom:calc(58px + .75rem); z-index:20; width:min(340px,calc(100vw - 1.5rem)); pointer-events:none; gap:.45rem;}
 body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;}
+#mapui.collapsed{width:auto;}
+#mapui.collapsed .mapcard{display:none;}
+.maptoggle{pointer-events:auto; cursor:pointer; width:42px; height:42px; display:grid; place-items:center; color:var(--cyan); background:rgba(5,6,14,.86); border:1px solid rgba(60,240,255,.34); border-radius:50%; box-shadow:0 8px 22px rgba(0,0,0,.46),0 0 18px rgba(60,240,255,.12); -webkit-backdrop-filter:blur(7px); backdrop-filter:blur(7px);}
+.maptoggle svg{width:20px;height:20px;display:block;}
+#mapui:not(.collapsed) .maptoggle{color:var(--void); background:linear-gradient(135deg,var(--cyan),var(--gold)); border-color:transparent;}
 .mapcard{pointer-events:auto; max-height:min(42vh,360px); overflow:auto; background:linear-gradient(180deg,rgba(5,6,14,.93),rgba(2,3,8,.90)); border:1px solid rgba(60,240,255,.24); border-radius:8px; padding:.62rem .7rem .68rem; box-shadow:0 14px 28px rgba(0,0,0,.48),0 0 16px rgba(60,240,255,.08),inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); transform:none; transform-origin:bottom right;}
 .mapcard .mc-top{display:flex; justify-content:space-between; align-items:flex-start; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--ink); gap:.65rem;}
 .mapcard .mc-top b{color:var(--cyan); font-size:.92rem;}
@@ -357,7 +362,7 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 .mc-badge.green{color:var(--green);border-color:rgba(107,224,107,.5);background:rgba(107,224,107,.12);}
 @keyframes spotPulse{0%{box-shadow:0 0 0 0 rgba(255,214,107,.35),0 0 20px rgba(255,214,107,.55);}70%{box-shadow:0 0 0 17px rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}100%{box-shadow:0 0 0 0 rgba(255,214,107,0),0 0 20px rgba(255,214,107,.55);}}
 @keyframes supplyPulse{0%{box-shadow:0 0 0 0 rgba(60,240,255,.32),0 0 18px rgba(60,240,255,.65);}70%{box-shadow:0 0 0 16px rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}100%{box-shadow:0 0 0 0 rgba(60,240,255,0),0 0 18px rgba(60,240,255,.65);}}
-@media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}#mapui{left:.5rem;right:.5rem;bottom:calc(58px + .5rem);width:auto;}.mapcard{width:100%;max-height:34vh;padding:.58rem .62rem .64rem;}.mapbars .mb-track{height:28px;}.mc-title strong{font-size:.86rem;}}
+@media (max-width:560px){.mapwalkhud{top:calc(env(safe-area-inset-top,0px) + .5rem);}.walkpill{font-size:.6rem;padding:.34rem .48rem;}#mapui{left:.5rem;right:.5rem;bottom:calc(58px + .5rem);width:auto;}.maptoggle{width:40px;height:40px;}.mapcard{width:100%;max-height:34vh;padding:.58rem .62rem .64rem;}.mapbars .mb-track{height:28px;}.mc-title strong{font-size:.86rem;}}
 /* 放置追いつきオーバーレイ */
 body.state-catchup #catchup,
 body.state-catchup #modebar{ display:none; }
@@ -534,7 +539,10 @@ body.state-catchup #catchup{display:flex;}
   <div class="walkpill" id="walkdist">歩行 <b>0m</b></div>
 </div>
 <div class="mapcenter" aria-hidden="true"></div>
-<div id="mapui"><div class="mapcard" id="mapcard"></div></div>
+<div id="mapui" class="collapsed">
+  <button class="maptoggle" id="maptoggle" type="button" title="出撃UI" aria-label="出撃UIを開く"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-target"></use></svg></button>
+  <div class="mapcard" id="mapcard"></div>
+</div>
 
 <noscript><p style="position:fixed;inset:0;display:grid;place-items:center;color:#EAF0FF;font-family:sans-serif">Fireworks — JavaScript を有効にしてください。</p></noscript>
 
@@ -2613,7 +2621,7 @@ function buildSkills(){ try{
 }catch(e){ const el=$('sklist'); if(el) el.textContent='buildSkills ERR: '+(e&&e.message); console.log('buildSkills',e); } }
 
 /* ===== 位置情報マップ（探索画面）：Three.js探索フィールド＋GPS＋DEV移動＋施設補給＋スイートスポット ===== */
-let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, selectedMapTowerId=null, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], supplySpots=[], sweetSpotItems=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
+let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, selectedMapTowerId=null, mapPanelOpen=false, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], supplySpots=[], sweetSpotItems=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
 const SUPPLY_FETCH_RADIUS=900, SUPPLY_FAST_RADIUS=1800, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
@@ -2779,9 +2787,9 @@ function onMapPointer(e){
   mapRaycaster.setFromCamera(mapPointer,camera);
   const hit=mapRaycaster.intersectObjects(map3D.interactives,false)[0]; if(!hit) return;
   const d=hit.object.userData||{};
-  if(d.kind==='supply'){ selectedSupplySpot=supplySpots.find(s=>s.id===d.id)||null; mapSpotCell=null; selectedMapTowerId=null; renderCellCard(); e.preventDefault(); }
-  else if(d.kind==='sweet'){ mapSpotCell=d.cell; selectedSupplySpot=null; selectedMapTowerId=null; renderCellCard(); e.preventDefault(); }
-  else if(d.kind==='tower'){ selectedMapTowerId=d.id; selectedSupplySpot=null; mapSpotCell=null; renderCellCard(); e.preventDefault(); }
+  if(d.kind==='supply'){ selectedSupplySpot=supplySpots.find(s=>s.id===d.id)||null; mapSpotCell=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); e.preventDefault(); }
+  else if(d.kind==='sweet'){ mapSpotCell=d.cell; selectedSupplySpot=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); e.preventDefault(); }
+  else if(d.kind==='tower'){ selectedMapTowerId=d.id; selectedSupplySpot=null; mapSpotCell=null; setMapPanelOpen(true); renderCellCard(); e.preventDefault(); }
 }
 renderer.domElement.addEventListener('pointerdown', onMapPointer);
 function classifyMode(sp, hist){   // sp: m/s
@@ -2930,7 +2938,7 @@ function drawSupplyMarkers(){
     if(dist>0 && (!nearestSupplyDist||dist<nearestSupplyDist)) nearestSupplyDist=dist;
     const marker=L.marker([spot.lat,spot.lng],{icon:supplySpotIcon(spot),zIndexOffset:620,bubblingMouseEvents:false});
     marker.bindPopup(supplyPopupHtml(spot),{className:'sweet-popup',maxWidth:260});
-    marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); selectedSupplySpot=spot; mapSpotCell=null; renderCellCard(); marker.openPopup(); });
+    marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); selectedSupplySpot=spot; mapSpotCell=null; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
     marker.addTo(LMAP); supplyMarkers.push(marker);
   }
   updateExplore3D(true);
@@ -3008,7 +3016,7 @@ function drawCells(){
       const popup=sweetSpotPopupHtml(cid);
       const marker=L.marker(ll,{icon:sweetSpotIcon(f,dist),zIndexOffset:500,bubblingMouseEvents:false});
       marker.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
-      marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=cid; selCell=cid; renderCellCard(); marker.openPopup(); });
+      marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=cid; selCell=cid; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
       marker.addTo(LMAP); sweetMarkers.push(marker);
     }
   }
@@ -3087,6 +3095,15 @@ function renderTowerObserverCard(card, tower){
   const back=document.createElement('button'); back.type='button'; back.textContent='現在地へ'; back.addEventListener('click',()=>{ selectedMapTowerId=null; renderCellCard(); }); ctrls.appendChild(back);
   card.appendChild(ctrls);
 }
+function setMapPanelOpen(open){
+  mapPanelOpen=!!open;
+  const ui=$('mapui'), btn=$('maptoggle');
+  if(ui) ui.classList.toggle('collapsed', !mapPanelOpen);
+  if(btn){
+    btn.setAttribute('aria-label', mapPanelOpen?'出撃UIを閉じる':'出撃UIを開く');
+    btn.title=mapPanelOpen?'閉じる':'出撃UI';
+  }
+}
 function renderCellCard(){
   updateMapWalkHud();
   const card=$('mapcard'); if(!card) return; card.textContent='';
@@ -3151,6 +3168,7 @@ function startGPS(){
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
 function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=!REDUCED; setTab('mode-map');
+  setMapPanelOpen(false);
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('探索: 補給施設で素材回収 / 高密度地点で出撃'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
   if(!avatarLL) setAvatar(VENUE.lat, VENUE.lng);   // 即・既定地点を表示（GPS/Leaflet失敗でも常に出撃可能）
@@ -3515,6 +3533,7 @@ $('tohome').addEventListener('click', showHome);
 $('mode-combat').addEventListener('click', showCombat);
 $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
+$('maptoggle').addEventListener('click', ()=>{ setMapPanelOpen(!mapPanelOpen); if(mapPanelOpen) renderCellCard(); });
 $('mode-skill').addEventListener('click', showSkills);
 $('mode-mod').addEventListener('click', showMods);
 $('mode-research').addEventListener('click', showResearch);
