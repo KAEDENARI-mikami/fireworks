@@ -336,9 +336,10 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 .sweet-pop-mod span{color:var(--dim);}
 .leaflet-container{background:#05060E;}
 .leaflet-div-icon{background:transparent;border:none;}
-.map-avatar{width:48px;height:56px;position:relative;filter:drop-shadow(0 12px 8px rgba(0,0,0,.45));transform:scale(var(--map-marker-scale));transform-origin:50% 90%;}
-.map-avatar .core{position:absolute;left:50%;top:43%;width:24px;height:24px;transform:translate(-50%,-50%) rotate(45deg);border:2px solid #fff;background:linear-gradient(135deg,var(--cyan),#0d1730);box-shadow:0 0 18px var(--cyan);border-radius:6px;}
-.map-avatar .ring{position:absolute;left:50%;bottom:0;width:46px;height:18px;transform:translateX(-50%) rotateX(68deg);border-radius:50%;border:1px solid rgba(60,240,255,.45);background:rgba(60,240,255,.08);animation:spotPulse 2.2s ease-out infinite;}
+.map-avatar{width:54px;height:62px;position:relative;filter:drop-shadow(0 12px 8px rgba(0,0,0,.45));transform:scale(1);transform-origin:50% 90%;}
+.map-avatar .core{position:absolute;left:50%;top:43%;width:28px;height:28px;transform:translate(-50%,-50%) rotate(45deg);border:2px solid #fff;background:linear-gradient(135deg,var(--cyan),#0d1730);box-shadow:0 0 18px var(--cyan);border-radius:6px;}
+.map-avatar .ring{position:absolute;left:50%;bottom:0;width:58px;height:22px;transform:translateX(-50%) rotateX(68deg);border-radius:50%;border:1px solid rgba(60,240,255,.45);background:rgba(60,240,255,.08);animation:spotPulse 2.2s ease-out infinite;}
+.map-avatar .self-label{font-size:10px; line-height:1.2; font-family:"DotGothic16",monospace; color:var(--void); background:rgba(60,240,255,.95); border:1px solid var(--cyan); padding:2px 5px 1px; border-radius:999px; position:absolute; top:-7px; left:50%; transform:translateX(-50%); white-space:nowrap; letter-spacing:.04em; box-shadow:0 0 8px rgba(60,240,255,.45);}
 .sweet-marker{width:56px;height:72px;position:relative;filter:drop-shadow(0 12px 10px rgba(0,0,0,.42));transform:scale(var(--map-marker-scale));transform-origin:50% 85%;}
 .sweet-marker .orb{position:absolute;left:50%;top:0;width:42px;height:42px;transform:translateX(-50%);border-radius:50%;border:2px solid rgba(255,255,255,.82);background:radial-gradient(circle at 35% 25%,#fff 0 7%,#FFE9A8 8% 22%,#FFD66B 23% 52%,#8A5B12 78%);box-shadow:0 0 20px rgba(255,214,107,.65);}
 .sweet-marker .stem{position:absolute;left:50%;top:36px;width:4px;height:23px;transform:translateX(-50%);background:linear-gradient(var(--gold),rgba(255,214,107,.18));box-shadow:0 0 9px rgba(255,214,107,.35);}
@@ -2673,7 +2674,7 @@ let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度�
 const SUPPLY_FETCH_RADIUS=520, SUPPLY_FAST_RADIUS=900, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
 const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=300;
-const MAP_FEATURE_RADIUS=430, MAP_FIELD_SIZE=980, MAP_RENDER_RADIUS=520, MAP_LABEL_LIMIT=12;
+const MAP_FEATURE_RADIUS=380, MAP_FIELD_SIZE=820, MAP_RENDER_RADIUS=430, MAP_LABEL_LIMIT=12;
 const MAP_3D_REFRESH_MS=220, MAP_FEATURE_REFRESH_MS=1400, MAP_SUPPLY_REFRESH_MS=900;
 let mapFeatureState={key:'',roads:[],buildings:[],labels:[],busy:false,seq:0};
 let _lastMap3DRedrawAt=0, _lastFeatureFetchAt=0, _lastSupplyFetchAt=0;
@@ -2684,8 +2685,8 @@ function setExploreView(on){
   map3D.active=!!on; map3D.root.visible=!!on;
   if(on){
     controls.enabled=true; controls.autoRotate=false; controls.enablePan=true;
-    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+360, MAP_ORIGIN.z+430);
-    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+16, MAP_ORIGIN.z-70);
+    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+300, MAP_ORIGIN.z+340);
+    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+12, MAP_ORIGIN.z-90);
     camera.lookAt(controls.target);
     renderer.setClearColor(0x05060E,1);
     scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
@@ -3041,7 +3042,7 @@ function requestSupplySpots(){
 }
 function leafletReady(){ return !window.__leafletFailed && typeof L!=='undefined'; }
 function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
-  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],18);
+  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],19);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19, subdomains:'abcd'}).addTo(LMAP);
   LMAP.on('click', e=>{ if(devMode) setAvatar(e.latlng.lat, e.latlng.lng); });
   return LMAP; }
@@ -3061,7 +3062,7 @@ function updateMapWalkHud(){
   if(dist) dist.innerHTML='歩行 <b>'+fmt(Math.floor(meta.research.dist||0))+'m</b>';
 }
 function avatarIcon(){
-  return L.divIcon({className:'',iconSize:[25,29],iconAnchor:[12,18],html:'<div class="map-avatar"><i class="ring"></i><i class="core"></i></div>'});
+  return L.divIcon({className:'',iconSize:[36,42],iconAnchor:[18,40],html:'<div class="map-avatar"><i class="ring"></i><i class="core"></i><span class="self-label">現在地</span></div>'});
 }
 function sweetSpotIcon(f, dist){
   const near=dist>0&&dist<180;
@@ -3072,7 +3073,7 @@ function supplySpotIcon(spot){
   return L.divIcon({className:'',iconSize:[27,36],iconAnchor:[13,30],html:'<div class="supply-marker '+(ready&&near?'ready':'')+(ready?'':' cooling')+'"><i class="cube"></i><i class="core"></i><i class="stem"></i><i class="base"></i><b class="tag">'+(ready?'補給':'待機')+'</b></div>'});
 }
 function setAvatar(lat,lng){ avatarLL=[lat,lng]; mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null;
-  if(LMAP){ if(!avatarMarker){ avatarMarker=L.marker(avatarLL,{icon:avatarIcon(),interactive:false,zIndexOffset:700}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
+  if(LMAP){ if(!avatarMarker){ avatarMarker=L.marker(avatarLL,{icon:avatarIcon(),interactive:false,zIndexOffset:1200}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
 function htmlEsc(s){ return String(s).replace(/[&<>"']/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch])); }
 function supplyPopupHtml(spot){
@@ -3323,7 +3324,7 @@ function renderCellCard(){
 function startGPS(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで出撃可（矢印/クリックで移動）'); return; }   // VENUEは showMap が既に表示
   if(_gpsWatch!=null){ try{ navigator.geolocation.clearWatch(_gpsWatch); }catch(e){} _gpsWatch=null; }   // 二重監視を防ぐ
-  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,18); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
+  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,19); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
