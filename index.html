@@ -2815,7 +2815,7 @@ function buildMapField(){
   const self=new THREE.Group(); self.position.copy(MAP_ORIGIN);
   addGroundRing(self, 10, 0x3CF0FF, .30, .8);
   const core=new THREE.Mesh(new THREE.OctahedronGeometry(8,0), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.78,blending:THREE.AdditiveBlending,depthWrite:false}));
-  core.position.y=13; self.add(core); addMapLabel(self, '現在地', 0x3CF0FF, 30, 46, 12); map3D.field.add(self);
+  core.position.y=13; self.add(core); map3D.field.add(self);
 }
 function mapTowerAnchors(){
   const arr=[];
@@ -2836,14 +2836,12 @@ function updateExplore3D(force=false){
   const key=(avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'')+'|'+mapFeatureState.key+'|'+(mapFeatureState.roads||[]).length+'|'+supplySpots.length+'|'+sweetSpotItems.length+'|'+mapTowerAnchors().map(t=>t.id+':'+Math.floor(t.wave||0)).join(',');
   if(!force && key===map3D.builtKey) return; map3D.builtKey=key;
   buildMapField(); clearObj(map3D.spots); clearObj(map3D.towers); map3D.interactives=[]; map3D.towerPos={};
-  let labelCount=0;
   const visibleSupply=supplySpots.filter(s=>supplySpotDistance(s)<=MAP_RENDER_RADIUS).sort((a,b)=>supplySpotDistance(a)-supplySpotDistance(b)).slice(0,20);
   for(const spot of visibleSupply){
     const p=mapLocalPos(spot.lat,spot.lng), dist=supplySpotDistance(spot), ready=supplyReady(spot), near=dist<=SUPPLY_INTERACT_RANGE;
     if(Math.abs(p.x-MAP_ORIGIN.x)>MAP_RENDER_RADIUS||Math.abs(p.z-MAP_ORIGIN.z)>MAP_RENDER_RADIUS) continue;
     const g=new THREE.Group(); g.position.copy(p);
     const mesh=addDiscMarker(g, near?0x3CF0FF:0x4FA8FF, ready); mesh.userData={kind:'supply',id:spot.id};
-    if(labelCount<MAP_LABEL_LIMIT && (near || dist<140)){ addMapLabel(g, spot.name||spot.type||'補給', ready?0x3CF0FF:0x9ED8FF, 58); labelCount++; }
     map3D.spots.add(g); map3D.interactives.push(mesh);
   }
   for(const s of sweetSpotItems.filter(s=>s.dist<=MAP_RENDER_RADIUS).sort((a,b)=>a.dist-b.dist).slice(0,12)){
@@ -2851,7 +2849,6 @@ function updateExplore3D(force=false){
     if(Math.abs(p.x-MAP_ORIGIN.x)>MAP_RENDER_RADIUS||Math.abs(p.z-MAP_ORIGIN.z)>MAP_RENDER_RADIUS) continue;
     const g=new THREE.Group(); g.position.copy(p);
     const mesh=addBeaconMarker(g, 0xFFD66B, 70+Math.min(90,(s.field.moduleCost||0)*6)); mesh.userData={kind:'sweet',cell:s.cell};
-    addMapLabel(g, (s.field.rarityLabel||'レア')+' C'+fmt(s.field.moduleCost||0), 0xFFD66B, 58+Math.min(70,(s.field.moduleCost||0)*4));
     map3D.spots.add(g); map3D.interactives.push(mesh);
   }
   for(const t of mapTowerAnchors()){
@@ -2860,7 +2857,6 @@ function updateExplore3D(force=false){
     const base=new THREE.Mesh(new THREE.CylinderGeometry(18,28,30,6), new THREE.MeshBasicMaterial({color:t.kind==='main'?0x3CF0FF:0xFFD66B,transparent:true,opacity:.8,blending:THREE.AdditiveBlending}));
     base.position.y=18; base.userData={kind:'tower',id:t.id}; g.add(base);
     addBeaconMarker(g, t.boss?0xFF4A4A:0xB46BFF, t.boss?220:130);
-    addMapLabel(g, 'W'+fmt(Math.floor(t.wave||1)), t.boss?0xFF4A4A:0xEAF0FF, 96);
     map3D.towers.add(g); map3D.interactives.push(base);
   }
 }
@@ -3133,7 +3129,6 @@ function claimSupplySpot(spot){
     powder+=1; tokens+=5; dust+=2;
     if(streakBonus){ powder+=5; tokens+=30; dust+=12; }
   }
-  ms.task=makeSupplyTask(spot,rng);
   meta.blackPowder+=powder;
   meta.towerMods.addonTokens+=tokens;
   meta.towerMods.dust+=dust;
@@ -3141,7 +3136,7 @@ function claimSupplySpot(spot){
   if(rng.chance(0.08)) addon=createTowerAddon(null,0);
   ms.claims[spot.id]=Date.now();
   saveMeta(); refreshCurrencyDisplays();
-  const bits=[]; if(powder) bits.push('黒色火薬+'+powder); bits.push('トークン+'+tokens); bits.push('改装片+'+dust); if(catDust) bits.push((TOWER_MOD_CAT_BY_ID[cat]||{}).name+'片+'+catDust); if(addon) bits.push('アドオン入手'); if(dailyBonus) bits.push('初回補給'); if(streakBonus) bits.push('7日連続'); if(ms.task) bits.push('依頼更新');
+  const bits=[]; if(powder) bits.push('黒色火薬+'+powder); bits.push('トークン+'+tokens); bits.push('改装片+'+dust); if(catDust) bits.push((TOWER_MOD_CAT_BY_ID[cat]||{}).name+'片+'+catDust); if(addon) bits.push('アドオン入手'); if(dailyBonus) bits.push('初回補給'); if(streakBonus) bits.push('7日連続');
   toast('施設補給: '+bits.join(' / '));
   drawSupplyMarkers(); renderCellCard();
 }
@@ -3211,7 +3206,6 @@ function refreshSweetSpotCoords(){
   toast('スポットを更新しました');
 }
 function renderSupplySpotCard(card, spot){
-  const ms=ensureMapSupply();
   const dist=Math.round(supplySpotDistance(spot)), left=supplyCooldownLeft(spot), near=dist<=SUPPLY_INTERACT_RANGE || devMode;
   const top=document.createElement('div'); top.className='mc-top';
   const title=document.createElement('div'); title.className='mc-title';
@@ -3224,10 +3218,6 @@ function renderSupplySpotCard(card, spot){
   top.appendChild(title); top.appendChild(badges); card.appendChild(top);
   const rewards=document.createElement('div'); rewards.className='supply-rewards';
   [['黒色火薬','0〜3'],['トークン','5〜12'],['改装片','1〜5']].forEach(x=>{ const d=document.createElement('div'); d.className='supply-reward'; d.innerHTML='<b>'+x[1]+'</b>'+x[0]; rewards.appendChild(d); });
-  const task=document.createElement('div'); task.className='supply-task';
-  if(ms.task&&ms.task.name) task.innerHTML='<b>探索依頼</b> '+htmlEsc(ms.task.name)+' <span>/ 報酬: '+htmlEsc(ms.task.reward||'未定')+'</span>';
-  else task.innerHTML='<b>探索依頼</b> 補給ディスクを回すと施設由来の依頼を受け取ります';
-  rewards.appendChild(task);
   card.appendChild(rewards);
   const claim=document.createElement('button'); claim.className='mapgo'; claim.type='button';
   claim.textContent=left>0?'再補給待ち':near?'補給ディスクを回す':'100m以内へ';
