@@ -278,14 +278,14 @@ body.state-result #result{ display:flex; }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;} }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
 /* 位置情報マップ（探索画面） */
-#map{display:none; position:fixed; inset:0; z-index:8; background:transparent; opacity:0; pointer-events:none;}
+#map{display:none; position:fixed; inset:0; z-index:8; background:#05060E; opacity:1; pointer-events:none;}
 body.state-map #map{display:block;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
-#map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 44%,transparent 0 30%,rgba(5,6,14,.12) 52%,rgba(5,6,14,.54) 100%),linear-gradient(180deg,rgba(60,240,255,.07),transparent 24%,transparent 72%,rgba(255,214,107,.06));z-index:400;}
+#map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 52%,rgba(5,6,14,.18),rgba(5,6,14,.64) 100%);z-index:400;}
 .mapwalkhud{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + .75rem);transform:translateX(-50%);z-index:10;width:min(560px,94vw);pointer-events:none;font-family:"DotGothic16",monospace;perspective:900px;}
 body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-content:space-between;}
-.walkpill{min-height:34px;display:flex;align-items:center;gap:.35rem;padding:.38rem .62rem;border:1px solid rgba(234,240,255,.18);border-radius:999px;background:linear-gradient(180deg,rgba(18,26,48,.86),rgba(5,6,14,.78));box-shadow:0 10px 22px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08);color:var(--ink);font-size:.68rem;white-space:nowrap;transform:rotateX(5deg);}
+.walkpill{min-height:34px;display:flex;align-items:center;gap:.35rem;padding:.38rem .62rem;border:1px solid rgba(234,240,255,.18);border-radius:999px;background:linear-gradient(180deg,rgba(10,12,22,.88),rgba(5,6,14,.82));box-shadow:0 10px 22px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06);color:var(--ink);font-size:.68rem;white-space:nowrap;transform:rotateX(5deg);}
 .walkpill b{color:var(--cyan);font-size:.76rem;}
 .walkpill.spot b{color:var(--green);}
 .mapcenter{display:none;position:fixed;left:50%;top:46%;transform:translate(-50%,-50%) rotateX(62deg);z-index:9;pointer-events:none;width:92px;height:92px;border-radius:50%;border:1px solid rgba(60,240,255,.34);background:radial-gradient(circle,rgba(60,240,255,.12),rgba(60,240,255,.03) 48%,transparent 68%);box-shadow:0 0 34px rgba(60,240,255,.2), inset 0 0 26px rgba(60,240,255,.1);}
@@ -294,7 +294,7 @@ body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-co
 body.state-map .mapcenter{display:block;}
 #mapui{display:none; position:fixed; top:calc(env(safe-area-inset-top,0px) + 4.75rem); right:1rem; z-index:20; width:min(520px,calc(100vw - 2rem)); pointer-events:none;}
 body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;}
-.mapcard{pointer-events:auto; max-height:calc(100vh - 7rem); overflow:auto; background:linear-gradient(180deg,rgba(17,25,46,.95),rgba(5,6,14,.94)); border:1px solid rgba(60,240,255,.42); border-radius:16px; padding:.82rem .9rem .85rem; box-shadow:0 18px 34px rgba(0,0,0,.36),0 0 26px rgba(60,240,255,.16),inset 0 1px 0 rgba(255,255,255,.07); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); transform:perspective(900px) rotateX(1deg); transform-origin:top right;}
+.mapcard{pointer-events:auto; max-height:calc(100vh - 7rem); overflow:auto; background:linear-gradient(180deg,rgba(5,6,14,.98),rgba(2,3,8,.98)); border:1px solid rgba(60,240,255,.28); border-radius:16px; padding:.82rem .9rem .85rem; box-shadow:0 18px 34px rgba(0,0,0,.54),0 0 20px rgba(60,240,255,.10),inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); transform:none; transform-origin:top right;}
 .mapcard .mc-top{display:flex; justify-content:space-between; align-items:flex-start; font-family:"DotGothic16",monospace; font-size:.72rem; color:var(--ink); gap:.65rem;}
 .mapcard .mc-top b{color:var(--cyan); font-size:.92rem;}
 .mc-title{display:flex;flex-direction:column;gap:.1rem;min-width:0;}
@@ -2612,7 +2612,7 @@ let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, se
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
 const SUPPLY_FETCH_RADIUS=900, SUPPLY_FAST_RADIUS=1800, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
-const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=220;
+const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=300;
 const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
 map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.combat); scene.add(map3D.root);
 const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
@@ -2623,8 +2623,8 @@ function setExploreView(on){
     camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+560, MAP_ORIGIN.z+680);
     controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+18, MAP_ORIGIN.z-120);
     camera.lookAt(controls.target);
-    renderer.setClearColor(0x50D4C6,1);
-    scene.fog.color.set(0x50D4C6); scene.fog.density=0.00078;
+    renderer.setClearColor(0x05060E,1);
+    scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
   }else{
     controls.enabled=true;
     if(camera.position.distanceTo(CORE)>5000) camera.position.set(0,220,660);
@@ -2742,13 +2742,13 @@ function updateExploreCombat(){
   const near=nearestTower(MAP_COMBAT_VISIBLE_M); if(!near) return;
   const p=map3D.towerPos[near.id]||mapLocalPos(near.lat,near.lng), dist=near.dist, detail=dist<=MAP_COMBAT_DETAIL_M, live=mapMode()==='live'&&near.kind==='main'&&isRunLive();
   const rangeM=near.kind==='main'?Math.max(24,(Number(game.range)||0)*MAP_RANGE_UNIT_M):120;
-  const rangeRing=new THREE.Mesh(new THREE.RingGeometry(Math.max(2,rangeM-2), rangeM+2, 96), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:dist<=MAP_COMBAT_DETAIL_M?.30:.13,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
+  const rangeRing=new THREE.Mesh(new THREE.RingGeometry(Math.max(2,rangeM-2), rangeM+2, 96), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:dist<=MAP_COMBAT_DETAIL_M?.38:.16,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
   rangeRing.rotation.x=-Math.PI/2; rangeRing.position.set(p.x,4,p.z); map3D.combat.add(rangeRing);
   const enemies=[];
   if(live && typeof E!=='undefined'){
     for(const e of E){ if(e&&e.active){
-      const kind=e.kind||'', scale=dist>180?1.05:.82, color=e.boss?0xFF4A4A:(e.beamer||kind==='beamer'?0xFF64D8:(e.shooter?0x7DFF9D:(kind==='firerun'?0xFF9A48:0xEAF0FF)));
-      enemies.push({x:e.x*MAP_RANGE_UNIT_M,z:e.z*MAP_RANGE_UNIT_M,y:10+(e.size||8)*.16,size:Math.max(dist>180?6:4,(e.size||7)*scale),color,live:true,boss:!!e.boss});
+      const kind=e.kind||'', scale=dist>180?1.10:.94, color=e.boss?0xFF4A4A:(e.beamer||kind==='beamer'?0xFF64D8:(e.shooter?0x7DFF9D:(kind==='firerun'?0xFF9A48:0xEAF0FF)));
+      enemies.push({x:e.x*MAP_RANGE_UNIT_M,z:e.z*MAP_RANGE_UNIT_M,y:10+(e.size||8)*.16,size:Math.max(dist>180?8:6,(e.size||7)*scale),color,live:true,boss:!!e.boss});
       if(enemies.length>=MAP_LIVE_ENEMY_LIMIT) break;
     } }
   }
@@ -2757,7 +2757,7 @@ function updateExploreCombat(){
     for(let i=0;i<count;i++){ const a=tval*0.8+i*2.399, r=detail?(45+(i%8)*10):(80+(i%8)*22); enemies.push({x:Math.cos(a)*r,z:Math.sin(a*1.13)*r,y:8,size:detail?5:4,color:near.boss?0xFF4A4A:(i%3?0xEAF0FF:0xFF9AD0)}); }
   }
   for(let i=0;i<enemies.length;i++){
-    const e=enemies[i], opacity=e.live?(detail?.96:.74):(dist<=120?.82:.35);
+    const e=enemies[i], opacity=e.live?(detail?.98:.84):(dist<=120?.9:.5);
     const m=new THREE.Mesh(new THREE.BoxGeometry(e.size,e.size,e.size), new THREE.MeshBasicMaterial({color:e.color,transparent:true,opacity,blending:THREE.AdditiveBlending}));
     m.position.set(p.x+e.x,p.y+e.y,p.z+e.z); m.rotation.set(tval+i,tval*.7+i*.3,tval*.4); map3D.combat.add(m);
     if(e.live && (e.boss || i<96)){
