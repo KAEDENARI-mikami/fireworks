@@ -454,6 +454,7 @@ body.state-catchup #catchup{display:flex;}
   <h2 id="rtitle"></h2>
   <div class="stat">到達WAVE <b id="rwave">0</b> ／ 撃破 <b id="rkill">0</b> ／ SCORE <b id="rscore">0</b></div>
   <div class="stat" id="rspark" style="font-size:.8rem;color:var(--dim)"></div>
+  <div class="stat" id="rmilestone" style="font-size:.76rem;color:var(--dim); min-height:1.2rem"></div>
   <div class="btns">
     <button id="rewardad" class="ad" type="button">広告を見る +5 黒色火薬</button>
     <button id="tohome" type="button">拠点へ</button>
@@ -816,6 +817,15 @@ let   TARGET_WAVE  = 15000;         // 規定ウェーブ（踏破条件）
 const BOSS_EVERY   = 25;            // ボスウェーブ間隔（25waveごと：wave25/50/75…）
 const BOSS_KEYS    = ['tank','inter','fort'];
 const SCALE_PER_WAVE = 1.005;      // 敵HP/攻撃の wave毎スケール（約139wave で2倍 / W15000≈×3.1e32）。決定論：waveは整数クロックなので純粋関数
+const WAVE_MILESTONES = [
+  { wave:10, reward:{blackPowder:100} },
+  { wave:20, reward:{spark:300} },
+  { wave:30, reward:{spark:500} },
+  { wave:40, reward:{blackPowder:200} },
+  { wave:50, reward:{spark:500} },
+  { wave:75, reward:{blackPowder:300} },
+  { wave:100, reward:{spark:1000} }
+];
 function waveMul(w){ return Math.pow(SCALE_PER_WAVE, Math.max(0, (w|0)-1)); }
 const SPEED_PER_WAVE = 1.005;      // 敵速度の wave毎スケール（20waveごと×1.005）。減速Lvが20wave/Lvで巻き戻す
 function speedWaveMul(){ return Math.pow(SPEED_PER_WAVE, Math.max(0, (game.wave - 20*(game.slowLv||0)))/20); }   // effective wave = wave − 20×減速Lv（下限0＝基準速度）
@@ -1860,9 +1870,46 @@ function updateHUD(dt){
 }
 
 /* ===== 拠点（準備画面・恒常強化） ===== */
+function normalizeMilestoneState(raw){
+  const out={ highestWave:0, claimed:{} };
+  const c=(raw&&typeof raw==='object'&&raw.claimed&&typeof raw.claimed==='object')?raw.claimed:{};
+  for(const ms of WAVE_MILESTONES){
+    const wave=Math.max(1, Math.min(10000, Math.floor(Number(ms.wave)||0)));
+    const key=String(wave);
+    out.claimed[wave]=!!(c[wave]||c[key]);
+  }
+  out.highestWave=Math.max(0, Math.floor(Number(raw&&raw.highestWave)||0));
+  return out;
+}
+function rewardTextForMilestone(reward){
+  const parts=[];
+  if(reward.blackPowder) parts.push('黒色火薬 '+fmt(reward.blackPowder));
+  if(reward.spark) parts.push('SPARK '+fmt(reward.spark));
+  return parts.join(' / ') || '報酬なし';
+}
+function claimWaveMilestones(wave){
+  if(!meta.milestones||typeof meta.milestones!=='object') meta.milestones=normalizeMilestoneState();
+  const reached=Math.max(1, Math.floor(Number(wave)||1));
+  const grants=[];
+  for(const ms of WAVE_MILESTONES){
+    if(reached >= ms.wave && !meta.milestones.claimed[ms.wave]){
+      const reward=ms.reward||{};
+      if(reward.blackPowder) meta.blackPowder += Math.max(0, Math.floor(reward.blackPowder));
+      if(reward.spark) meta.spark += Math.max(0, Math.floor(reward.spark));
+      meta.milestones.claimed[ms.wave]=true;
+      grants.push({ wave:ms.wave, reward:{ blackPowder:Math.max(0,Math.floor(reward.blackPowder||0)), spark:Math.max(0,Math.floor(reward.spark||0)) } });
+    }
+  }
+  if(reached > (meta.milestones.highestWave||0)) meta.milestones.highestWave=reached;
+  return grants;
+}
+function milestoneSummary(grants){
+  if(!grants||!grants.length) return '';
+  return grants.map(g=>'WAVE '+fmt(g.wave)+' '+rewardTextForMilestone(g.reward)).join(' ／ ');
+}
 const meta = { spark:0, blackPowder:0, towerSlots:1, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false, mapSupply:{claims:{},lastDay:'',streak:0,task:null},
   towerMods:{owned:{}, equip:{turret:null,barrier:null,armor:null,transmitter:null,reactor:null}, addons:{}, addonEquip:{turret:[null,null,null],barrier:[null,null,null],armor:[null,null,null],transmitter:[null,null,null],reactor:[null,null,null]}, dust:0, catDust:{turret:0,barrier:0,armor:0,transmitter:0,reactor:0}, addonTokens:0, pity:0, legendPity:0, seed:0, walkBank:0},
-  settings:{combatObserverMode:'live'} };
+  milestones: normalizeMilestoneState(), settings:{combatObserverMode:'live'} };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -3243,8 +3290,10 @@ function runStep(dt){
 function finishRun(clear, retreat){ if(!isRunLive()) return; game.state='result'; game.runLive=false; game.ended=true;
   const sc=Math.round(8*Math.sqrt(Math.max(1,game.wave))) * (clear?1.5:1) * (1+0.12*(TOTAL/100)) * (game.sparkMul||1) * (1+0.07*resLv('r_spark')) * (game.moduleRewardMul||1);
   meta.spark += Math.round(sc); for(const c of COLORS) meta.bank[c]+=Math.floor(game.res[c]);   // 持ち帰り（撤退でも全額キープ）
+  const milestoneGains = claimWaveMilestones(game.wave);
   grantTowerModResultReward(clear, game.wave);
   game.result = { clear, retreat:!!retreat, wave:game.wave, kills:game.kills, sc:Math.round(sc),
+    milestoneGains,
     haul:{red:Math.floor(game.res.red),blue:Math.floor(game.res.blue),green:Math.floor(game.res.green),yellow:Math.floor(game.res.yellow),purple:Math.floor(game.res.purple)} };
   saveMeta(); clearRun();
 }
@@ -3256,6 +3305,10 @@ function showResult(){ if(!game.result || game.resultShown) return; game.resultS
   $('rwave').textContent=r.wave; $('rkill').textContent=fmt(r.kills); $('rscore').textContent=fmt(r.kills);
   const h=r.haul; const haul='R'+fmt(h.red)+' B'+fmt(h.blue)+' G'+fmt(h.green)+' Y'+fmt(h.yellow)+' P'+fmt(h.purple);
   $('rspark').textContent='精算 Spark '+fmt(r.sc)+'（報酬×'+(r.clear?'1.5':'1')+'） ／ 恒常資源 '+haul;
+  const rm=$('rmilestone'); if(rm){
+    const ms=r.milestoneGains;
+    rm.textContent = (ms&&ms.length) ? ('到達マイルストーン：'+milestoneSummary(ms)) : '';
+  }
   refreshRewardAdButton();
   controls.autoRotate=!REDUCED;
   if((r.clear||r.retreat) && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
@@ -3398,7 +3451,7 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live'}; localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings})); }catch(e){} }
+function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live'}; localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,milestones:meta.milestones,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings})); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
   meta.blackPowder=Math.max(0, Number(m.blackPowder)||0);
@@ -3413,6 +3466,7 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
       if(n && isFinite(st) && st>=0 && !(n.max&&(meta.research.node[sl.key]||0)>=n.max) && !seen[sl.key]){ seen[sl.key]=1; meta.research.slots.push({key:sl.key, start:Math.min(st, meta.research.dist)}); } else { meta.research.slots.push(null); } } }
   meta.gachaSeed=(m.gachaSeed>>>0)||((Date.now()>>>0)||1); meta.free10Done=!!m.free10Done;
   meta.items=(m.items&&typeof m.items==='object')?m.items:{}; meta.armedShibuya=!!m.armedShibuya;
+  meta.milestones=normalizeMilestoneState(m&&m.milestones);
   meta.mapSupply=(m.mapSupply&&typeof m.mapSupply==='object')?m.mapSupply:{claims:{}};
   ensureMapSupply();
   meta.settings=(m.settings&&typeof m.settings==='object')?m.settings:{combatObserverMode:'live'};
