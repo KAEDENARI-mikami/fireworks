@@ -29,6 +29,7 @@ html,body{height:100%;}
 body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monospace; overflow:hidden; -webkit-font-smoothing:antialiased; }
 
 #bg{position:fixed; inset:0; width:100%; height:100%; display:block; z-index:1; touch-action:none;}
+body.state-map #bg{opacity:0; pointer-events:none;}
 .grain{ position:fixed; inset:-50%; z-index:1; pointer-events:none; opacity:.04; mix-blend-mode:screen;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 #flash{position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0;
@@ -280,7 +281,7 @@ body.state-result #result{ display:flex; }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
 /* 位置情報マップ（探索画面） */
 #map{display:none; position:fixed; inset:0; z-index:0; background:#05060E; opacity:0; pointer-events:none;}
-body.state-map #map{display:block; opacity:1;}
+body.state-map #map{display:block; opacity:1; pointer-events:auto;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
 #map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 52%,rgba(5,6,14,.18),rgba(5,6,14,.64) 100%);z-index:400;}
@@ -2677,14 +2678,14 @@ const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, 
 const MAP_FEATURE_RADIUS=380, MAP_FIELD_SIZE=820, MAP_RENDER_RADIUS=430, MAP_LABEL_LIMIT=12;
 const MAP_3D_REFRESH_MS=220, MAP_FEATURE_REFRESH_MS=1400, MAP_SUPPLY_REFRESH_MS=900;
 let mapFeatureState={key:'',roads:[],buildings:[],labels:[],busy:false,seq:0};
-let _lastMap3DRedrawAt=0, _lastFeatureFetchAt=0, _lastSupplyFetchAt=0;
+let _lastMap3DRedrawAt=0, _lastFeatureFetchAt=-Infinity, _lastSupplyFetchAt=-Infinity;
 const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), labels:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
 map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.labels,map3D.combat); scene.add(map3D.root);
 const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
 function setExploreView(on){
-  map3D.active=!!on; map3D.root.visible=!!on;
+  map3D.active=false; map3D.root.visible=false;
   if(on){
-    controls.enabled=true; controls.autoRotate=false; controls.enablePan=true;
+    controls.enabled=false; controls.autoRotate=false; controls.enablePan=false;
     camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+620, MAP_ORIGIN.z+120);
     controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+18, MAP_ORIGIN.z);
     camera.lookAt(controls.target);
@@ -2798,6 +2799,7 @@ function towerDist(t){ return avatarLL?haversine(avatarLL[0],avatarLL[1],t.lat,t
 function findTower(id){ return mapTowerAnchors().find(t=>t.id===id)||null; }
 function nearestTower(max=Infinity){ let best=null, bd=max; for(const t of mapTowerAnchors()){ const d=towerDist(t); if(d<bd){best=t;bd=d;} } return best?Object.assign({dist:bd},best):null; }
 function updateExplore3D(force=false){
+  if(!map3D.active) return;
   if(!avatarLL||!map3D.root) return;
   const key=(avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'')+'|'+mapFeatureState.key+'|'+(mapFeatureState.roads||[]).length+'|'+supplySpots.length+'|'+sweetSpotItems.length+'|'+mapTowerAnchors().map(t=>t.id+':'+Math.floor(t.wave||0)).join(',');
   if(!force && key===map3D.builtKey) return; map3D.builtKey=key;
@@ -2831,6 +2833,7 @@ function updateExplore3D(force=false){
   }
 }
 function updateExploreCombat(){
+  if(!map3D.active) return;
   if(game.state!=='map'||!avatarLL) return;
   clearObj(map3D.combat);
   const near=nearestTower(MAP_COMBAT_VISIBLE_M); if(!near) return;
@@ -3301,7 +3304,7 @@ function startGPS(){
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
-function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=true; controls.enablePan=true; setTab('mode-map');
+function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=false; controls.enablePan=false; setTab('mode-map');
   setMapPanelOpen(false);
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('探索: 補給施設で素材回収 / 高密度地点で出撃'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
