@@ -161,8 +161,9 @@ body.state-mod #modebar{display:flex;}
 .modslots{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:.45rem; width:min(980px,96vw);}
 .modslot{--ac:#3CF0FF; min-height:72px; border:2px dashed rgba(234,240,255,.22); border-radius:8px; background:rgba(13,18,38,.68); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.15rem; padding:.45rem; text-align:center; cursor:pointer; pointer-events:auto; color:var(--dim);}
 .modslot.on{border-style:solid; border-color:var(--ac); color:var(--ink); box-shadow:0 0 14px color-mix(in srgb,var(--ac) 26%,transparent);}
+.modslot.sel{outline:2px solid var(--gold); outline-offset:2px; background:linear-gradient(155deg,color-mix(in srgb,var(--ac) 16%,rgba(13,18,38,.9)),rgba(8,10,20,.94));}
 .modslot b{font-family:"Reggae One",sans-serif; font-size:.72rem; color:var(--ac);}
-.modslot span{font-size:.58rem; line-height:1.25;}
+.modslot span{font-size:.58rem; line-height:1.25; white-space:pre-line;}
 #modcats{width:min(980px,96vw);display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
 #modcats .ctab{display:flex;align-items:center;justify-content:center;gap:.45rem;min-height:44px;font-size:.9rem;font-variant-numeric:tabular-nums;}
 #modcats .ctab svg{width:1.25rem;height:1.25rem;display:block;filter:drop-shadow(0 0 8px currentColor);}
@@ -178,6 +179,7 @@ body.state-mod #modebar{display:flex;}
 .modtile .mstats{font-size:.64rem;color:var(--dim);line-height:1.42;white-space:pre-line;flex:1;}
 .modtile .mfoot{display:flex;justify-content:space-between;align-items:center;font-size:.62rem;color:var(--ink);}
 .modtile .mfoot b{color:var(--gold);}
+.modempty{grid-column:1/-1; padding:.7rem .85rem; border:1px dashed rgba(234,240,255,.18); border-radius:8px; background:rgba(234,240,255,.035); color:var(--dim); font-family:"DotGothic16",monospace; font-size:.68rem; text-align:center;}
 @media (max-width:720px){.modslots{grid-template-columns:1fr 1fr;}.modslot:last-child{grid-column:1/-1;}}
 .skgacha{pointer-events:auto;cursor:pointer;font-family:"Reggae One",sans-serif;font-size:1rem;letter-spacing:.04em;padding:.6rem 1.6rem;color:var(--void);background:linear-gradient(135deg,var(--purple),var(--gold));border:none;border-radius:7px;box-shadow:0 0 22px rgba(180,107,255,.5);}
 .skreveal{font-family:"DotGothic16",monospace;font-size:.82rem;color:var(--cyan);min-height:1.2em;}
@@ -219,6 +221,16 @@ body.state-mod #modebar{display:flex;}
 .sdstars{font-size:1.15rem; letter-spacing:3px; margin:.25rem 0;}
 .sdstars b{color:var(--gold);} .sdstars i{color:rgba(234,240,255,.22); font-style:normal;}
 .sddesc{font-size:.82rem; color:var(--dim); line-height:1.55; margin:.55rem .2rem .95rem; white-space:pre-line;}
+.addon-effects{display:flex; flex-direction:column; gap:.35rem; text-align:left; white-space:normal;}
+.addon-main{padding:.46rem .55rem; border:1px solid color-mix(in srgb,var(--ac) 40%,rgba(234,240,255,.12)); border-radius:8px; background:rgba(234,240,255,.045); color:var(--ink);}
+.addon-locks{display:flex; flex-direction:column; gap:.28rem;}
+.addon-lock-row{display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:.48rem; padding:.44rem .52rem; border:1px solid rgba(234,240,255,.13); border-radius:8px; background:rgba(5,6,14,.38); color:var(--dim); cursor:pointer;}
+.addon-lock-row:hover{border-color:color-mix(in srgb,var(--ac) 38%,rgba(234,240,255,.18)); background:rgba(234,240,255,.06);}
+.addon-lock-row input{width:1.05rem; height:1.05rem; accent-color:var(--ac); cursor:pointer;}
+.addon-lock-row b{min-width:2.6rem; color:var(--ac); font-size:.66rem;}
+.addon-lock-row span{min-width:0; overflow-wrap:anywhere;}
+.addon-lock-row em{font-style:normal; color:var(--gold); font-size:.66rem;}
+.addon-cost{margin-top:.7rem; font-size:.76rem; line-height:1.45; text-align:center; color:var(--dim); white-space:pre-line;}
 .sdbtns{display:flex; gap:.55rem; flex-wrap:wrap;}
 .sdbtns button{flex:1; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.82rem; padding:.62rem .4rem; border-radius:9px; color:var(--ink); transition:.15s;
   background:color-mix(in srgb,var(--ac) 18%, rgba(234,240,255,.05)); border:1px solid var(--ac);}
@@ -2071,6 +2083,7 @@ const TOWER_MOD_CATS=[
 ];
 const TOWER_MOD_CAT_BY_ID=Object.fromEntries(TOWER_MOD_CATS.map(c=>[c.id,c]));
 const TOWER_MOD_RARITIES={
+  common:{id:'common',label:'Common',rank:-1,color:'#5F6B80',mul:0.72,dust:0,catDust:0},
   rare:{id:'rare',label:'Rare',rank:0,color:'#8A93AD',mul:1,dust:1,catDust:1},
   epic:{id:'epic',label:'Epic',rank:1,color:'#B46BFF',mul:1.35,dust:4,catDust:2},
   legend:{id:'legend',label:'Legend',rank:2,color:'#FFD66B',mul:1.85,dust:16,catDust:5},
@@ -2103,8 +2116,8 @@ const TOWER_MOD_DEFS=[
 const TOWER_MOD_DEF_BY_ID=Object.fromEntries(TOWER_MOD_DEFS.map(m=>[m.id,m]));
 const TOWER_MOD_DRAW_COST=25, TOWER_MOD_CAT_DRAW_COST=60, TOWER_MOD_WALK_DUST=500;
 const TOWER_ADDON_SLOTS=3;
-const TOWER_ADDON_SUBS={rare:1,epic:2,legend:3,mythic:4,celestial:5};
-const TOWER_ADDON_TOKEN_BY_RARITY={rare:8,epic:28,legend:95,mythic:320,celestial:1200};
+const TOWER_ADDON_SUBS={common:0,rare:1,epic:2,legend:3,mythic:4,celestial:5};
+const TOWER_ADDON_TOKEN_BY_RARITY={common:3,rare:8,epic:28,legend:95,mythic:320,celestial:1200};
 const TOWER_ADDON_STATS={
   turret:['dmgPct','fireRatePct','rangePct','critChanceFlat','critPowerFlat','bossDmgPct'],
   barrier:['barrierFlat','shieldFlat','regenFlat','drFlat','dmgTakenMul'],
@@ -2119,6 +2132,20 @@ const TOWER_ADDON_STAT_BASE={
   cashPct:0.04,harvestPct:0.04,sparkPct:0.035,
 };
 let modCat='turret', lastModReveal='';
+function addonLockArray(ad){ const n=(ad&&Array.isArray(ad.subs))?ad.subs.length:0; const src=Array.isArray(ad&&ad.lockedSubs)?ad.lockedSubs:[]; return Array.from({length:n},(_,i)=>!!src[i]); }
+function addonKeepCount(ad){ return addonLockArray(ad).filter(Boolean).length; }
+function syncAddonLocks(ad){
+  if(!ad||!Array.isArray(ad.subs)) return 0;
+  const n=ad.subs.length;
+  if(!Array.isArray(ad.lockedSubs)){
+    const keep=Math.max(0,Math.min(n,ad.lockedSubCount|0));
+    ad.lockedSubs=Array.from({length:n},(_,i)=>i<keep);
+  }else{
+    ad.lockedSubs=Array.from({length:n},(_,i)=>!!ad.lockedSubs[i]);
+  }
+  ad.lockedSubCount=ad.lockedSubs.filter(Boolean).length;
+  return ad.lockedSubCount;
+}
 function ensureTowerMods(){
   if(!meta.towerMods||typeof meta.towerMods!=='object') meta.towerMods={};
   const tm=meta.towerMods;
@@ -2147,9 +2174,11 @@ function ensureTowerMods(){
   for(const uid of Object.keys(tm.addons)){
     const ad=tm.addons[uid], cat=ad&&TOWER_MOD_CAT_BY_ID[ad.cat], rr=ad&&TOWER_MOD_RARITIES[ad.rarity];
     if(!ad||!cat||!rr||!ad.main||!Array.isArray(ad.subs)){ delete tm.addons[uid]; continue; }
-    ad.uid=uid; ad.lockedSubCount=Math.max(0,Math.min(ad.subs.length,ad.lockedSubCount|0));
-    ad.subs=ad.subs.slice(0,TOWER_ADDON_SUBS[ad.rarity]||1).filter(e=>e&&TOWER_ADDON_STAT_BASE[e.stat]!==undefined&&TOWER_MOD_RARITIES[e.rarity]);
-    while(ad.subs.length<(TOWER_ADDON_SUBS[ad.rarity]||1)){ const st=(TOWER_ADDON_STATS[ad.cat]||TOWER_ADDON_STATS.reactor)[0]; ad.subs.push({stat:st,rarity:'rare',value:TOWER_ADDON_STAT_BASE[st]}); }
+    ad.uid=uid;
+    const subTarget=TOWER_ADDON_SUBS[ad.rarity]??1;
+    ad.subs=ad.subs.slice(0,subTarget).filter(e=>e&&TOWER_ADDON_STAT_BASE[e.stat]!==undefined&&TOWER_MOD_RARITIES[e.rarity]);
+    while(ad.subs.length<subTarget){ const st=(TOWER_ADDON_STATS[ad.cat]||TOWER_ADDON_STATS.reactor)[0]; ad.subs.push({stat:st,rarity:'rare',value:TOWER_ADDON_STAT_BASE[st]}); }
+    syncAddonLocks(ad);
   }
   for(const c of TOWER_MOD_CATS){ tm.addonEquip[c.id]=tm.addonEquip[c.id].map(uid=>tm.addons[uid]?uid:null); }
 }
@@ -2184,7 +2213,19 @@ function rollAddonEffectRarity(){
   if(r<0.05) return 'mythic';
   if(r<0.17) return 'legend';
   if(r<0.45) return 'epic';
-  return 'rare';
+  if(r<0.72) return 'rare';
+  return 'common';
+}
+function modRollAddonRarity(minRank=-1){
+  ensureTowerMods();
+  if(minRank>=0) return modRollRarity(minRank);
+  const r=modRng();
+  if(r<0.002) return 'celestial';
+  if(r<0.018) return 'mythic';
+  if(r<0.065) return 'legend';
+  if(r<0.205) return 'epic';
+  if(r<0.555) return 'rare';
+  return 'common';
 }
 function randomAddonEffect(cat, main){
   const pool=TOWER_ADDON_STATS[cat]||TOWER_ADDON_STATS.reactor;
@@ -2192,17 +2233,18 @@ function randomAddonEffect(cat, main){
   const rarity=main?null:rollAddonEffectRarity();
   return {stat, rarity:rarity||'main', value:TOWER_ADDON_STAT_BASE[stat]};
 }
-function createTowerAddon(cat=null, minRank=0){
+function createTowerAddon(cat=null, minRank=-1){
   ensureTowerMods();
   const c=cat||TOWER_MOD_CATS[Math.floor(modRng()*TOWER_MOD_CATS.length)].id;
-  const rarity=modRollRarity(minRank), n=TOWER_ADDON_SUBS[rarity]||1;
+  const rarity=modRollAddonRarity(minRank), n=TOWER_ADDON_SUBS[rarity]||0;
   const uid='ta-'+hash32(c,rarity,Date.now(),meta.towerMods.seed,Object.keys(meta.towerMods.addons).length).toString(36)+'-'+modRandInt(1000,9999);
-  const ad={uid,cat:c,rarity,main:randomAddonEffect(c,true),subs:[],lockedSubCount:0};
+  const ad={uid,cat:c,rarity,main:randomAddonEffect(c,true),subs:[],lockedSubs:[],lockedSubCount:0};
   for(let i=0;i<n;i++) ad.subs.push(randomAddonEffect(c,false));
+  syncAddonLocks(ad);
   meta.towerMods.addons[uid]=ad;
   return ad;
 }
-function grantTowerAddon(cat=null, minRank=0, reason='アドオン'){
+function grantTowerAddon(cat=null, minRank=-1, reason='アドオン'){
   const ad=createTowerAddon(cat,minRank), rr=TOWER_MOD_RARITIES[ad.rarity], ci=TOWER_MOD_CAT_BY_ID[ad.cat];
   lastModReveal=reason+' '+ci.name+'アドオン '+rr.label+' 入手';
   if(RENDER) toast(lastModReveal);
@@ -2264,7 +2306,7 @@ function addonEffectText(ad,e,main=false){
   const val=pct?(sign+Math.round(v*100)+'%'):(sign+(e.stat.endsWith('Flat')?v.toFixed(e.stat==='drFlat'||e.stat==='vulnFlat'||e.stat==='critChanceFlat'?3:0):v.toFixed(2)));
   return (main?'MAIN':'SUB '+(rr?rr.label:'Rare'))+' '+modStatName(e.stat)+' '+val;
 }
-function addonText(ad){ return [addonEffectText(ad,ad.main,true)].concat((ad.subs||[]).map((e,i)=>(i<(ad.lockedSubCount||0)?'🔒 ':'')+addonEffectText(ad,e,false))).join('\n'); }
+function addonText(ad){ const locks=addonLockArray(ad); return [addonEffectText(ad,ad.main,true)].concat((ad.subs||[]).map((e,i)=>(locks[i]?'🔒 ':'')+addonEffectText(ad,e,false))).join('\n'); }
 function towerModLevelCost(inst){ const rr=TOWER_MOD_RARITIES[inst.rarity]; return Math.ceil((8+rr.rank*8)*Math.pow(inst.level,1.35)); }
 function towerModStarCost(inst){ const rr=TOWER_MOD_RARITIES[inst.rarity]; return Math.ceil((12+rr.rank*12)*Math.pow((inst.stars||0)+1,2)); }
 function equipTowerMod(uid){ ensureTowerMods(); const inst=meta.towerMods.owned[uid]; if(!inst) return; meta.towerMods.equip[inst.cat]=uid; saveMeta(); buildMods(); }
@@ -2275,9 +2317,9 @@ function dismantleTowerMod(uid){ ensureTowerMods(); const inst=meta.towerMods.ow
 function equipTowerAddon(uid, slot=null){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const arr=meta.towerMods.addonEquip[ad.cat]; for(let i=0;i<arr.length;i++) if(arr[i]===uid) arr[i]=null; let s=slot; if(s===null||s===undefined) s=arr.indexOf(null); if(s<0) s=0; arr[s]=uid; saveMeta(); buildMods(); }
 function unequipTowerAddon(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const arr=meta.towerMods.addonEquip[ad.cat]; for(let i=0;i<arr.length;i++) if(arr[i]===uid) arr[i]=null; saveMeta(); buildMods(); }
 function dismantleTowerAddon(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const rr=TOWER_MOD_RARITIES[ad.rarity]||TOWER_MOD_RARITIES.rare; const subBonus=(ad.subs||[]).reduce((a,e)=>a+((TOWER_MOD_RARITIES[e.rarity]||TOWER_MOD_RARITIES.rare).rank+1)*2,0); meta.towerMods.addonTokens+=TOWER_ADDON_TOKEN_BY_RARITY[ad.rarity]+subBonus; const arr=meta.towerMods.addonEquip[ad.cat]||[]; for(let i=0;i<arr.length;i++) if(arr[i]===uid) arr[i]=null; delete meta.towerMods.addons[uid]; saveMeta(); closeDetail(); buildMods(); }
-function addonRerollCost(ad){ const keep=Math.max(0,Math.min((ad.subs||[]).length,ad.lockedSubCount|0)), reroll=Math.max(0,(ad.subs||[]).length-keep); return Math.pow(keep*2+1,2)*reroll*10; }
-function changeAddonKeep(uid, delta){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; ad.lockedSubCount=Math.max(0,Math.min((ad.subs||[]).length,(ad.lockedSubCount||0)+delta)); saveMeta(); openTowerAddonDetail(uid); buildMods(); }
-function rerollAddonSubs(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const cost=addonRerollCost(ad); if(cost<=0||meta.towerMods.addonTokens<cost) return; meta.towerMods.addonTokens-=cost; for(let i=ad.lockedSubCount||0;i<ad.subs.length;i++) ad.subs[i]=randomAddonEffect(ad.cat,false); saveMeta(); openTowerAddonDetail(uid); buildMods(); }
+function addonRerollCost(ad){ const keep=syncAddonLocks(ad), reroll=Math.max(0,(ad.subs||[]).length-keep); return Math.pow(keep*2+1,2)*reroll*10; }
+function setAddonSubLock(uid, index, locked){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad||!Array.isArray(ad.subs)||index<0||index>=ad.subs.length) return; syncAddonLocks(ad); ad.lockedSubs[index]=!!locked; syncAddonLocks(ad); saveMeta(); openTowerAddonDetail(uid); buildMods(); }
+function rerollAddonSubs(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; syncAddonLocks(ad); const cost=addonRerollCost(ad); if(cost<=0||meta.towerMods.addonTokens<cost) return; meta.towerMods.addonTokens-=cost; for(let i=0;i<ad.subs.length;i++) if(!ad.lockedSubs[i]) ad.subs[i]=randomAddonEffect(ad.cat,false); syncAddonLocks(ad); saveMeta(); openTowerAddonDetail(uid); buildMods(); }
 function cloneEquippedTowerMods(){ ensureTowerMods(); const bodies=TOWER_MOD_CATS.map(c=>meta.towerMods.equip[c.id]).filter(Boolean).map(uid=>Object.assign({}, meta.towerMods.owned[uid])).filter(Boolean); const addons=[]; for(const c of TOWER_MOD_CATS){ for(const uid of meta.towerMods.addonEquip[c.id]||[]){ if(uid&&meta.towerMods.addons[uid]) addons.push(JSON.parse(JSON.stringify(meta.towerMods.addons[uid]))); } } return {bodies,addons}; }
 function applyTowerModStat(k,v){
   if(k==='dmgPct') game.dmg*=1+v;
@@ -2353,15 +2395,16 @@ function buildMods(){ try{
   const slots=$('modslots'); slots.textContent='';
   for(const c of TOWER_MOD_CATS){ const uid=tm.equip[c.id], inst=uid&&tm.owned[uid], def=inst&&TOWER_MOD_DEF_BY_ID[inst.defId], rr=def&&TOWER_MOD_RARITIES[def.rarity];
     const adCount=(tm.addonEquip[c.id]||[]).filter(Boolean).length;
-    const d=document.createElement('div'); d.className='modslot'+(inst?' on':''); d.style.setProperty('--ac', rr?rr.color:COLORHEX[c.color]);
-    const b=document.createElement('b'); b.textContent=c.name; const s=document.createElement('span'); s.textContent=(inst?(def.name+' Lv'+inst.level+' ★'+(inst.stars||0)):'素体なし')+' / アドオン '+adCount+'/'+TOWER_ADDON_SLOTS;
+    const d=document.createElement('div'); d.className='modslot'+(inst?' on':'')+(c.id===modCat?' sel':''); d.style.setProperty('--ac', rr?rr.color:COLORHEX[c.color]);
+    const b=document.createElement('b'); b.textContent=c.name; const s=document.createElement('span'); s.textContent='素体: '+(inst?(def.name+' Lv'+inst.level+' ★'+(inst.stars||0)):'なし')+'\nアドオン: '+adCount+'/'+TOWER_ADDON_SLOTS;
     d.appendChild(b); d.appendChild(s); d.addEventListener('click',()=>{ modCat=c.id; if(inst) openTowerModDetail(inst.uid); else buildMods(); }); slots.appendChild(d);
   }
   const cats=$('modcats'); cats.textContent='';
   for(const c of TOWER_MOD_CATS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c.id===modCat?' on':''); t.style.color=COLORHEX[c.color]; const count=fmt(tm.catDust[c.id]||0); t.title=c.name+'片 '+count; t.setAttribute('aria-label',c.name+'片 '+count); const ic=document.createElement('span'); ic.className='ctab-icon'; ic.appendChild(iconEl(c.icon)); const num=document.createElement('span'); num.className='ctab-count'; num.textContent=count; t.append(ic,num); if(c.id===modCat)t.style.borderColor=COLORHEX[c.color]; t.addEventListener('click',()=>{modCat=c.id; buildMods();}); cats.appendChild(t); }
   const list=$('modlist'); list.textContent='';
-  const bodyHead=document.createElement('div'); bodyHead.className='skcard'; bodyHead.style.setProperty('--ac',COLORHEX[catInfo.color]); bodyHead.innerHTML='<div class="skhd"><div class="skn">'+catInfo.name+' 素体</div><span class="skbadge">アドオン倍率 ×'+addonMulForCat(modCat).toFixed(2)+'</span></div><div class="skd">素体は特殊効果と、対応アドオンの強化倍率を持ちます。</div>'; list.appendChild(bodyHead);
+  const bodyHead=document.createElement('div'); bodyHead.className='skcard'; bodyHead.style.setProperty('--ac',COLORHEX[catInfo.color]); bodyHead.innerHTML='<div class="skhd"><div class="skn">STEP 1: '+catInfo.name+' 素体</div><span class="skbadge">アドオン倍率 ×'+addonMulForCat(modCat).toFixed(2)+'</span></div><div class="skd">このカテゴリの本体です。1つだけ装備でき、対応アドオンの効果倍率を決めます。</div>'; list.appendChild(bodyHead);
   const owned=Object.values(tm.owned).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || b.level-a.level);
+  if(!owned.length){ const empty=document.createElement('div'); empty.className='modempty'; empty.textContent=catInfo.name+'素体をまだ持っていません。上の素体箱から入手します。'; list.appendChild(empty); }
   for(const inst of owned){ const def=TOWER_MOD_DEF_BY_ID[inst.defId], rr=TOWER_MOD_RARITIES[def.rarity], eq=tm.equip[def.cat]===inst.uid;
     const tile=document.createElement('div'); tile.className='modtile'+(eq?' eqd':''); tile.style.setProperty('--ac',rr.color);
     const top=document.createElement('div'); top.className='mtop'; const nm=document.createElement('div'); nm.className='mname'; nm.textContent=def.name; const rb=document.createElement('div'); rb.className='mrare'; rb.textContent=rr.label; top.appendChild(nm); top.appendChild(rb);
@@ -2369,13 +2412,14 @@ function buildMods(){ try{
     const foot=document.createElement('div'); foot.className='mfoot'; foot.innerHTML='<span>Lv '+fmt(inst.level)+' / ★'+fmt(inst.stars||0)+'</span><b>'+(eq?'装備中':'未装備')+'</b>';
     tile.appendChild(top); tile.appendChild(st); tile.appendChild(foot); tile.addEventListener('click',()=>openTowerModDetail(inst.uid)); list.appendChild(tile);
   }
-  const adHead=document.createElement('div'); adHead.className='skcard'; adHead.style.setProperty('--ac',COLORHEX[catInfo.color]); adHead.innerHTML='<div class="skhd"><div class="skn">'+catInfo.name+' アドオン</div><span class="skbadge">装備 '+fmt((tm.addonEquip[modCat]||[]).filter(Boolean).length)+'/'+TOWER_ADDON_SLOTS+'</span></div><div class="skd">道端や戦闘で拾う小型パーツ。メイン効果1つと、レア度別サブ効果を持ちます。</div>'; list.appendChild(adHead);
+  const adHead=document.createElement('div'); adHead.className='skcard'; adHead.style.setProperty('--ac',COLORHEX[catInfo.color]); adHead.innerHTML='<div class="skhd"><div class="skn">STEP 2: '+catInfo.name+' アドオン</div><span class="skbadge">装備 '+fmt((tm.addonEquip[modCat]||[]).filter(Boolean).length)+'/'+TOWER_ADDON_SLOTS+'</span></div><div class="skd">素体に追加する小型パーツです。Commonはメイン効果のみ、Rare以上はサブ効果が付きます。</div>'; list.appendChild(adHead);
   const addons=Object.values(tm.addons).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || (b.subs||[]).length-(a.subs||[]).length);
+  if(!addons.length){ const empty=document.createElement('div'); empty.className='modempty'; empty.textContent=catInfo.name+'アドオンをまだ持っていません。探索補給や戦闘報酬で入手します。'; list.appendChild(empty); }
   for(const ad of addons){ const rr=TOWER_MOD_RARITIES[ad.rarity], eq=(tm.addonEquip[ad.cat]||[]).indexOf(ad.uid)>=0;
     const tile=document.createElement('div'); tile.className='modtile'+(eq?' eqd':''); tile.style.setProperty('--ac',rr.color);
-    const top=document.createElement('div'); top.className='mtop'; const nm=document.createElement('div'); nm.className='mname'; nm.textContent=catInfo.name+'アドオン'; const rb=document.createElement('div'); rb.className='mrare'; rb.textContent=rr.label; top.appendChild(nm); top.appendChild(rb);
+    const top=document.createElement('div'); top.className='mtop'; const nm=document.createElement('div'); nm.className='mname'; nm.textContent='アドオン'; const rb=document.createElement('div'); rb.className='mrare'; rb.textContent=rr.label; top.appendChild(nm); top.appendChild(rb);
     const st=document.createElement('div'); st.className='mstats'; st.textContent=addonText(ad);
-    const foot=document.createElement('div'); foot.className='mfoot'; foot.innerHTML='<span>SUB '+fmt((ad.subs||[]).length)+' / 保持 '+fmt(ad.lockedSubCount||0)+'</span><b>'+(eq?'装備中':'未装備')+'</b>';
+    const foot=document.createElement('div'); foot.className='mfoot'; foot.innerHTML='<span>'+((ad.subs||[]).length?('SUB '+fmt((ad.subs||[]).length)+' / 保持 '+fmt(addonKeepCount(ad))):'メインのみ')+'</span><b>'+(eq?'装備中':'未装備')+'</b>';
     tile.appendChild(top); tile.appendChild(st); tile.appendChild(foot); tile.addEventListener('click',()=>openTowerAddonDetail(ad.uid)); list.appendChild(tile);
   }
 }catch(e){ const el=$('modlist'); if(el) el.textContent='buildMods ERR: '+(e&&e.message); console.log('buildMods',e); } }
@@ -2390,16 +2434,30 @@ function openTowerModDetail(uid){ ensureTowerMods(); const inst=meta.towerMods.o
   const dis=document.createElement('button'); dis.textContent='分解'; dis.addEventListener('click',()=>dismantleTowerMod(uid)); bt.appendChild(dis);
   $('skdetail').classList.add('on');
 }
-function openTowerAddonDetail(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; const rr=TOWER_MOD_RARITIES[ad.rarity], cat=TOWER_MOD_CAT_BY_ID[ad.cat], eq=(meta.towerMods.addonEquip[ad.cat]||[]).indexOf(uid)>=0, cost=addonRerollCost(ad);
+function openTowerAddonDetail(uid){ ensureTowerMods(); const ad=meta.towerMods.addons[uid]; if(!ad) return; syncAddonLocks(ad); const rr=TOWER_MOD_RARITIES[ad.rarity], cat=TOWER_MOD_CAT_BY_ID[ad.cat], eq=(meta.towerMods.addonEquip[ad.cat]||[]).indexOf(uid)>=0, cost=addonRerollCost(ad), keep=addonKeepCount(ad), rerollCount=Math.max(0,(ad.subs||[]).length-keep);
   $('sdcard').style.setProperty('--ac', rr.color); { const si=$('sdicon'); si.textContent=''; si.appendChild(iconEl(cat.icon)); } $('sdname').textContent=cat.name+'アドオン';
-  $('sdbadge').textContent=rr.label+' / SUB '+(ad.subs||[]).length+' / 保持 '+(ad.lockedSubCount||0);
+  $('sdbadge').textContent=rr.label+' / '+((ad.subs||[]).length?'SUB '+(ad.subs||[]).length+' / 保持 '+keep:'メイン効果のみ');
   setStars($('sdstars'), Math.min(5,(ad.subs||[]).length), 5);
-  $('sddesc').textContent=addonText(ad)+'\n\nリロール費用: (保持'+fmt(ad.lockedSubCount||0)+'×2+1)^2 × リロール'+fmt(Math.max(0,(ad.subs||[]).length-(ad.lockedSubCount||0)))+' ×10 = '+fmt(cost)+'トークン\n分解: アドオントークン+'+fmt(TOWER_ADDON_TOKEN_BY_RARITY[ad.rarity]||0);
+  const desc=$('sddesc'); desc.textContent='';
+  const effects=document.createElement('div'); effects.className='addon-effects';
+  const main=document.createElement('div'); main.className='addon-main'; main.textContent=addonEffectText(ad,ad.main,true); effects.appendChild(main);
+  const locks=addonLockArray(ad), lockList=document.createElement('div'); lockList.className='addon-locks';
+  if((ad.subs||[]).length){
+    (ad.subs||[]).forEach((e,i)=>{ const row=document.createElement('label'); row.className='addon-lock-row';
+      const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!locks[i]; cb.addEventListener('change',()=>setAddonSubLock(uid,i,cb.checked));
+      const tx=document.createElement('span'); tx.textContent=addonEffectText(ad,e,false);
+      const mark=document.createElement('em'); mark.textContent=locks[i]?'保持':'変更';
+      row.append(cb,tx,mark); lockList.appendChild(row);
+    });
+    effects.appendChild(lockList);
+  }
+  const info=document.createElement('div'); info.className='addon-cost'; info.textContent=((ad.subs||[]).length?('リロール費用: (保持'+fmt(keep)+'×2+1)^2 × リロール'+fmt(rerollCount)+' ×10 = '+fmt(cost)+'トークン'):'Commonはサブ効果なし / リロール対象なし')+'\n分解: アドオントークン+'+fmt(TOWER_ADDON_TOKEN_BY_RARITY[ad.rarity]||0);
+  effects.appendChild(info); desc.appendChild(effects);
   const bt=$('sdbtns'); bt.textContent='';
   const eqb=document.createElement('button'); eqb.textContent=eq?'装備解除':'装備'; if(eq) eqb.className='eq'; eqb.addEventListener('click',()=>{ if(eq) unequipTowerAddon(uid); else equipTowerAddon(uid); openTowerAddonDetail(uid); }); bt.appendChild(eqb);
-  const keepMinus=document.createElement('button'); keepMinus.textContent='保持-'; keepMinus.disabled=(ad.lockedSubCount||0)<=0; keepMinus.addEventListener('click',()=>changeAddonKeep(uid,-1)); bt.appendChild(keepMinus);
-  const keepPlus=document.createElement('button'); keepPlus.textContent='保持+'; keepPlus.disabled=(ad.lockedSubCount||0)>=(ad.subs||[]).length; keepPlus.addEventListener('click',()=>changeAddonKeep(uid,1)); bt.appendChild(keepPlus);
-  const reroll=document.createElement('button'); reroll.textContent='リロール '+fmt(cost); reroll.disabled=cost<=0||meta.towerMods.addonTokens<cost; reroll.addEventListener('click',()=>rerollAddonSubs(uid)); bt.appendChild(reroll);
+  if((ad.subs||[]).length){
+    const reroll=document.createElement('button'); reroll.textContent=rerollCount>0?'リロール '+fmt(cost):'リロール対象なし'; reroll.disabled=rerollCount<=0||cost<=0||meta.towerMods.addonTokens<cost; reroll.addEventListener('click',()=>rerollAddonSubs(uid)); bt.appendChild(reroll);
+  }
   const dis=document.createElement('button'); dis.textContent='分解'; dis.addEventListener('click',()=>dismantleTowerAddon(uid)); bt.appendChild(dis);
   $('skdetail').classList.add('on');
 }
@@ -3133,7 +3191,7 @@ function claimSupplySpot(spot){
   meta.towerMods.addonTokens+=tokens;
   meta.towerMods.dust+=dust;
   if(catDust) meta.towerMods.catDust[cat]=(meta.towerMods.catDust[cat]||0)+catDust;
-  if(rng.chance(0.08)) addon=createTowerAddon(null,0);
+  if(rng.chance(0.08)) addon=createTowerAddon(null,-1);
   ms.claims[spot.id]=Date.now();
   saveMeta(); refreshCurrencyDisplays();
   const bits=[]; if(powder) bits.push('黒色火薬+'+powder); bits.push('トークン+'+tokens); bits.push('改装片+'+dust); if(catDust) bits.push((TOWER_MOD_CAT_BY_ID[cat]||{}).name+'片+'+catDust); if(addon) bits.push('アドオン入手'); if(dailyBonus) bits.push('初回補給'); if(streakBonus) bits.push('7日連続');
