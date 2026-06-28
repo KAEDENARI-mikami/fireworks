@@ -2670,18 +2670,20 @@ function buildSkills(){ try{
 /* ===== 位置情報マップ（探索画面）：Three.js探索フィールド＋GPS＋DEV移動＋施設補給＋スイートスポット ===== */
 let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, selectedMapTowerId=null, mapPanelOpen=false, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], supplySpots=[], sweetSpotItems=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
-const SUPPLY_FETCH_RADIUS=900, SUPPLY_FAST_RADIUS=1800, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
+const SUPPLY_FETCH_RADIUS=520, SUPPLY_FAST_RADIUS=900, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
-const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=300;
-const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
-map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.combat); scene.add(map3D.root);
+const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=240, MAP_COMBAT_DETAIL_M=180, MAP_LIVE_ENEMY_LIMIT=180;
+const MAP_FEATURE_RADIUS=430, MAP_FIELD_SIZE=980, MAP_RENDER_RADIUS=520, MAP_LABEL_LIMIT=12;
+let mapFeatureState={key:'',roads:[],buildings:[],labels:[],busy:false,seq:0};
+const map3D={root:new THREE.Group(), field:new THREE.Group(), spots:new THREE.Group(), towers:new THREE.Group(), labels:new THREE.Group(), combat:new THREE.Group(), interactives:[], active:false, builtKey:'', towerPos:{}};
+map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,map3D.labels,map3D.combat); scene.add(map3D.root);
 const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
 function setExploreView(on){
   map3D.active=!!on; map3D.root.visible=!!on;
   if(on){
     controls.enabled=true; controls.autoRotate=false; controls.enablePan=true;
-    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+560, MAP_ORIGIN.z+680);
-    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+18, MAP_ORIGIN.z-120);
+    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+360, MAP_ORIGIN.z+430);
+    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+16, MAP_ORIGIN.z-70);
     camera.lookAt(controls.target);
     renderer.setClearColor(0x05060E,1);
     scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
@@ -2702,12 +2704,17 @@ function mapLocalPos(lat,lng){
   return new THREE.Vector3(MAP_ORIGIN.x+east,0,MAP_ORIGIN.z-north);
 }
 function addMapLabel(parent, text, color=0xEAF0FF, y=58){
+  text=trimMapLabel(text);
   const c=document.createElement('canvas'); c.width=256; c.height=64; const g=c.getContext('2d');
   g.font='24px DotGothic16, monospace'; g.textAlign='center'; g.textBaseline='middle';
   g.fillStyle='rgba(5,6,14,.72)'; g.fillRect(8,12,240,40); g.strokeStyle='rgba(234,240,255,.24)'; g.strokeRect(8,12,240,40);
   g.fillStyle='#'+color.toString(16).padStart(6,'0'); g.fillText(text,128,33);
   const tex=new THREE.CanvasTexture(c), sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
   sp.position.y=y; sp.scale.set(82,20,1); parent.add(sp); return sp;
+}
+function trimMapLabel(s, max=12){
+  s=String(s||'').replace(/\s+/g,' ').trim();
+  return s.length>max ? s.slice(0,max-1)+'…' : s;
 }
 function addDiscMarker(parent, color, ready=true){
   const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:ready?.78:.28,blending:THREE.AdditiveBlending,depthWrite:false});
@@ -2732,19 +2739,60 @@ function addRoad(parent, x,z,len,w,rot,color=0xCFFFD3,opacity=.42){
   const m=new THREE.Mesh(new THREE.PlaneGeometry(w,len), new THREE.MeshBasicMaterial({color,transparent:true,opacity,side:THREE.DoubleSide,depthWrite:false}));
   m.rotation.x=-Math.PI/2; m.rotation.z=rot; m.position.set(MAP_ORIGIN.x+x,1,MAP_ORIGIN.z+z); parent.add(m); return m;
 }
+function roadStyle(tags){
+  const h=tags&&tags.highway||'road';
+  if(['motorway','trunk','primary'].includes(h)) return {w:18,color:0x1C6F78,opacity:.46};
+  if(['secondary','tertiary'].includes(h)) return {w:13,color:0x2A6076,opacity:.40};
+  if(['residential','unclassified','service'].includes(h)) return {w:8,color:0x395267,opacity:.34};
+  if(['footway','path','pedestrian','cycleway','steps'].includes(h)) return {w:4,color:0x3CF0FF,opacity:.26};
+  return {w:7,color:0x304C5C,opacity:.30};
+}
+function addRoadSegment(parent, a, b, style){
+  const p1=mapLocalPos(a.lat,a.lng), p2=mapLocalPos(b.lat,b.lng);
+  const dx=p2.x-p1.x, dz=p2.z-p1.z, len=Math.hypot(dx,dz);
+  if(len<2 || len>MAP_RENDER_RADIUS*2.2) return null;
+  const cx=(p1.x+p2.x)/2-MAP_ORIGIN.x, cz=(p1.z+p2.z)/2-MAP_ORIGIN.z;
+  if(Math.hypot(cx,cz)>MAP_RENDER_RADIUS+80) return null;
+  return addRoad(parent, cx, cz, len, style.w, Math.atan2(dx,dz), style.color, style.opacity);
+}
+function addOsmBuilding(parent, feature){
+  const pts=(feature.geometry||[]).map(p=>mapLocalPos(p.lat,p.lng));
+  if(pts.length<3) return null;
+  let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+  for(const p of pts){ minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x); minZ=Math.min(minZ,p.z); maxZ=Math.max(maxZ,p.z); }
+  const w=Math.max(8, Math.min(120, maxX-minX)), d=Math.max(8, Math.min(120, maxZ-minZ));
+  const cx=(minX+maxX)/2-MAP_ORIGIN.x, cz=(minZ+maxZ)/2-MAP_ORIGIN.z;
+  if(Math.hypot(cx,cz)>MAP_RENDER_RADIUS || w*d<36) return null;
+  const levels=Math.max(1, Math.min(10, Number(feature.tags&&feature.tags['building:levels'])||0));
+  const h=levels?levels*4:Math.max(5, Math.min(24, 5+(hash32('bldg',feature.id||cx,cz)%18)));
+  const block=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshBasicMaterial({color:0x173541,transparent:true,opacity:.62}));
+  block.position.set(MAP_ORIGIN.x+cx,h/2,MAP_ORIGIN.z+cz); parent.add(block); return block;
+}
+function buildFallbackMapField(){
+  const rng=makeRNG(hash32('mapfield', avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'base'));
+  for(let i=-3;i<=3;i++){ addRoad(map3D.field, i*95+rng.range(-10,10), 0, MAP_FIELD_SIZE, i%3===0?16:9, rng.range(-.08,.08), 0x1C5F67, .30); }
+  for(let i=-3;i<=3;i++){ addRoad(map3D.field, 0, i*95+rng.range(-10,10), MAP_FIELD_SIZE, i%3===0?18:9, Math.PI/2+rng.range(-.09,.09), 0x304C5C, .28); }
+  for(let i=0;i<18;i++){
+    const bx=rng.range(-410,410), bz=rng.range(-410,410), bw=rng.range(34,90), bd=rng.range(28,80), bh=rng.range(4,20);
+    const block=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd), new THREE.MeshBasicMaterial({color:rng.chance(.5)?0x15333D:0x1C2638,transparent:true,opacity:.55}));
+    block.position.set(MAP_ORIGIN.x+bx,bh/2,MAP_ORIGIN.z+bz); map3D.field.add(block);
+  }
+}
 function buildMapField(){
-  clearObj(map3D.field);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(2400,2400), new THREE.MeshBasicMaterial({color:0x070914,transparent:true,opacity:.96,side:THREE.DoubleSide}));
+  clearObj(map3D.field); clearObj(map3D.labels);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(MAP_FIELD_SIZE,MAP_FIELD_SIZE), new THREE.MeshBasicMaterial({color:0x070914,transparent:true,opacity:.96,side:THREE.DoubleSide}));
   ground.rotation.x=-Math.PI/2; ground.position.copy(MAP_ORIGIN); map3D.field.add(ground);
   const zone=new THREE.Mesh(new THREE.RingGeometry(100,104,128), new THREE.MeshBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.28,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
   zone.rotation.x=-Math.PI/2; zone.position.set(MAP_ORIGIN.x,3,MAP_ORIGIN.z); map3D.field.add(zone);
-  const rng=makeRNG(hash32('mapfield', avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'base'));
-  for(let i=-5;i<=5;i++){ addRoad(map3D.field, i*120+rng.range(-16,16), 0, 2300, i%3===0?22:12, rng.range(-.08,.08), 0x1C5F67, .32); }
-  for(let i=-5;i<=5;i++){ addRoad(map3D.field, 0, i*120+rng.range(-16,16), 2300, i%3===0?24:13, Math.PI/2+rng.range(-.09,.09), 0x304C5C, .30); }
-  for(let i=0;i<34;i++){
-    const bx=rng.range(-980,980), bz=rng.range(-980,980), bw=rng.range(48,140), bd=rng.range(32,110), bh=rng.range(3,24);
-    const block=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd), new THREE.MeshBasicMaterial({color:rng.chance(.5)?0x15333D:0x1C2638,transparent:true,opacity:.62}));
-    block.position.set(MAP_ORIGIN.x+bx,bh/2,MAP_ORIGIN.z+bz); map3D.field.add(block);
+  const mf=mapFeatureState, hasOsm=(mf.roads&&mf.roads.length)||(mf.buildings&&mf.buildings.length);
+  if(hasOsm){
+    for(const rd of mf.roads.slice(0,90)){
+      const geom=rd.geometry||[], st=roadStyle(rd.tags||{});
+      for(let i=1;i<geom.length;i++) addRoadSegment(map3D.field, geom[i-1], geom[i], st);
+    }
+    for(const b of mf.buildings.slice(0,80)) addOsmBuilding(map3D.field,b);
+  }else{
+    buildFallbackMapField();
   }
   const drone=new THREE.Group(); drone.name='map-drone'; drone.position.copy(MAP_ORIGIN);
   addGroundRing(drone, 24, 0x3CF0FF, .45, 1.4);
@@ -2769,21 +2817,30 @@ function findTower(id){ return mapTowerAnchors().find(t=>t.id===id)||null; }
 function nearestTower(max=Infinity){ let best=null, bd=max; for(const t of mapTowerAnchors()){ const d=towerDist(t); if(d<bd){best=t;bd=d;} } return best?Object.assign({dist:bd},best):null; }
 function updateExplore3D(force=false){
   if(!avatarLL||!map3D.root) return;
-  const key=(avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'')+'|'+supplySpots.length+'|'+sweetSpotItems.length+'|'+mapTowerAnchors().map(t=>t.id+':'+Math.floor(t.wave||0)).join(',');
+  const key=(avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):'')+'|'+mapFeatureState.key+'|'+(mapFeatureState.roads||[]).length+'|'+supplySpots.length+'|'+sweetSpotItems.length+'|'+mapTowerAnchors().map(t=>t.id+':'+Math.floor(t.wave||0)).join(',');
   if(!force && key===map3D.builtKey) return; map3D.builtKey=key;
   buildMapField(); clearObj(map3D.spots); clearObj(map3D.towers); map3D.interactives=[]; map3D.towerPos={};
-  for(const spot of supplySpots.slice(0,48)){
+  let labelCount=0;
+  const featureLabels=(mapFeatureState.labels||[]).filter(l=>avatarLL&&haversine(avatarLL[0],avatarLL[1],l.lat,l.lng)<=MAP_RENDER_RADIUS).slice(0,MAP_LABEL_LIMIT);
+  for(const lab of featureLabels){
+    const p=mapLocalPos(lab.lat,lab.lng);
+    const g=new THREE.Group(); g.position.copy(p); addMapLabel(g, lab.name, 0x9ED8FF, 46); map3D.labels.add(g); labelCount++;
+  }
+  const visibleSupply=supplySpots.filter(s=>supplySpotDistance(s)<=MAP_RENDER_RADIUS).sort((a,b)=>supplySpotDistance(a)-supplySpotDistance(b)).slice(0,28);
+  for(const spot of visibleSupply){
     const p=mapLocalPos(spot.lat,spot.lng), dist=supplySpotDistance(spot), ready=supplyReady(spot), near=dist<=SUPPLY_INTERACT_RANGE;
-    if(Math.abs(p.x-MAP_ORIGIN.x)>1250||Math.abs(p.z-MAP_ORIGIN.z)>1250) continue;
+    if(Math.abs(p.x-MAP_ORIGIN.x)>MAP_RENDER_RADIUS||Math.abs(p.z-MAP_ORIGIN.z)>MAP_RENDER_RADIUS) continue;
     const g=new THREE.Group(); g.position.copy(p);
     const mesh=addDiscMarker(g, near?0x3CF0FF:0x4FA8FF, ready); mesh.userData={kind:'supply',id:spot.id};
+    if(labelCount<MAP_LABEL_LIMIT+8 && (near || dist<260)){ addMapLabel(g, spot.name||spot.type||'補給', ready?0x3CF0FF:0x9ED8FF, 58); labelCount++; }
     map3D.spots.add(g); map3D.interactives.push(mesh);
   }
-  for(const s of sweetSpotItems.slice(0,24)){
+  for(const s of sweetSpotItems.filter(s=>s.dist<=MAP_RENDER_RADIUS).sort((a,b)=>a.dist-b.dist).slice(0,12)){
     const ll=GeoCell.cellToLatLng(s.cell), p=mapLocalPos(ll[0],ll[1]);
-    if(Math.abs(p.x-MAP_ORIGIN.x)>1500||Math.abs(p.z-MAP_ORIGIN.z)>1500) continue;
+    if(Math.abs(p.x-MAP_ORIGIN.x)>MAP_RENDER_RADIUS||Math.abs(p.z-MAP_ORIGIN.z)>MAP_RENDER_RADIUS) continue;
     const g=new THREE.Group(); g.position.copy(p);
     const mesh=addBeaconMarker(g, 0xFFD66B, 70+Math.min(90,(s.field.moduleCost||0)*6)); mesh.userData={kind:'sweet',cell:s.cell};
+    addMapLabel(g, (s.field.rarityLabel||'レア')+' C'+fmt(s.field.moduleCost||0), 0xFFD66B, 58+Math.min(70,(s.field.moduleCost||0)*4));
     map3D.spots.add(g); map3D.interactives.push(mesh);
   }
   for(const t of mapTowerAnchors()){
@@ -2885,7 +2942,7 @@ function fallbackSupplySpots(lat,lng,cell){
   const rng=makeRNG(hash32('fallback-supply',cell));
   const out=[]; const cos=Math.max(0.2,Math.cos(lat*Math.PI/180));
   for(let i=0;i<16;i++){
-    const a=rng.range(0,Math.PI*2), d=rng.range(80,modeFast()?1500:760);
+    const a=rng.range(0,Math.PI*2), d=rng.range(70,modeFast()?820:460);
     out.push({id:'local:'+cell+':'+i, name:names[i%names.length], type:names[i%names.length], lat:lat+Math.sin(a)*d/111320, lng:lng+Math.cos(a)*d/(111320*cos), source:'local'});
   }
   return out;
@@ -2915,6 +2972,52 @@ async function fetchFacilitySupplySpots(lat,lng,cell){
     return out.slice(0,36);
   }finally{ clearTimeout(to); }
 }
+function mapFeatureLabel(tags){
+  if(!tags) return '';
+  const name=tags['name:ja']||tags.name||tags['addr:housename']||'';
+  if(!name) return '';
+  return name;
+}
+async function fetchMapFeatures(lat,lng,cell){
+  const radius=MAP_FEATURE_RADIUS;
+  const q='[out:json][timeout:7];('
+    +'way(around:'+radius+','+lat+','+lng+')[highway];'
+    +'way(around:'+radius+','+lat+','+lng+')[building];'
+    +'node(around:'+radius+','+lat+','+lng+')[name];'
+    +');out tags geom center 160;';
+  const ctrl=new AbortController(), to=setTimeout(()=>ctrl.abort(),8000);
+  try{
+    const res=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q),{signal:ctrl.signal});
+    if(!res.ok) throw new Error('overpass map '+res.status);
+    const json=await res.json(), roads=[], buildings=[], labels=[];
+    for(const e of (json.elements||[])){
+      const tags=e.tags||{};
+      if(e.type==='way' && Array.isArray(e.geometry)){
+        if(tags.highway) roads.push({id:e.id,tags,geometry:e.geometry});
+        else if(tags.building) buildings.push({id:e.id,tags,geometry:e.geometry});
+        const name=mapFeatureLabel(tags);
+        if(name && e.center && typeof e.center.lat==='number') labels.push({name,type:tags.highway?'道路':tags.building?'建物':'地点',lat:e.center.lat,lng:e.center.lon,source:'osm'});
+      }else if(e.type==='node' && typeof e.lat==='number'){
+        const name=mapFeatureLabel(tags);
+        if(name) labels.push({name,type:supplyTypeLabel(tags),lat:e.lat,lng:e.lon,source:'osm'});
+      }
+    }
+    labels.sort((a,b)=>haversine(lat,lng,a.lat,a.lng)-haversine(lat,lng,b.lat,b.lng));
+    return {cell, roads, buildings, labels:labels.slice(0,24)};
+  }finally{ clearTimeout(to); }
+}
+function requestMapFeatures(){
+  if(!avatarLL) return;
+  const cell=GeoCell.latLngToCell(avatarLL[0],avatarLL[1]), key=cell+'|'+MAP_FEATURE_RADIUS;
+  if(key===mapFeatureState.key || mapFeatureState.busy) return;
+  mapFeatureState.key=key; mapFeatureState.roads=[]; mapFeatureState.buildings=[]; mapFeatureState.labels=[];
+  const seq=++mapFeatureState.seq; mapFeatureState.busy=true;
+  fetchMapFeatures(avatarLL[0],avatarLL[1],cell).then(features=>{
+    if(seq!==mapFeatureState.seq) return;
+    mapFeatureState=Object.assign(mapFeatureState, features||{}, {key,busy:false});
+    updateExplore3D(true);
+  }).catch(()=>{ if(seq===mapFeatureState.seq){ mapFeatureState.busy=false; updateExplore3D(true); } });
+}
 function requestSupplySpots(){
   if(!avatarLL) return;
   const cell=GeoCell.latLngToCell(avatarLL[0],avatarLL[1]), key=cell+'|'+(modeFast()?1:0);
@@ -2932,7 +3035,7 @@ function requestSupplySpots(){
 }
 function leafletReady(){ return !window.__leafletFailed && typeof L!=='undefined'; }
 function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
-  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],17);
+  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],18);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19, subdomains:'abcd'}).addTo(LMAP);
   LMAP.on('click', e=>{ if(devMode) setAvatar(e.latlng.lat, e.latlng.lng); });
   return LMAP; }
@@ -3043,7 +3146,7 @@ function drawCells(){
   const avatarCell = avatarLL ? GeoCell.latLngToCell(avatarLL[0],avatarLL[1]) : GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
   selCell = mapSpotCell || avatarCell;
   // 現在地はアバター点のみ。近傍のスイートスポットを金色の点で表示（高速移動中は探索半径を拡大）
-  const wantK = modeFast()?48:16;   // 徒歩 約1.2km / 車・電車 約3.6km
+  const wantK = modeFast()?18:8;   // 徒歩 約600m / 車・電車 約1.35km
   const _now=performance.now();
   if(LMAP && avatarLL && (avatarCell!==_sweetCenterCell || wantK!==_sweetK) && _now-_sweetT>1000){   // セル/モード変化時のみ・最大1秒に1回（高速移動の再計算暴走を防ぐ）
     _sweetCenterCell=avatarCell; _sweetK=wantK; _sweetT=_now;
@@ -3067,6 +3170,7 @@ function drawCells(){
       marker.addTo(LMAP); sweetMarkers.push(marker);
     }
   }
+  requestMapFeatures();
   requestSupplySpots();
   updateMapWalkHud();
   updateExplore3D(true);
@@ -3078,7 +3182,7 @@ function refreshCurrentPosition(){
     devMode=false;
     accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed);
     setAvatar(p.coords.latitude,p.coords.longitude);
-    if(LMAP) try{ LMAP.setView(avatarLL, Math.max(16, LMAP.getZoom()||16), { animate:true }); }catch(e){}
+    if(LMAP) try{ LMAP.setView(avatarLL, Math.max(18, LMAP.getZoom()||18), { animate:true }); }catch(e){}
     toast('📍 現在地を更新しました');
   }, ()=>{ toast('📍 現在地の再取得に失敗しました'); }, { enableHighAccuracy:true, maximumAge:0, timeout:12000 });
 }
@@ -3211,7 +3315,7 @@ function renderCellCard(){
 function startGPS(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで出撃可（矢印/クリックで移動）'); return; }   // VENUEは showMap が既に表示
   if(_gpsWatch!=null){ try{ navigator.geolocation.clearWatch(_gpsWatch); }catch(e){} _gpsWatch=null; }   // 二重監視を防ぐ
-  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,17); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
+  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,18); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
