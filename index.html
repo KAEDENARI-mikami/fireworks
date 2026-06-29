@@ -3544,6 +3544,11 @@ function grantBlackPowder(amount, reason){
 function rewardedAdUnitId(){
   const cfg = AD_CONFIG || {};
   if(cfg.rewardedAdId) return cfg.rewardedAdId;
+  if(cfg.rewardedAdIds){
+    const p=currentPlatform();
+    if(p==='ios' && cfg.rewardedAdIds.ios) return cfg.rewardedAdIds.ios;
+    if(p==='android' && cfg.rewardedAdIds.android) return cfg.rewardedAdIds.android;
+  }
   const p=currentPlatform();
   return p==='ios' ? ADMOB_TEST_REWARDED.ios : ADMOB_TEST_REWARDED.android;
 }
