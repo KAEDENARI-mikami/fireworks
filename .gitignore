@@ -1,3 +1,14 @@
 *.bak.html
 _*.html
 .DS_Store
+node_modules/
+web/
+
+# Native build outputs and local secrets
+android/.gradle/
+android/**/build/
+android/local.properties
+*.jks
+*.keystore
+*.p12
+.env.play
