@@ -5,7 +5,7 @@ This project ships the web game through Capacitor as an Android app.
 ## Current Android identity
 
 - App name: `Fireworks`
-- Package name / applicationId: `com.mikamiatsushiya.fireworks`
+- Package name / applicationId: `com.kaedenari.fireworks`
 - Minimum SDK: 23
 - Target SDK: 35
 - Release AAB command: `npm run android:bundle:release`

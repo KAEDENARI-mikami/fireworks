@@ -10,10 +10,10 @@ def fireworksVersionName = (project.findProperty('FIREWORKS_VERSION_NAME') ?: Sy
 def admobAppId = (project.findProperty('FIREWORKS_ADMOB_APP_ID') ?: System.getenv('FIREWORKS_ADMOB_APP_ID') ?: 'ca-app-pub-3940256099942544~3347511713').toString()
 
 android {
-    namespace "com.mikamiatsushiya.fireworks"
+    namespace "com.kaedenari.fireworks"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.mikamiatsushiya.fireworks"
+        applicationId "com.kaedenari.fireworks"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode fireworksVersionCode

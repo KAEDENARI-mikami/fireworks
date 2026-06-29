@@ -1,4 +1,4 @@
-package com.mikamiatsushiya.fireworks;
+package com.kaedenari.fireworks;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -43,7 +43,7 @@ if(!versionName) fail(errors, 'FIREWORKS_VERSION_NAME is required.');
 if(!existsSync(resolve(root, 'privacy-policy.html'))) fail(errors, 'privacy-policy.html is required for the Play listing privacy policy URL.');
 
 const config = readFileSync(resolve(root, 'capacitor.config.json'), 'utf8');
-if(!config.includes('"appId": "com.mikamiatsushiya.fireworks"')) fail(warnings, 'Capacitor appId has changed; confirm this is intentional before first Play upload.');
+if(!config.includes('"appId": "com.kaedenari.fireworks"')) fail(warnings, 'Capacitor appId has changed; confirm this is intentional before first Play upload.');
 
 if(warnings.length){
   console.warn('Play release preflight warnings:');

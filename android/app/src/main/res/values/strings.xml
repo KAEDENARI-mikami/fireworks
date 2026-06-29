@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Fireworks</string>
     <string name="title_activity_main">Fireworks</string>
-    <string name="package_name">com.mikamiatsushiya.fireworks</string>
-    <string name="custom_url_scheme">com.mikamiatsushiya.fireworks</string>
+    <string name="package_name">com.kaedenari.fireworks</string>
+    <string name="custom_url_scheme">com.kaedenari.fireworks</string>
 </resources>
