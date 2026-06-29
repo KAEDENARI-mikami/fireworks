@@ -29,7 +29,7 @@ html,body{height:100%;}
 body{ background:var(--void); color:var(--ink); font-family:"DotGothic16", monospace; overflow:hidden; -webkit-font-smoothing:antialiased; }
 
 #bg{position:fixed; inset:0; width:100%; height:100%; display:block; z-index:1; touch-action:none;}
-body.state-map #bg{opacity:1; pointer-events:auto;}
+body.state-map #bg{display:none; opacity:0; pointer-events:none;}
 .grain{ position:fixed; inset:-50%; z-index:1; pointer-events:none; opacity:.04; mix-blend-mode:screen;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 #flash{position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0;
@@ -293,7 +293,7 @@ body.state-result #result{ display:flex; }
 @media (max-width:560px){ .topbar{gap:1.1rem; font-size:.66rem;} .res{top:50px;} }
 /* 位置情報マップ（探索画面） */
 #map{display:none; position:fixed; inset:0; z-index:0; background:#05060E; opacity:0; pointer-events:none;}
-body.state-map #map{display:none;}
+body.state-map #map{display:block; opacity:1; pointer-events:auto;}
 body.state-map .title, body.state-map .meta, body.state-map .hint, body.state-map #hud{display:none;}
 body.state-map #modebar{display:flex;}
 #map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 52%,rgba(5,6,14,.18),rgba(5,6,14,.64) 100%);z-index:400;}
@@ -367,6 +367,12 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 .supply-marker .tag{position:absolute;right:-3px;top:31px;font-family:"DotGothic16",monospace;font-size:.55rem;color:var(--void);background:var(--green);border-radius:999px;padding:.02rem .28rem;}
 .supply-marker.cooling{opacity:.55;filter:grayscale(.6) drop-shadow(0 8px 10px rgba(0,0,0,.35));}
 .supply-marker.ready .cube{animation:supplyPulse 1.9s ease-out infinite;}
+.tower-marker{width:44px;height:56px;position:relative;filter:drop-shadow(0 10px 9px rgba(0,0,0,.45));transform:scale(.78);transform-origin:50% 86%;}
+.tower-marker .beam{position:absolute;left:50%;top:0;width:16px;height:42px;transform:translateX(-50%);background:linear-gradient(rgba(180,107,255,.78),rgba(180,107,255,.06));clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);box-shadow:0 0 18px rgba(180,107,255,.42);}
+.tower-marker .core{position:absolute;left:50%;top:24px;width:24px;height:24px;transform:translateX(-50%) rotate(45deg);border-radius:5px;border:2px solid rgba(255,255,255,.78);background:linear-gradient(135deg,var(--cyan),var(--purple));box-shadow:0 0 16px rgba(60,240,255,.55);}
+.tower-marker .base{position:absolute;left:50%;bottom:0;width:38px;height:13px;transform:translateX(-50%) rotateX(64deg);border-radius:50%;border:1px solid rgba(180,107,255,.55);background:rgba(180,107,255,.13);}
+.tower-marker.boss .beam{background:linear-gradient(rgba(255,74,74,.82),rgba(255,74,74,.08));box-shadow:0 0 20px rgba(255,74,74,.46);}
+.tower-marker.boss .core{background:linear-gradient(135deg,var(--red),var(--gold));box-shadow:0 0 16px rgba(255,74,74,.55);}
 .supply-rewards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.35rem;margin:.55rem 0 .2rem;}
 .supply-reward{font-family:"DotGothic16",monospace;font-size:.62rem;line-height:1.25;padding:.42rem .35rem;border-radius:8px;text-align:center;border:1px solid rgba(234,240,255,.15);background:rgba(234,240,255,.06);color:var(--ink);}
 .supply-reward b{display:block;color:var(--cyan);font-size:.78rem;}
@@ -2727,8 +2733,8 @@ function buildSkills(){ try{
   }
 }catch(e){ const el=$('sklist'); if(el) el.textContent='buildSkills ERR: '+(e&&e.message); console.log('buildSkills',e); } }
 
-/* ===== 位置情報マップ（探索画面）：Three.js探索フィールド＋GPS＋DEV移動＋施設補給＋スイートスポット ===== */
-let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, selectedMapTowerId=null, mapPanelOpen=false, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], supplySpots=[], sweetSpotItems=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
+/* ===== 位置情報マップ（探索画面）：2D地図＋GPS＋DEV移動＋施設補給＋スイートスポット ===== */
+let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, selectedMapTowerId=null, mapPanelOpen=false, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], towerMarkers=[], supplySpots=[], sweetSpotItems=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
 const SUPPLY_FETCH_RADIUS=520, SUPPLY_FAST_RADIUS=900, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
@@ -2743,12 +2749,9 @@ map3D.root.visible=false; map3D.root.add(map3D.field,map3D.spots,map3D.towers,ma
 const mapTileLoader=new THREE.TextureLoader(); mapTileLoader.setCrossOrigin('anonymous');
 const mapRaycaster=new THREE.Raycaster(), mapPointer=new THREE.Vector2();
 function setExploreView(on){
-  map3D.active=!!on; map3D.root.visible=!!on;
+  map3D.active=false; map3D.root.visible=false;
   if(on){
-    controls.enabled=true; controls.autoRotate=false; controls.enablePan=true;
-    camera.position.set(MAP_ORIGIN.x, MAP_ORIGIN.y+560, MAP_ORIGIN.z+520);
-    controls.target.set(MAP_ORIGIN.x, MAP_ORIGIN.y+10, MAP_ORIGIN.z-70);
-    camera.lookAt(controls.target);
+    controls.enabled=false; controls.autoRotate=false; controls.enablePan=false;
     renderer.setClearColor(0x05060E,1);
     scene.fog.color.set(0x05060E); scene.fog.density=0.00060;
   }else{
@@ -2760,7 +2763,7 @@ function setExploreView(on){
 }
 function clearObj(g){ while(g.children.length){ g.remove(g.children[0]); } }
 function mapMode(){ return meta.settings&&meta.settings.combatObserverMode==='cinematic'?'cinematic':'live'; }
-function toggleMapMode(){ if(!meta.settings) meta.settings={}; meta.settings.combatObserverMode=mapMode()==='live'?'cinematic':'live'; saveMeta(); renderCellCard(); updateExplore3D(true); }
+function toggleMapMode(){ if(!meta.settings) meta.settings={}; meta.settings.combatObserverMode=mapMode()==='live'?'cinematic':'live'; saveMeta(); renderCellCard(); drawTowerMarkers(); }
 function mapLocalPos(lat,lng){
   if(!avatarLL) return new THREE.Vector3(MAP_ORIGIN.x,0,MAP_ORIGIN.z);
   const cos=Math.max(0.2,Math.cos(avatarLL[0]*Math.PI/180));
@@ -3073,6 +3076,7 @@ async function fetchMapFeatures(lat,lng,cell){
   }finally{ clearTimeout(to); }
 }
 function requestMapFeatures(){
+  if(!map3D.active) return;
   if(!avatarLL) return;
   const cell=GeoCell.latLngToCell(avatarLL[0],avatarLL[1]), key=cell+'|'+MAP_FEATURE_RADIUS;
   if(key===mapFeatureState.key || mapFeatureState.busy) return;
@@ -3105,7 +3109,7 @@ function requestSupplySpots(){
 }
 function leafletReady(){ return !window.__leafletFailed && typeof L!=='undefined'; }
 function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
-  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],19);
+  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],17);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19, subdomains:'abcd'}).addTo(LMAP);
   LMAP.on('click', e=>{ if(devMode) setAvatar(e.latlng.lat, e.latlng.lng); });
   return LMAP; }
@@ -3135,6 +3139,9 @@ function supplySpotIcon(spot){
   const ready=supplyReady(spot), near=supplySpotDistance(spot)<=SUPPLY_INTERACT_RANGE;
   return L.divIcon({className:'',iconSize:[27,36],iconAnchor:[13,30],html:'<div class="supply-marker '+(ready&&near?'ready':'')+(ready?'':' cooling')+'"><i class="cube"></i><i class="core"></i><i class="stem"></i><i class="base"></i><b class="tag">'+(ready?'補給':'待機')+'</b></div>'});
 }
+function towerMarkerIcon(tower){
+  return L.divIcon({className:'',iconSize:[34,44],iconAnchor:[17,38],html:'<div class="tower-marker '+(tower.boss?'boss':'')+'"><i class="beam"></i><i class="core"></i><i class="base"></i></div>'});
+}
 function setAvatar(lat,lng){ avatarLL=[lat,lng]; mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null;
   if(LMAP){ if(!avatarMarker){ avatarMarker=L.marker(avatarLL,{icon:avatarIcon(),interactive:false,zIndexOffset:1200}); avatarMarker.addTo(LMAP); } else avatarMarker.setLatLng(avatarLL); LMAP.panTo(avatarLL,{animate:false}); }
   drawCells(); }
@@ -3161,7 +3168,29 @@ function drawSupplyMarkers(){
     marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); selectedSupplySpot=spot; mapSpotCell=null; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
     marker.addTo(LMAP); supplyMarkers.push(marker);
   }
-  updateExplore3D(true);
+  drawTowerMarkers();
+}
+function towerPopupHtml(tower){
+  const dist=Math.round(towerDist(tower));
+  return '<div class="sweet-pop">'
+    + '<div class="sweet-pop-title"><b>'+htmlEsc(tower.label||'戦闘中の塔')+'</b><span>'+htmlEsc(tower.boss?'BOSS':'観測')+'</span></div>'
+    + '<div class="sweet-pop-row"><span>距離</span><b>'+fmt(dist)+'m</b></div>'
+    + '<div class="sweet-pop-row"><span>Wave</span><b>'+fmt(Math.floor(tower.wave||1))+'</b></div>'
+    + '<div class="sweet-pop-row"><span>HP</span><b>'+fmt(Math.ceil(tower.hp||0))+'/'+fmt(Math.ceil(tower.maxhp||1))+'</b></div>'
+    + '</div>';
+}
+function drawTowerMarkers(){
+  if(!LMAP) return;
+  towerMarkers.forEach(m=>LMAP.removeLayer(m)); towerMarkers=[];
+  if(!avatarLL) return;
+  for(const tower of mapTowerAnchors()){
+    const dist=towerDist(tower);
+    if(dist>MAP_COMBAT_VISIBLE_M) continue;
+    const marker=L.marker([tower.lat,tower.lng],{icon:towerMarkerIcon(tower),zIndexOffset:760,bubblingMouseEvents:false});
+    marker.bindPopup(towerPopupHtml(tower),{className:'sweet-popup',maxWidth:240});
+    marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); selectedMapTowerId=tower.id; selectedSupplySpot=null; mapSpotCell=null; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
+    marker.addTo(LMAP); towerMarkers.push(marker);
+  }
 }
 function claimSupplySpot(spot){
   if(!spot) return;
@@ -3240,10 +3269,8 @@ function drawCells(){
     }
   }
   requestSupplySpots();
+  drawTowerMarkers();
   updateMapWalkHud();
-  const force3D = (_now-_lastMap3DRedrawAt) >= MAP_3D_REFRESH_MS;
-  updateExplore3D(force3D);
-  if(force3D) _lastMap3DRedrawAt=_now;
   renderCellCard(); }
 function refreshCurrentPosition(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで移動してください'); return; }
@@ -3252,7 +3279,7 @@ function refreshCurrentPosition(){
     devMode=false;
     accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed);
     setAvatar(p.coords.latitude,p.coords.longitude);
-    if(LMAP) try{ LMAP.setView(avatarLL, Math.max(18, LMAP.getZoom()||18), { animate:true }); }catch(e){}
+    if(LMAP) try{ LMAP.setView(avatarLL, Math.max(17, Math.min(18, LMAP.getZoom()||17)), { animate:true }); }catch(e){}
     toast('📍 現在地を更新しました');
   }, ()=>{ toast('📍 現在地の再取得に失敗しました'); }, { enableHighAccuracy:true, maximumAge:0, timeout:12000 });
 }
@@ -3294,7 +3321,7 @@ function renderTowerObserverCard(card, tower){
   const top=document.createElement('div'); top.className='mc-top';
   const title=document.createElement('div'); title.className='mc-title';
   const st=document.createElement('strong'); st.textContent=tower.label||'戦闘中の塔';
-  const sub=document.createElement('span'); sub.textContent='第三者視点の戦闘観測 / 約'+fmt(dist)+'m / '+(mode==='live'?'実戦闘参照':'軽量演出');
+  const sub=document.createElement('span'); sub.textContent='2D地図上の塔情報 / 約'+fmt(dist)+'m / '+(mode==='live'?'実戦闘参照':'軽量表示');
   title.appendChild(st); title.appendChild(sub);
   const badges=document.createElement('div'); badges.className='mc-badges';
   const b1=document.createElement('span'); b1.className='mc-badge gold'; b1.textContent='WAVE '+fmt(Math.floor(tower.wave||1)); badges.appendChild(b1);
@@ -3303,7 +3330,7 @@ function renderTowerObserverCard(card, tower){
   const rewards=document.createElement('div'); rewards.className='supply-rewards';
   [['HP',fmt(Math.ceil(tower.hp||0))+'/'+fmt(Math.ceil(tower.maxhp||1))],['危険度',tower.boss?'高':'通常'],['同期',mode==='live'?'実戦闘':'軽量']].forEach(x=>{ const d=document.createElement('div'); d.className='supply-reward'; d.innerHTML='<b>'+x[1]+'</b>'+x[0]; rewards.appendChild(d); });
   const task=document.createElement('div'); task.className='supply-task';
-  task.innerHTML='<b>観測範囲</b> '+fmt(MAP_COMBAT_VISIBLE_M)+'m以内で敵軍表示、'+fmt(MAP_COMBAT_DETAIL_M)+'m以内で実戦闘参照を詳細表示 <span>/ 1射程='+MAP_RANGE_UNIT_M+'m / HP '+Math.round(hpPct*100)+'%</span>';
+  task.innerHTML='<b>観測範囲</b> '+fmt(MAP_COMBAT_VISIBLE_M)+'m以内で塔情報を表示 <span>/ 1射程='+MAP_RANGE_UNIT_M+'m / HP '+Math.round(hpPct*100)+'%</span>';
   rewards.appendChild(task); card.appendChild(rewards);
   const ctrls=document.createElement('div'); ctrls.className='mapbtns';
   const combat=document.createElement('button'); combat.type='button'; combat.textContent=tower.kind==='main'?'戦闘画面へ':'ショップで確認'; combat.addEventListener('click',()=>tower.kind==='main'?showCombat():showShop()); ctrls.appendChild(combat);
@@ -3380,11 +3407,11 @@ function renderCellCard(){
 function startGPS(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで出撃可（矢印/クリックで移動）'); return; }   // VENUEは showMap が既に表示
   if(_gpsWatch!=null){ try{ navigator.geolocation.clearWatch(_gpsWatch); }catch(e){} _gpsWatch=null; }   // 二重監視を防ぐ
-  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,19); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
+  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,17); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
-function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=true; controls.enablePan=true; setTab('mode-map');
+function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=false; controls.enablePan=false; setTab('mode-map');
   setMapPanelOpen(false);
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('探索: 補給施設で素材回収 / 高密度地点で出撃'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
@@ -3714,8 +3741,8 @@ function snowVfxTick(){ if(REDUCED||!game.skillZones.length) return;   // 吹雪
       emitP(px,py,pz, -Math.sin(a)*55+rand(-12,12), -16+rand(-6,6), Math.cos(a)*55+rand(-12,12), 0.95, .72,.86,1.0, 1.7); } } }
 function loop(now){
   const realDt=Math.min((now-last)/1000,0.25); last=now; tval+=realDt;
-  if(game.state==='map'){ updateExplore3D(false); updateExploreCombat(); }
-  if(!REDUCED){ controls.update(); if(beacon){ const pu=0.78+0.22*Math.sin(tval*3); beacon.scale.set(30*pu,30*pu,1); beacon.material.opacity=0.6+0.4*Math.sin(tval*3); } }
+  const render3D = game.state!=='map';
+  if(!REDUCED && render3D){ controls.update(); if(beacon){ const pu=0.78+0.22*Math.sin(tval*3); beacon.scale.set(30*pu,30*pu,1); beacon.material.opacity=0.6+0.4*Math.sin(tval*3); } }
   updateParallelTowerRuns(false);
   if(isRunLive() && !catchup.active){                     // 前面：固定DTで実時間消化（放置追いつき中は停止）
     acc += realDt*timeScale; let steps=0;
@@ -3723,8 +3750,8 @@ function loop(now){
     if(isRunLive()){ updateHUD(realDt); snowVfxTick(); }
     else if(typeof showResult==='function') showResult();                 // 前面でラン終了→リザルト演出
   }
-  else if(game.state==='title' || game.state==='home' || game.state==='map'){ if(!REDUCED){ if((Math.floor(tval*60)%40)===0) spawnShell(); updateShells(); } }
-  if(!REDUCED){ stepP(); renderer.render(scene,camera); }
+  else if(game.state==='title' || game.state==='home'){ if(!REDUCED){ if((Math.floor(tval*60)%40)===0) spawnShell(); updateShells(); } }
+  if(!REDUCED && render3D){ stepP(); renderer.render(scene,camera); }
   requestAnimationFrame(loop);
 }
 
