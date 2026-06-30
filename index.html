@@ -2737,6 +2737,7 @@ function buildSkills(){ try{
 let LMAP=null, avatarLL=null, devMode=false, cellPolys=[], avatarMarker=null, selCell=null, mapSpotCell=null, selectedSupplySpot=null, selectedMapTowerId=null, mapPanelOpen=false, mapKeyBound=false, gpsLocked=false, _gpsWatch=null, sweetMarkers=[], supplyMarkers=[], towerMarkers=[], supplySpots=[], sweetSpotItems=[], _sweetCenterCell=null, _sweetK=0, _sweetT=0, _supplyCenterCell=null, _supplyFetchBusy=false, _supplySeq=0, nearbySweetCount=0, nearestSweetDist=0, nearbySupplyCount=0, nearestSupplyDist=0;
 let moveMode='stop', moveSpeed=0, _speedHist=[];   // 移動モード（速度ロック＆探索拡大用）
 const SUPPLY_FETCH_RADIUS=520, SUPPLY_FAST_RADIUS=900, SUPPLY_INTERACT_RANGE=100, SUPPLY_COOLDOWN_MS=5*60*1000;
+const SWEET_SPOT_RADIUS_M=100, MAP_MIN_ZOOM=17, MAP_MAX_ZOOM=19, SWEET_SCAN_K=10, SWEET_SCAN_FAST_K=18;
 const MAP_ORIGIN=new THREE.Vector3(12000,0,12000);
 const MAP_RANGE_UNIT_M=0.25, MAP_COMBAT_VISIBLE_M=400, MAP_COMBAT_DETAIL_M=400, MAP_LIVE_ENEMY_LIMIT=300;
 const MAP_FEATURE_RADIUS=380, MAP_FIELD_SIZE=820, MAP_RENDER_RADIUS=430, MAP_LABEL_LIMIT=12;
@@ -2961,7 +2962,7 @@ function onMapPointer(e){
   const hit=mapRaycaster.intersectObjects(map3D.interactives,false)[0]; if(!hit) return;
   const d=hit.object.userData||{};
   if(d.kind==='supply'){ selectedSupplySpot=supplySpots.find(s=>s.id===d.id)||null; mapSpotCell=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); e.preventDefault(); }
-  else if(d.kind==='sweet'){ mapSpotCell=d.cell; selectedSupplySpot=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); e.preventDefault(); }
+  else if(d.kind==='sweet'){ mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); e.preventDefault(); }
   else if(d.kind==='tower'){ selectedMapTowerId=d.id; selectedSupplySpot=null; mapSpotCell=null; setMapPanelOpen(true); renderCellCard(); e.preventDefault(); }
 }
 renderer.domElement.addEventListener('pointerdown', onMapPointer);
@@ -3109,8 +3110,8 @@ function requestSupplySpots(){
 }
 function leafletReady(){ return !window.__leafletFailed && typeof L!=='undefined'; }
 function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
-  LMAP=L.map('map',{zoomControl:false, attributionControl:false}).setView([VENUE.lat,VENUE.lng],17);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19, subdomains:'abcd'}).addTo(LMAP);
+  LMAP=L.map('map',{zoomControl:false, attributionControl:false,minZoom:MAP_MIN_ZOOM,maxZoom:MAP_MAX_ZOOM}).setView([VENUE.lat,VENUE.lng],MAP_MIN_ZOOM);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:MAP_MAX_ZOOM, subdomains:'abcd'}).addTo(LMAP);
   LMAP.on('click', e=>{ if(devMode) setAvatar(e.latlng.lat, e.latlng.lng); });
   return LMAP; }
 let _lastFix=null;
@@ -3125,14 +3126,14 @@ function accrueWalk(lat,lng,gpsSpeed){ const now=performance.now();
 function updateMapWalkHud(){
   const mode=$('walkmode'), spots=$('walkspots'), dist=$('walkdist');
   if(mode) mode.innerHTML=htmlEsc(modeLabel())+' <b>'+Math.max(0,moveSpeed||0).toFixed(1)+'m/s</b>';
-  if(spots) spots.innerHTML='補給 <b>'+fmt(nearbySupplyCount)+'</b>'+(nearestSupplyDist>0?' <span>'+fmt(Math.round(nearestSupplyDist))+'m</span>':'');
+  if(spots) spots.innerHTML='補給 <b>'+fmt(nearbySupplyCount)+'</b> / S <b>'+fmt(nearbySweetCount)+'</b>'+(nearestSupplyDist>0?' <span>'+fmt(Math.round(nearestSupplyDist))+'m</span>':'');
   if(dist) dist.innerHTML='歩行 <b>'+fmt(Math.floor(meta.research.dist||0))+'m</b>';
 }
 function avatarIcon(){
   return L.divIcon({className:'',iconSize:[36,42],iconAnchor:[18,40],html:'<div class="map-avatar"><i class="ring"></i><i class="core"></i><span class="self-label">現在地</span></div>'});
 }
 function sweetSpotIcon(f, dist){
-  const near=dist>0&&dist<180;
+  const near=dist>0&&dist<=SWEET_SPOT_RADIUS_M;
   return L.divIcon({className:'',iconSize:[29,38],iconAnchor:[14,28],html:'<div class="sweet-marker '+(near?'near':'')+'"><i class="orb"></i><i class="stem"></i><i class="base"></i><b class="cost">C'+fmt(f.moduleCost||0)+'</b></div>'});
 }
 function supplySpotIcon(spot){
@@ -3178,6 +3179,18 @@ function towerPopupHtml(tower){
     + '<div class="sweet-pop-row"><span>Wave</span><b>'+fmt(Math.floor(tower.wave||1))+'</b></div>'
     + '<div class="sweet-pop-row"><span>HP</span><b>'+fmt(Math.ceil(tower.hp||0))+'/'+fmt(Math.ceil(tower.maxhp||1))+'</b></div>'
     + '</div>';
+}
+function nearestSweetSpot(max=Infinity){
+  let best=null, bd=max;
+  for(const s of sweetSpotItems){
+    const d=Number(s.dist)||0;
+    if(d<bd){ best=s; bd=d; }
+  }
+  return best?Object.assign({dist:bd},best):null;
+}
+function activeSweetSpot(){ return nearestSweetSpot(SWEET_SPOT_RADIUS_M); }
+function sweetZoneStyle(field, active){
+  return {color:active?'#FFD66B':'#B46BFF', weight:active?2:1, opacity:active?.90:.50, fillColor:active?'#FFD66B':'#B46BFF', fillOpacity:active?.14:.07};
 }
 function drawTowerMarkers(){
   if(!LMAP) return;
@@ -3242,11 +3255,11 @@ function sweetSpotPopupHtml(cellId){
 }
 function drawCells(){
   const avatarCell = avatarLL ? GeoCell.latLngToCell(avatarLL[0],avatarLL[1]) : GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
-  selCell = mapSpotCell || avatarCell;
-  // 現在地はアバター点のみ。近傍のスイートスポットを金色の点で表示（高速移動中は探索半径を拡大）
-  const wantK = modeFast()?18:8;   // 徒歩 約600m / 車・電車 約1.35km
+  selCell = avatarCell;
+  // 近傍のスイートスポットを「点＋半径100mの範囲」として表示（高速移動中は探索半径を拡大）
+  const wantK = modeFast()?SWEET_SCAN_FAST_K:SWEET_SCAN_K;   // 通常 約700m / 高速移動 約1.35km
   const _now=performance.now();
-  if(LMAP && avatarLL && (avatarCell!==_sweetCenterCell || wantK!==_sweetK) && _now-_sweetT>1000){   // セル/モード変化時のみ・最大1秒に1回（高速移動の再計算暴走を防ぐ）
+  if(LMAP && avatarLL && (avatarCell!==_sweetCenterCell || wantK!==_sweetK || _now-_sweetT>180)){   // 付近情報を即時寄りで更新
     _sweetCenterCell=avatarCell; _sweetK=wantK; _sweetT=_now;
     sweetMarkers.forEach(m=>LMAP.removeLayer(m)); sweetMarkers=[]; sweetSpotItems=[];
     nearbySweetCount=0; nearestSweetDist=0;
@@ -3262,9 +3275,14 @@ function drawCells(){
       if(dist>0 && (!nearestSweetDist || dist<nearestSweetDist)) nearestSweetDist=dist;
       sweetSpotItems.push({cell:cid, field:f, dist});
       const popup=sweetSpotPopupHtml(cid);
+      const active=dist<=SWEET_SPOT_RADIUS_M;
+      const circle=L.circle(ll,Object.assign({radius:SWEET_SPOT_RADIUS_M,interactive:true,bubblingMouseEvents:false},sweetZoneStyle(f,active)));
+      circle.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
+      circle.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); circle.openPopup(); });
+      circle.addTo(LMAP); sweetMarkers.push(circle);
       const marker=L.marker(ll,{icon:sweetSpotIcon(f,dist),zIndexOffset:500,bubblingMouseEvents:false});
       marker.bindPopup(popup,{className:'sweet-popup', maxWidth:280});
-      marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=cid; selCell=cid; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
+      marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
       marker.addTo(LMAP); sweetMarkers.push(marker);
     }
   }
@@ -3279,7 +3297,7 @@ function refreshCurrentPosition(){
     devMode=false;
     accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed);
     setAvatar(p.coords.latitude,p.coords.longitude);
-    if(LMAP) try{ LMAP.setView(avatarLL, Math.max(17, Math.min(18, LMAP.getZoom()||17)), { animate:true }); }catch(e){}
+    if(LMAP) try{ LMAP.setView(avatarLL, Math.max(MAP_MIN_ZOOM, Math.min(18, LMAP.getZoom()||MAP_MIN_ZOOM)), { animate:true }); }catch(e){}
     toast('📍 現在地を更新しました');
   }, ()=>{ toast('📍 現在地の再取得に失敗しました'); }, { enableHighAccuracy:true, maximumAge:0, timeout:12000 });
 }
@@ -3354,17 +3372,18 @@ function renderCellCard(){
   if(selectedSupplySpot){ renderSupplySpotCard(card, selectedSupplySpot); return; }
   const selectedTower=selectedMapTowerId&&findTower(selectedMapTowerId);
   if(selectedTower){ renderTowerObserverCard(card, selectedTower); return; }
-  const cell=selCell||GeoCell.latLngToCell(VENUE.lat,VENUE.lng), lng=avatarLL?avatarLL[1]:VENUE.lng;
-  const f=fieldFromCell(cell, todBucketAt(Date.now(),lng), Date.now());
   const hellOn=!!meta.armedShibuya;                                  // シブヤ装備中はこのカードに地獄の値をプレビュー
-  const dTotal=hellOn?500:f.TOTAL, dELv=hellOn?(1+500/300)*5:f.eLvMul, dDens=c=>hellOn?100:f.DENS[c];
-  const selectedSpot=!hellOn && !!mapSpotCell && cell===mapSpotCell;
+  const sweetActive=!hellOn && activeSweetSpot();
+  const avatarCell=avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):GeoCell.latLngToCell(VENUE.lat,VENUE.lng);
+  const cell=sweetActive?sweetActive.cell:(selCell||avatarCell);
   const cellLL=GeoCell.cellToLatLng(cell);
+  const f=fieldFromCell(cell, todBucketAt(Date.now(),cellLL[1]), Date.now());
+  const dTotal=hellOn?500:f.TOTAL, dELv=hellOn?(1+500/300)*5:f.eLvMul, dDens=c=>hellOn?100:f.DENS[c];
   const dist=avatarLL?haversine(avatarLL[0],avatarLL[1],cellLL[0],cellLL[1]):0;
   const top=document.createElement('div'); top.className='mc-top';
   const title=document.createElement('div'); title.className='mc-title';
-  const st=document.createElement('strong'); st.textContent=hellOn?'シブヤ地獄':selectedSpot?'スイートスポット':'探索フィールド';
-  const sub=document.createElement('span'); sub.textContent=selectedSpot?('現在地から約'+fmt(Math.round(dist))+'m / 選択中の高密度地点'):(f.jackpot?'この地点はスイートスポット':'歩くと補給施設と高密度地点が更新されます');
+  const st=document.createElement('strong'); st.textContent=hellOn?'シブヤ地獄':sweetActive?'スイートスポット圏内':'探索フィールド';
+  const sub=document.createElement('span'); sub.textContent=sweetActive?('中心から約'+fmt(Math.round(sweetActive.dist))+'m / 半径'+fmt(SWEET_SPOT_RADIUS_M)+'m内は同一仕様'):(f.jackpot?'現在地は高密度域':'周辺'+fmt(700)+'mの補給施設とスイートスポットを表示します');
   if(hellOn){ st.style.color='#FF6BB0'; sub.textContent='全鉱石密度100・敵HP/攻撃×5・敵量×2'; }
   title.appendChild(st); title.appendChild(sub);
   const badges=document.createElement('div'); badges.className='mc-badges';
@@ -3386,7 +3405,7 @@ function renderCellCard(){
   }
   const go=document.createElement('button'); go.className='mapgo'; go.type='button';
   const canParallel=isRunLive() && canStartParallelTower();
-  go.textContent=canParallel?'第二塔をこの地点へ':(isRunLive()?'戦闘へ戻る':(hellOn?'シブヤ地獄へ出撃':'この地点へ出撃'));
+  go.textContent=canParallel?(sweetActive?'第二塔をこの圏内へ':'第二塔をこの地点へ'):(isRunLive()?'戦闘へ戻る':(hellOn?'シブヤ地獄へ出撃':(sweetActive?'この圏内仕様で出撃':'この地点へ出撃')));
   go.addEventListener('click', ()=>{ if(canParallel) startParallelTowerRun(cell); else if(isRunLive()) showCombat(); else deployFromCell(cell); }); card.appendChild(go);
   const ctrls=document.createElement('div'); ctrls.className='mapbtns';
   const updatePos=document.createElement('button'); updatePos.type='button'; updatePos.textContent='位置更新';
@@ -3396,7 +3415,6 @@ function renderCellCard(){
   ctrls.appendChild(updatePos); ctrls.appendChild(updateSpots);
   const nearTower=nearestTower(MAP_COMBAT_VISIBLE_M);
   if(nearTower){ const obs=document.createElement('button'); obs.type='button'; obs.textContent='塔観測 '+fmt(Math.round(nearTower.dist))+'m'; obs.addEventListener('click',()=>{ selectedMapTowerId=nearTower.id; selectedSupplySpot=null; mapSpotCell=null; renderCellCard(); }); ctrls.appendChild(obs); }
-  if(selectedSpot){ const clear=document.createElement('button'); clear.type='button'; clear.textContent='現在地へ'; clear.addEventListener('click',()=>{ mapSpotCell=null; selCell=avatarLL?GeoCell.latLngToCell(avatarLL[0],avatarLL[1]):GeoCell.latLngToCell(VENUE.lat,VENUE.lng); renderCellCard(); }); ctrls.appendChild(clear); }
   card.appendChild(ctrls);
   const hint=document.createElement('div'); hint.className='maphint';
   hint.textContent = hellOn ? '⚠ シブヤテレポート発動：全鉱石密度100・敵HP/攻撃×5・敵量×2（資源は最大）'
@@ -3407,7 +3425,7 @@ function renderCellCard(){
 function startGPS(){
   if(!navigator.geolocation || !window.isSecureContext){ devMode=true; toast('GPS不可：DEVモードで出撃可（矢印/クリックで移動）'); return; }   // VENUEは showMap が既に表示
   if(_gpsWatch!=null){ try{ navigator.geolocation.clearWatch(_gpsWatch); }catch(e){} _gpsWatch=null; }   // 二重監視を防ぐ
-  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,17); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
+  _gpsWatch = navigator.geolocation.watchPosition(p=>{ if(game.state!=='map') return; const first=!gpsLocked; gpsLocked=true; devMode=false; accrueWalk(p.coords.latitude,p.coords.longitude,p.coords.speed); setAvatar(p.coords.latitude,p.coords.longitude); if(first){ if(LMAP){ try{ LMAP.setView(avatarLL,MAP_MIN_ZOOM); }catch(e){} } toast('📍 現在地を取得（精度±'+Math.round(p.coords.accuracy)+'m）'); } },
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
