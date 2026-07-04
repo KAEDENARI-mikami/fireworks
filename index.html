@@ -1132,9 +1132,9 @@ function freeEnemySlot(){
   return -1;
 }
 const CRYSTAL_ORBS = {
-  red:{ key:'red', hp:900, atk:120, size:10, col:[1,.42,.35], range:1700, moveSpd:64, shoot:true, shotInterval:[0.95,1.55], split:false, moveMin:500, moveMax:1400, summonScale:1.0, beam:false },
-  water:{ key:'water', hp:780, atk:85, size:9, col:[.6,1,.58], range:700, moveSpd:120, shoot:false, split:true, splitMax:2, splitCount:[2,3], moveMin:500, moveMax:1400, summonScale:1.0, beam:false },
-  green:{ key:'green', hp:680, atk:70, size:8, col:[.55,1,.68], range:900, moveSpd:88, shoot:false, split:false, moveMin:500, moveMax:800, summonScale:0.92, beam:false },
+  red:{ key:'red', hp:1000, atk:1.0, size:17, col:[1,.35,.3], range:1700, moveSpd:0.7, shoot:false, shotInterval:[1,1], split:false, moveMin:100, moveMax:100, summonScale:1.0, beam:false },
+  water:{ key:'water', hp:1000, atk:1.0, size:17, col:[.4,.7,1], range:400, moveSpd:0.7, shoot:false, shotInterval:[1,1], split:false, moveMin:100, moveMax:100, summonScale:1.0, beam:false },
+  green:{ key:'green', hp:1000, atk:1.0, size:17, col:[.45,1,.45], range:900, moveSpd:0.7, shoot:false, shotInterval:[1,1], split:false, moveMin:100, moveMax:100, summonScale:0.92, beam:false },
   white:{ key:'white', hp:1800, atk:240, size:18, col:[1,1,1], range:700, moveSpd:82, shoot:false, split:true, splitMax:3, splitCount:[2,3], moveMin:500, moveMax:1400, summonScale:1.3, beam:true },
 };
 function pickCrystalSplitCount(cfg, parent){
@@ -1563,6 +1563,7 @@ function bossDefeated(e){
     if(e.cfg && e.cfg.key==='crystalline'){ for(let i=0;i<MAXE;i++){ const o=E[i];
       if(o && o.crystalOrbit && (o.crystalParent===e || (o.crystalBossId&&o.crystalBossId===e.id))){
         o.active=false; o.crystalOrbit=false; o.crystalParent=null; o.crystalBossId=0;
+        if(o.crystalType==='water') clearHalfDamageAura('crystal:'+o.id);
       }
     } }
     if(e.cfg && e.cfg.key==='crystalline' && game.halfDamageAuras){
@@ -1612,6 +1613,7 @@ function onEnemyDeath(t, noSplitSpawn){
   if(t.boss){ meta.spark += 5; dispatch('onKill',DT,t); bossDefeated(t); return; }
   if(t.crystalOrbit){
     const cfg = CRYSTAL_ORBS[t.crystalType];
+    if(t.crystalType==='water') clearHalfDamageAura('crystal:'+t.id);
     if(cfg && cfg.split && !noSplitSpawn && t.crystalCanSplit && t.crystalSplitLevel < t.crystalSplitMax){
       const splitCount = pickCrystalSplitCount(cfg, t);
       const childScale = Math.max(0.05, (t.crystalSpawnScale||1)*0.5);
@@ -1696,52 +1698,50 @@ function updateCrystalOrbit(e, dt, i3, i){
   const parent = e.crystalParent;
   const anchor = toPoint(e.crystalAnchor) || (parent && parent.active ? toPoint(parent) : null) || { x:0, y:0, z:0 };
   const bx = anchor.x, by = anchor.y, bz = anchor.z;
-  const moveMin = Math.max(120, cfg.moveMin || 420);
-  const moveMax = Math.max(moveMin, cfg.moveMax || 920);
   if(e.hp<=0){ onEnemyDeath(e); return; }
 
-  if(!e.crystalTarget || game.t>=e.crystalNextTarget){
-    const rad = rand(moveMin, moveMax);
-    const ang = rand(0,6.283);
-    e.crystalTarget = { x: bx + Math.cos(ang)*rad, y: by + rand(-35,65), z: bz + Math.sin(ang)*rad };
-    e.crystalNextTarget = game.t + rand(0.9,2.6);
-  }
-  const tx=e.crystalTarget.x, ty=e.crystalTarget.y, tz=e.crystalTarget.z;
-  let dx=tx-e.x, dy=ty-e.y, dz=tz-e.z, d=Math.hypot(dx,dy,dz)||1;
-  const mv = e.crystalWanderSpd*dt;
-  if(d<=0.0001){ e.crystalTarget = null; }
-  else {
-    const r = Math.min(1, mv/d);
-    e.x += dx*r; e.y += dy*r; e.z += dz*r;
-    const dToCore = Math.hypot(e.x-CORE.x,e.y-CORE.y,e.z-CORE.z);
-    if(cfg.shoot && dToCore <= (cfg.range||1200) && e.shotCd<=0){ e.shotCd = rand(cfg.shotInterval?cfg.shotInterval[0]:1.2, cfg.shotInterval?cfg.shotInterval[1]:1.7); fireEnemyBullet(e,e.dmg); }
-    else if(cfg.shoot) e.shotCd -= dt;
-  }
-  if(cfg.beam){
-    if(e.crystalBeamTicks>0){
-      e.crystalBeamCdAtk += dt;
-      while(e.crystalBeamTicks>0 && e.crystalBeamCdAtk>=0.05){
-        e.crystalBeamCdAtk -= 0.05;
-        e.crystalBeamTicks--;
-        damageTowerFromEnemy(e, e.dmg * 0.18 * (e.crystalSpawnScale||1));
-      }
-      if(RENDER) drawBeam(e, e.crystalType==='white' ? 0xE6C0FF : 0xFF5A3A);
-      if(e.crystalBeamTicks<=0) e.crystalBeamCd = rand(4,7);
-    } else {
-      e.crystalBeamCd -= dt;
-      if(e.crystalBeamCd<=0){
-        e.crystalBeamCd = 2.6;
-        e.crystalBeamTicks = 18;
-        e.crystalBeamCdAtk = 0;
-      }
-    }
-  }
+  e.crystalOrbitAng = (e.crystalOrbitAng===undefined ? rand(0,6.283) : e.crystalOrbitAng) + 0.7*dt;
+  const orbitR = e.crystalWanderR || 100;
+  e.x = bx + Math.cos(e.crystalOrbitAng)*orbitR;
+  e.z = bz + Math.sin(e.crystalOrbitAng)*orbitR;
+  e.y = by;
+
   if(e.crystalType==='white'){
     e.crystalHealCd -= dt;
     if(e.crystalHealCd<=0){
       spawnWave(700, 1600, 0, 0xE6C0FF, {x:e.x,y:e.y,z:e.z}, Math.min(e.maxhp*0.35,200));
       e.crystalHealCd = rand(10,15);
     }
+  } else if(e.crystalType==='red'){
+    const atk = (e.crystalParent && e.crystalParent.dmg) || e.dmg;
+    if(e.laserT>0){
+      e.laserT-=dt; e.laserAcc+=dt;
+      while(e.laserAcc>=0.05){ e.laserAcc-=0.05; damageTowerFromEnemy(e, atk*0.10); }
+      const a=orbitLaser.geometry.attributes.position.array;
+      a[0]=e.x; a[1]=e.y; a[2]=e.z; a[3]=CORE.x; a[4]=CORE.y; a[5]=CORE.z;
+      orbitLaser.geometry.attributes.position.needsUpdate=true;
+      orbitLaser.visible=true;
+    } else { orbitLaser.visible=false; e.crystalBeamCd-=dt; if(e.crystalBeamCd<=0){ e.crystalBeamCd=5; e.laserT=1.0; e.laserAcc=0; } }
+  } else if(e.crystalType==='water'){
+    refreshHalfDamageAura('crystal:'+e.id, e.x,e.y,e.z,400,0.35);
+  } else if(e.crystalType==='green'){
+    e.crystalBeamCd -= dt;
+    if(e.crystalBeamCd<=0){
+      e.crystalBeamCd = rand(10,15);
+      const atk = (e.crystalParent && e.crystalParent.dmg) || e.dmg;
+      spawnWave(900, 1600, 0, 0x6BE06B, {x:e.x,y:e.y,z:e.z}, atk*1.2);
+      toast('オービット 回復波動');
+    }
+  }
+  const orbitKey = (e.crystalType==='water' ? 'blue' : e.crystalType);
+  const m=orbitMeshes[orbitKey];
+  if(m){
+    m.visible=true;
+    m.position.set(e.x,e.y,e.z);
+    m.rotation.y+=dt*1.6;
+    m.rotation.x+=dt*0.9;
+    const hpf=clamp(e.hp/e.maxhp,0,1);
+    if(m.children[0]) m.children[0].material.opacity=0.08+0.2*hpf;
   }
   const hpf = clamp(e.hp/e.maxhp,0,1), s = e.size*(0.78+0.22*hpf);
   edm.position.set(e.x,e.y,e.z); edm.rotation.set(e.phase,e.phase*0.7,0); e.phase += e.spin;
