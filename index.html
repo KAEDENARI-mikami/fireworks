@@ -1148,7 +1148,7 @@ function spawnCrystalOrbit(parent, type, count, overrides){
   const wm=waveMul(game.wave);
   const rt=activeModuleRuntime()||{};
   const opts = overrides || {};
-  const resolvedParent = parent && parent.active ? parent : null;
+  const resolvedParent = parent || null;
   const cScale=opts.scale===undefined?1:Math.max(0.05, opts.scale);
   const splitLevel=opts.splitLevel===undefined?0:Math.max(0, opts.splitLevel);
   const splitMax=opts.splitMax===undefined?(cfg.splitMax||0):opts.splitMax;
@@ -1156,7 +1156,7 @@ function spawnCrystalOrbit(parent, type, count, overrides){
   const baseAtk = cfg.atk * (opts.atkMul||1) * cScale;
   const moveMin = opts.moveMin===undefined?(cfg.moveMin||450):(opts.moveMin||cfg.moveMin||450);
   const moveMax = opts.moveMax===undefined?(cfg.moveMax||900):(opts.moveMax||cfg.moveMax||900);
-  const spawnCenter = toPoint(opts.spawnCenter) || toPoint(parent);
+  const spawnCenter = toPoint(opts.spawnCenter) || (parent && parent.active ? toPoint(parent) : null);
   const anchor = spawnCenter || { x:0, y:0, z:0 };
   const bossRootId = resolvedParent
     ? (resolvedParent.cfg && resolvedParent.cfg.key === 'crystalline'
