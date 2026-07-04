@@ -12,3 +12,4 @@ android/local.properties
 *.keystore
 *.p12
 .env.play
+.env.supabase

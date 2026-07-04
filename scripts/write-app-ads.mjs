@@ -10,4 +10,5 @@ if(!/^pub-\d{16}$/.test(publisherId)){
 const root = resolve(import.meta.dirname, '..');
 const line = `google.com, ${publisherId}, DIRECT, f08c47fec0942fa0\n`;
 writeFileSync(resolve(root, 'app-ads.txt'), line);
-console.log('wrote app-ads.txt');
+writeFileSync(resolve(root, 'ads.txt'), line);
+console.log('wrote app-ads.txt and ads.txt');

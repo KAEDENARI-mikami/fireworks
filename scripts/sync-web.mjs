@@ -7,7 +7,7 @@ const root = resolve(here, '..');
 const outDir = resolve(root, 'web');
 
 mkdirSync(outDir, { recursive: true });
-for(const file of ['index.html','manifest.webmanifest','sw.js','icon.svg','fireworks.config.js','privacy-policy.html']){
+for(const file of ['index.html','manifest.webmanifest','sw.js','icon.svg','fireworks.config.js','privacy-policy.html','app-ads.txt','ads.txt']){
   const src = resolve(root, file);
   const out = resolve(outDir, file);
   if(!existsSync(src)) continue;
@@ -17,10 +17,13 @@ for(const file of ['index.html','manifest.webmanifest','sw.js','icon.svg','firew
 
 const rewardedAndroidId = process.env.FIREWORKS_ADMOB_REWARDED_ANDROID_ID || '';
 const rewardedIosId = process.env.FIREWORKS_ADMOB_REWARDED_IOS_ID || '';
+const adsenseClient = process.env.FIREWORKS_ADSENSE_CLIENT_ID || '';
 const adsTesting = process.env.FIREWORKS_ADS_TESTING;
-if(rewardedAndroidId || rewardedIosId || adsTesting){
+const apiBaseUrl = process.env.FIREWORKS_API_BASE_URL || '';
+if(rewardedAndroidId || rewardedIosId || adsenseClient || adsTesting || apiBaseUrl){
   const testing = adsTesting === undefined ? false : !/^(0|false|no)$/i.test(adsTesting);
   const npa = /^(1|true|yes)$/i.test(process.env.FIREWORKS_ADS_NPA || '');
+  const allowLocalhost = /^(1|true|yes)$/i.test(process.env.FIREWORKS_ADSENSE_ALLOW_LOCALHOST || '');
   const config = `window.FireworksAdsConfig = ${JSON.stringify({
     rewardedAdId: rewardedAndroidId || null,
     rewardedAdIds: {
@@ -29,7 +32,14 @@ if(rewardedAndroidId || rewardedIosId || adsTesting){
     },
     testing,
     npa
+  }, null, 2)};\n\nwindow.FireworksWebAdsConfig = ${JSON.stringify({
+    adsenseClient: adsenseClient || null,
+    autoAds: !!adsenseClient,
+    webOnly: true,
+    allowLocalhost
+  }, null, 2)};\n\nwindow.FireworksApiConfig = ${JSON.stringify({
+    apiBaseUrl: apiBaseUrl || 'https://atdgogohyvlrfwcxoocb.supabase.co/functions/v1/fireworks-api',
   }, null, 2)};\n`;
   writeFileSync(resolve(outDir, 'fireworks.config.js'), config);
-  console.log('generated web/fireworks.config.js from FIREWORKS_ADMOB_* environment');
+  console.log('generated web/fireworks.config.js from environment');
 }

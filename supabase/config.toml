@@ -1,0 +1,4 @@
+project_id = "atdgogohyvlrfwcxoocb"
+
+[functions.fireworks-api]
+verify_jwt = false
