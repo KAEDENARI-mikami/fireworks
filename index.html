@@ -11,6 +11,20 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <script src="fireworks.config.js"></script>
+<script>
+(() => {
+  const cfg = window.FireworksWebAdsConfig || {};
+  if(!cfg.autoAds || !cfg.adsenseClient) return;
+  const localHost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/i.test(location.hostname);
+  const nativeProtocol = /^(capacitor|ionic):$/i.test(location.protocol);
+  if(location.protocol === 'file:' || nativeProtocol || (localHost && !cfg.allowLocalhost)) return;
+  const script = document.createElement('script');
+  script.async = true;
+  script.crossOrigin = 'anonymous';
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(cfg.adsenseClient)}`;
+  document.head.appendChild(script);
+})();
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -165,8 +179,9 @@ body.state-mod #modebar{display:flex;}
 .modslot b{font-family:"Reggae One",sans-serif; font-size:.72rem; color:var(--ac);}
 .modslot span{font-size:.58rem; line-height:1.25; white-space:pre-line;}
 #modcats{width:min(980px,96vw);display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
-#modcats .ctab{display:flex;align-items:center;justify-content:center;gap:.45rem;min-height:44px;font-size:.9rem;font-variant-numeric:tabular-nums;}
+#modcats .ctab{display:grid;grid-template-columns:auto auto auto;align-items:center;justify-content:center;gap:.32rem;min-height:48px;font-size:.82rem;font-variant-numeric:tabular-nums;padding:.48rem .55rem;}
 #modcats .ctab svg{width:1.25rem;height:1.25rem;display:block;filter:drop-shadow(0 0 8px currentColor);}
+#modcats .ctab .ctab-label{color:var(--ink);font-size:.72rem;line-height:1;white-space:nowrap;}
 #modcats .ctab .ctab-count{line-height:1;}
 #modlist{width:min(980px,96vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.55rem;align-content:start;}
 .modtile{--ac:#3CF0FF; position:relative; cursor:pointer; pointer-events:auto; min-height:168px; display:flex; flex-direction:column; gap:.32rem; border-radius:10px; padding:.7rem .75rem .75rem; font-family:"DotGothic16",monospace; color:var(--ink); overflow:hidden; border:1px solid color-mix(in srgb,var(--ac) 48%, rgba(234,240,255,.16)); background:linear-gradient(155deg,color-mix(in srgb,var(--ac) 13%,rgba(13,18,38,.9)),rgba(8,10,20,.96));}
@@ -248,6 +263,12 @@ body.state-mod #modebar{display:flex;}
 .skcard .skn{font-family:"Reggae One",sans-serif; font-size:.96rem; letter-spacing:.02em; line-height:1.15;}
 .skcard .skbadge{flex:none; font-size:.64rem; color:var(--ac); border:1px solid color-mix(in srgb,var(--ac) 45%, rgba(234,240,255,.25)); border-radius:999px; padding:.06rem .5rem; white-space:nowrap;}
 .skcard .skd{font-size:.64rem; color:var(--dim); line-height:1.42; min-height:1.7em;}
+.skcard.modsection{grid-column:1/-1;min-height:auto;padding:.85rem 1rem;}
+.skcard.modsection:hover{transform:none;}
+.skcard.modsection .skhd{align-items:center;flex-wrap:wrap;justify-content:flex-start;}
+.skcard.modsection .skn{font-family:"DotGothic16",monospace;font-size:1rem;font-weight:700;letter-spacing:.08em;line-height:1.25;word-break:keep-all;overflow-wrap:normal;}
+.skcard.modsection .skbadge{margin-left:auto;}
+.skcard.modsection .skd{font-size:.72rem;max-width:720px;min-height:0;}
 .skcard .skbtns{display:flex; gap:.4rem; margin-top:.2rem;}
 .skcard .skbtns button{flex:1; pointer-events:auto; cursor:pointer; font-family:"DotGothic16",monospace; font-size:.74rem; padding:.5rem .4rem; border-radius:7px; color:var(--ink); transition:.15s;
   background:rgba(234,240,255,.06); background:color-mix(in srgb, var(--ac) 16%, rgba(234,240,255,.04));
@@ -646,6 +667,7 @@ const MODULE_RARITIES = [
   {id:'mythic', label:'ミシック', chance:0.06, density:[4000,5000], cost:[8,10]},
   {id:'celestial', label:'セレスティアル', chance:0.02, density:[8000,10000], cost:[13,15]},
 ];
+const SWEET_REWARD_MUL_BY_RARITY = { rare:1.8, epic:3.4, legend:7.5, mythic:18, celestial:45 };
 const MODULE_THEME = { attack:'#FF4A4A', defense:'#3CA0FF', economy:'#6BE06B', special:'#FFD66B', tricky:'#B46BFF', curse:'#FF7A3C' };
 const MODULE_FAMILY_FOR_COLOR = { red:'attack', blue:'defense', green:'economy', yellow:'special', purple:'tricky' };
 const MODULE_DEFS = [
@@ -689,6 +711,10 @@ const MODULE_DEFS = [
   { id:'moon', cost:7, family:'curse', color:'purple', name:'月の難題', desc:'通常攻撃1/5、バリアに炎上、HPがガラス化、スキルは半減', apply(s){ s.playerDmgMul*=0.2; s.playerHpMul*=0.75; s.playerDrMul*=0.7; s.playerSkillChargeRateMul*=0.5; s.skillDamageMul*=0.5; s.barrierBurnPct=0.005; s.armorDecayBoostDelta-=0.4; } },
 ];
 function moduleRarityByRoll(r){ if(r<0.45) return MODULE_RARITIES[0]; if(r<0.80) return MODULE_RARITIES[1]; if(r<0.92) return MODULE_RARITIES[2]; if(r<0.98) return MODULE_RARITIES[3]; return MODULE_RARITIES[4]; }
+function sweetRewardMul(rarityId, totalCost){
+  const base = SWEET_REWARD_MUL_BY_RARITY[rarityId];
+  return base || (1 + 0.3 * Math.max(0, Number(totalCost)||0));
+}
 function dominantColor(d){ let best='red', bv=-1; for(const c of COLORS){ if(d[c]>bv){ best=c; bv=d[c]; } } return best; }
 function weightedPick(items, weights, rng){ let total=0; for(const w of weights) total+=Math.max(0,w||0); if(!(total>0)) return items[(rng.next()*items.length)|0];
   let r=rng.next()*total; for(let i=0;i<items.length;i++){ r-=Math.max(0,weights[i]||0); if(r<=0) return items[i]; } return items[items.length-1]; }
@@ -748,7 +774,7 @@ function buildSweetSpot(field){
     sweetspot:true,
     DENS:DENSv, TOTAL:TOTALv, baseMul:1 + TOTALv/300, colorBias:{ red:DENSv.red/160, blue:DENSv.blue/180, green:DENSv.green/220, yellow:DENSv.yellow/220, purple:DENSv.purple/180 }, eLvMul:(1 + TOTALv/300) + Math.max(DENSv.red/160,DENSv.blue/180,DENSv.green/220,DENSv.yellow/220,DENSv.purple/180), densityMul:TOTALv/265,
     rarity:rarity.id, rarityLabel:rarity.label, moduleProfile:profile, moduleProfileLabel:profile==='biased'?'偏り':'均等',
-    densityTarget:totalTarget, moduleBudget:budget, moduleCost:totalCost, moduleNames:modules.map(m=>m.name), modules, rewardMul:1 + 0.3*totalCost,
+    densityTarget:totalTarget, moduleBudget:budget, moduleCost:totalCost, moduleNames:modules.map(m=>m.name), modules, rewardMul:sweetRewardMul(rarity.id, totalCost),
   });
 }
 function buildModuleState(field){
@@ -767,7 +793,7 @@ function buildModuleState(field){
     barrierBurnPct:0, armorDecayBoostDelta:0,
   };
   for(const mod of field.modules||[]) if(mod && typeof mod.apply==='function') mod.apply(state, field);
-  state.rewardMul = field.rewardMul || (1 + 0.3*state.moduleCost);
+  state.rewardMul = field.rewardMul || sweetRewardMul(state.rarity, state.moduleCost);
   return state;
 }
 function buildFieldProfile(field){ return buildSweetSpot(field); }
@@ -959,13 +985,69 @@ const ene = new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1), new THREE.Mesh
 ene.instanceMatrix.setUsage(THREE.DynamicDrawUsage); ene.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(MAXE*3),3); ene.frustumCulled=false; scene.add(ene);
 const ecol=ene.instanceColor.array, edm=new THREE.Object3D();
 let enemyId=0;
-const E=new Array(MAXE); for(let i=0;i<MAXE;i++) E[i]={active:false,id:0,kind:'',shooter:false,range:0,shotCd:0,boss:false,repCd:0,shootCd:0,laserCd:0,laserT:0,laserAcc:0,tx:0,ty:0,tz:0,ang:0,orbR:0,tgtR:0,enraged:false,enrageT:0,sum70:false,sum30:false,x:0,y:0,z:0,hp:0,maxhp:1,spd:1,dmg:1,size:6,col:[1,1,1],spin:0,phase:0,eb:0,ebDmg:0,zatk:1,skillDmgMul:1,split:false,noSplit:false,beamer:false,beamCd:0,beamT:0,beamTickAcc:0,beamTicksLeft:0};
+const E=new Array(MAXE); for(let i=0;i<MAXE;i++) E[i]={active:false,id:0,kind:'',shooter:false,range:0,shotCd:0,boss:false,repCd:0,shootCd:0,laserCd:0,laserT:0,laserAcc:0,tx:0,ty:0,tz:0,ang:0,orbR:0,tgtR:0,enraged:false,enrageT:0,sum70:false,sum30:false,x:0,y:0,z:0,hp:0,maxhp:1,spd:1,dmg:1,size:6,col:[1,1,1],spin:0,phase:0,eb:0,ebDmg:0,zatk:1,skillDmgMul:1,split:false,noSplit:false,beamer:false,beamCd:0,beamT:0,beamTickAcc:0,beamTicksLeft:0,eliteRank:0,eliteKey:'',eliteHitLabel:''};
 const ETYPES=[
   {key:'mote',  hp:8,  spd:46, dmg:4,  size:6,  col:[.7,.95,1.0]},   // 粒子兵
   {key:'halo',  hp:42, spd:20, dmg:13, size:12, col:[.4,.7,1.0]},    // 光輪重装（青寄り）
   {key:'spiral',hp:16, spd:78, dmg:6,  size:7,  col:[1,.45,.7]},     // 疾走螺旋（赤寄り）
   {key:'shooter',hp:58,spd:24, dmg:30, size:18, col:[.42,1,.45], shooter:true, range:200}, // 射撃兵（緑・遠隔／鈍足の球）
 ];
+const ELITE_DEFS = {
+  1: [ { key:'fire', dmgMul:2, hpMul:5, label:'炎' }, { key:'ice', dmgMul:2, hpMul:5, label:'氷' }, { key:'thunder', dmgMul:2, hpMul:5, label:'雷' } ],
+  2: [ { key:'moon', dmgMul:3, hpMul:10, label:'月' }, { key:'curse', dmgMul:3, hpMul:10, label:'呪' }, { key:'flag', dmgMul:3, hpMul:10, label:'旗' } ],
+};
+function eliteTier1Chance(w){ return Math.min(0.25, Math.floor((Math.max(0,w)||0)/100)*0.01); }
+function eliteTier2Chance(w){ return Math.min(0.10, Math.floor((Math.max(0,w)||0)/300)*0.01); }
+function eliteRollForEnemy(wave, isBaseTier2Enemy){
+  const base2=Math.max(0, eliteTier2Chance(wave) - (isBaseTier2Enemy ? 0.03 : 0));
+  if(game.rng && game.rng.chance(base2)) return 2;
+  if(game.rng && game.rng.chance(eliteTier1Chance(wave))) return 1;
+  return 0;
+}
+function resetElite(e){ e.eliteRank=0; e.eliteKey=''; e.eliteHitLabel=''; }
+function applyEliteEffects(e, baseDamage){
+  const hitDmg = Number(baseDamage)||0;
+  if(!e.eliteRank){ return { dmg:hitDmg, slow:false, ignoreBarrier:false, summonFlag:false }; }
+  if(e.eliteRank===1){
+    if(e.eliteKey==='fire') { applyBurn(1.0); return { dmg:hitDmg }; }
+    if(e.eliteKey==='ice'){ game.eliteSlowUntil = Math.max(game.eliteSlowUntil||0, 1); return { dmg:hitDmg }; }
+    if(e.eliteKey==='thunder'){ return { dmg:hitDmg, ignoreBarrier:true }; }
+  }
+  if(e.eliteRank===2){
+    if(e.eliteKey==='moon'){ game.armor = Math.max(0, game.armor - (hitDmg*5)); return { dmg:hitDmg }; }
+    if(e.eliteKey==='curse'){ return { dmg:hitDmg + (game.maxhp + game.barrier)*0.01 }; }
+    if(e.eliteKey==='flag'){ return { dmg:hitDmg, summonFlag:true }; }
+  }
+  return { dmg:hitDmg };
+}
+function enemyAttackPayload(e, baseDmg){
+  const eff = applyEliteEffects(e, baseDmg);
+  if(!eff) return { dmg:baseDmg, ignoreBarrier:false, summonFlag:false };
+  return {
+    dmg: Number(eff.dmg)||0,
+    ignoreBarrier: !!eff.ignoreBarrier,
+    summonFlag: !!eff.summonFlag,
+  };
+}
+function damageTowerFromEnemy(e, baseDmg){
+  const hit = enemyAttackPayload(e, baseDmg);
+  damageTower(hit.dmg, { source: e, sourceKind:'enemy', eliteRank:e ? e.eliteRank : 0, ignoreBarrier: hit.ignoreBarrier });
+  return hit;
+}
+function maybeApplyElite(e, isBaseTier2Enemy){
+  const rank = eliteRollForEnemy(game.wave, !!isBaseTier2Enemy);
+  e.eliteRank = rank;
+  e.eliteHitLabel = '';
+  e.eliteKey = '';
+  if(!rank) return;
+  const pool = ELITE_DEFS[rank];
+  const sel = game.rng.pick(pool);
+  e.eliteKey = sel.key;
+  e.eliteHitLabel = sel.label || sel.key;
+  e.maxhp *= sel.hpMul;
+  e.hp *= sel.hpMul;
+  e.dmg *= sel.dmgMul;
+}
 /* ===== Tier2 敵（wave50以降、tier1とは別枠の抽選で混入） ===== */
 const TIER2=[
   {key:'protect', name:'ミニプロテクト', hp:750, spd:46, dmg:125, size:13, col:[.45,.8,1],  skillDmgMul:0.5},               // スキル由来ダメージ50%軽減（即死・通常弾は除外）
@@ -974,6 +1056,7 @@ const TIER2=[
 ];
 function tier2Chance(w){ if(w<50) return 0; return Math.min(0.35, 0.02 + 0.005*Math.floor((w-50)/50)); }  // wave50=2% / 50waveごと+0.5% / 上限35%
 function resetT2(e){
+  resetElite(e);
   e.skillDmgMul=1; e.split=false; e.noSplit=false; e.beamer=false; e.beamCd=0; e.beamT=0; e.beamTickAcc=0; e.beamTicksLeft=0;
   e.invincibleShieldHits=0; e.invincibleShieldIgnoresInstant=false; e.blessingShieldHits=0; e.blessingShieldIgnoresInstant=false;
   e.blessed=false; e.blessedShieldHits=0; e.blessedShieldIgnoresInstant=false; e.blessedSpeedMul=1; e.blessedDamageTakenMul=1; e.blessedStatusImmune=false; e.blessedDeathShield=0; e._adaptHit=false;
@@ -1009,6 +1092,7 @@ function spawnTier2(){
   e.kind=t.key; e.boss=false; e.fireball=false; e.barrierMax=0; e.orbit=false; e.plasma=false;
   e.shooter=false; e.range=t.range||0; e.shotCd=0;
   e.skillDmgMul=t.skillDmgMul||1; e.split=!!t.split; e.beamer=!!t.beamer;
+  maybeApplyElite(e, true);
   applyEnemySpawnModules(e, rt, false);
   if(e.beamer){ e.beamCd=srand(2,10); e.beamT=0; e.beamTickAcc=0; e.beamTicksLeft=0; }              // 初回ビームを散らす
 }
@@ -1023,6 +1107,7 @@ function spawnFirerunClones(parent){
     e.size=t.size*0.85; e.col=t.col.slice(); e.spin=srand(-.05,.05); e.phase=a;
     e.kind='firerun'; e.shooter=false; e.range=0; e.shotCd=0; e.boss=false; e.fireball=false; e.barrierMax=0; e.orbit=false; e.plasma=false;
     e.split=true; e.noSplit=true;                                                                   // 分身は再分裂しない
+    maybeApplyElite(e, true);
   }
 }
 function spawnEnemy(){
@@ -1041,6 +1126,7 @@ function spawnEnemy(){
   e.dmg = t.dmg * fieldMul('red') * wm * (game.enemyAtkMul||1) * (rt.enemyAtkMul||1); e.eb=0; e.ebDmg=0; e.zatk=1;
   e.size=t.size; e.col=t.col.slice(); e.spin=srand(-.04,.04); e.phase=ang;
   e.kind=t.key; e.shooter=!!t.shooter; e.range=t.range||0; e.shotCd=srand(0.5,3); e.boss=false; e.fireball=false; e.barrierMax=0; e.orbit=false; e.plasma=false;
+  maybeApplyElite(e, false);
   applyEnemySpawnModules(e, rt, true);
   // tier2：wave50以降、tier1湧き1体ごとに独立抽選（当選で1体追加）。wave<50は乱数を一切消費せず従来と同一ストリーム
   if(game.wave>=50 && game.rng.next() < tier2Chance(game.wave)) spawnTier2();
@@ -1065,7 +1151,14 @@ function updateEnemies(dt){
     // 塔に到達→ダメージ
     if(inRange && e.shooter){ e.shotCd -= dt; if(e.shotCd<=0){ e.shotCd += 3; fireEnemyBullet(e); if(rt.enemyHealOnHitPct>0) e.hp=Math.min(e.maxhp, e.hp + e.maxhp*rt.enemyHealOnHitPct); } }
     if(inRange && e.beamer){ updateBeamer(e, dt); }
-    if(d < 78){ damageTower(e.dmg*(e.zatk||1) + e.maxhp*(rt.enemyMeleeFlatPct||0)); if(rt.barrierBurnPct>0 && game.barrier>0) game.barrier=Math.max(0, game.barrier - game.barrier*rt.barrierBurnPct); if(rt.enemyHealOnHitPct>0) e.hp=Math.min(e.maxhp, e.hp + e.maxhp*rt.enemyHealOnHitPct); if(e.fireball) applyBurn(1.0); burst(e.x,e.y,e.z, e.fireball?[1,.55,.2]:[1,.4,.3],26,1.1); e.active=false; continue; }
+    if(d < 78){
+      const base = e.dmg*(e.zatk||1) + e.maxhp*(rt.enemyMeleeFlatPct||0);
+      const h = damageTowerFromEnemy(e, base);
+      if(rt.barrierBurnPct>0 && game.barrier>0) game.barrier=Math.max(0, game.barrier - game.barrier*rt.barrierBurnPct);
+      if(rt.enemyHealOnHitPct>0) e.hp=Math.min(e.maxhp, e.hp + e.maxhp*rt.enemyHealOnHitPct);
+      if(e.fireball) applyBurn(1.0);
+      burst(e.x,e.y,e.z, e.fireball?[1,.55,.2]:[1,.4,.3],26,1.1); e.active=false; continue;
+    }
     const hpf = clamp(e.hp/e.maxhp,0,1), s=e.size*(0.7+0.3*hpf);
     edm.position.set(e.x,e.y,e.z); edm.rotation.set(e.phase, e.phase*0.7, 0); e.phase+=e.spin; edm.scale.set(s,s,s); edm.updateMatrix(); ene.setMatrixAt(i,edm.matrix);
     const b=0.55+0.45*hpf; ecol[i3]=e.col[0]*b; ecol[i3+1]=e.col[1]*b; ecol[i3+2]=e.col[2]*b;
@@ -1117,7 +1210,7 @@ function drawBeam(e){ if(_beamIdx>=beamerBeams.length) return; const b=beamerBea
 function updateBeamer(e, dt){   // 射程内で停止中：10秒毎に0.4秒のビーム（0.1秒毎×4ヒット＝攻撃力40%/回）
   if(e.beamT>0){
     e.beamT-=dt; e.beamTickAcc+=dt;
-    while(e.beamTicksLeft>0 && e.beamTickAcc>=0.1){ e.beamTickAcc-=0.1; e.beamTicksLeft--; damageTower(e.dmg*0.1*(e.zatk||1)); }
+    while(e.beamTicksLeft>0 && e.beamTickAcc>=0.1){ e.beamTickAcc-=0.1; e.beamTicksLeft--; damageTowerFromEnemy(e, e.dmg*0.1*(e.zatk||1)); }
     if(RENDER) drawBeam(e);
     if(e.beamT<=0) e.beamT=0;
   } else {
@@ -1172,6 +1265,7 @@ function summon(typeKey, n, hpMul, dmgMul, spdMul){
     e.dmg = t.dmg * fieldMul('red') * dmgMul * wm * (game.enemyAtkMul||1) * (rt.enemyAtkMul||1); e.eb=0; e.ebDmg=0; e.zatk=1;
     e.size=t.size; e.col=t.col.slice(); e.spin=srand(-.04,.04); e.phase=a;
     e.kind=t.key; e.shooter=!!t.shooter; e.range=t.range||0; e.shotCd=srand(0.5,3); e.boss=false; e.enrageT=0; e.sum70=true; e.sum30=true; e.fireball=false; e.barrierMax=0; e.orbit=false; e.plasma=false;
+    maybeApplyElite(e, false);
     applyEnemySpawnModules(e, rt, true);
   }
 }
@@ -1193,7 +1287,7 @@ function updateBoss(e, dt, i3, i){
   e.shootCd-=dt; if(e.shootCd<=0){ e.shootCd=e.enraged?B.shootInt*0.8:B.shootInt; fireEnemyBullet(e, e.dmg*(e.enraged?B.shootMul*1.6:B.shootMul)); }
   // レーザー（即着弾・0.04秒ごとに攻撃力×laserDmg）。エンレイジ中はCD無視で連射
   const LDUR = B.laserDur*(e.enraged?1.25:1), LDMG = e.dmg*B.laserDmg*(e.enraged?1.25:1);
-  if(e.laserT>0){ e.laserT-=dt; e.laserAcc+=dt; while(e.laserAcc>=0.04){ e.laserAcc-=0.04; damageTower(LDMG); }
+  if(e.laserT>0){ e.laserT-=dt; e.laserAcc+=dt; while(e.laserAcc>=0.04){ e.laserAcc-=0.04; damageTowerFromEnemy(e, LDMG); }
     { const L=bossMeshes[e.mi||0].laser; const a=L.geometry.attributes.position.array; a[0]=e.x;a[1]=e.y;a[2]=e.z; a[3]=CORE.x;a[4]=CORE.y;a[5]=CORE.z; L.geometry.attributes.position.needsUpdate=true; L.material.color.setHex(e.enraged?0x3CA0FF:B.col); L.visible=(e.laserT>0); }
   } else if(e.enrageT>0){ e.laserT=LDUR; e.laserAcc=0; }
   else { e.laserCd-=dt; if(e.laserCd<=0){ e.laserCd=srand(B.laserCd[0],B.laserCd[1]); e.laserT=LDUR; e.laserAcc=0; } }
@@ -1251,6 +1345,7 @@ function onEnemyDeath(t, noSplitSpawn){
   const rt = activeModuleRuntime() || {};
   t.active=false; const reward=Math.ceil((2+t.maxhp*0.18)*game.cashMul*(rt.cashMul||1)); game.cash+=reward; game.kills++; game.score=game.kills; burst(t.x,t.y,t.z,t.col,40,1.3);
   game.cashEarned+=reward; dispatch('onKill',DT,t);
+  if(t && t.eliteRank===2 && t.eliteKey==='flag') summon('mote',10,1,1,1);
   if(t.split && !t.noSplit && !noSplitSpawn) spawnFirerunClones(t);   // ファイヤーラン：撃破時に分身2体（分身自身は再分裂しない／全消し時は分裂させない）
 }
 function orbitDestroyed(t){ if(t.orbitDead) return; t.orbitDead=true; t.reviveAt=game.t+30; t.hp=0; if(t.orbitType==='blue') game.blueAura=null; if(orbitMeshes[t.orbitType]) orbitMeshes[t.orbitType].visible=false; burst(t.x,t.y,t.z,t.col,150,2.4); toast('要塞オービット破壊（30s後復活）'); }
@@ -1285,7 +1380,7 @@ function updateOrbit(e, dt, i3, i){
   e.x=boss.x+Math.cos(ang)*100; e.z=boss.z+Math.sin(ang)*100; e.y=boss.y;
   const atk=boss.dmg;
   if(e.orbitType==='red'){
-    if(e.laserT>0){ e.laserT-=dt; e.laserAcc+=dt; while(e.laserAcc>=0.05){ e.laserAcc-=0.05; damageTower(atk*0.10); }
+    if(e.laserT>0){ e.laserT-=dt; e.laserAcc+=dt; while(e.laserAcc>=0.05){ e.laserAcc-=0.05; damageTowerFromEnemy(e, atk*0.10); }
       const a=orbitLaser.geometry.attributes.position.array; a[0]=e.x;a[1]=e.y;a[2]=e.z; a[3]=CORE.x;a[4]=CORE.y;a[5]=CORE.z; orbitLaser.geometry.attributes.position.needsUpdate=true; orbitLaser.visible=true;
     } else { orbitLaser.visible=false; e.orbitCd-=dt; if(e.orbitCd<=0){ e.orbitCd=5; e.laserT=1.0; e.laserAcc=0; } }
   } else if(e.orbitType==='blue'){
@@ -1303,7 +1398,7 @@ function updatePlasma(e, dt, i3, i){
   e.x+=dx/d*v; e.y+=dy/d*v; e.z+=dz/d*v;
   if(plasmaMesh){ plasmaMesh.visible=true; plasmaMesh.position.set(e.x,e.y,e.z); const sc=clamp(e.hp/e.maxhp,0.25,1); plasmaMesh.scale.setScalar(0.6+0.9*sc); plasmaMesh.rotation.y+=dt*1.2; plasmaMesh.rotation.x+=dt*0.7; }
   if(Math.random()<0.6) emitP(e.x,e.y,e.z, rand(-.3,.3),rand(-.3,.3),rand(-.3,.3), 4, .85,.5,1, 2.2);
-  if(d<95){ damageTower(e.hp + (e.plasmaAtk||0)); burst(CORE.x,CORE.y,CORE.z,[.85,.5,1],400,4); e.active=false; e.plasma=false; if(plasmaMesh) plasmaMesh.visible=false;
+  if(d<95){ damageTowerFromEnemy(e, e.hp + (e.plasmaAtk||0)); burst(CORE.x,CORE.y,CORE.z,[.85,.5,1],400,4); e.active=false; e.plasma=false; if(plasmaMesh) plasmaMesh.visible=false;
     ecol[i3]=ecol[i3+1]=ecol[i3+2]=0; edm.position.set(0,-99999,0); edm.scale.set(0,0,0); edm.updateMatrix(); ene.setMatrixAt(i,edm.matrix); return; }
   ecol[i3]=ecol[i3+1]=ecol[i3+2]=0; edm.position.set(0,-99999,0); edm.scale.set(0,0,0); edm.updateMatrix(); ene.setMatrixAt(i,edm.matrix);
 }
@@ -1389,7 +1484,7 @@ function updateInterceptor(e, dt, i3, i){
     // 突進：塔へ高速直進。着弾で350%＋炎上3s
     const dx=CORE.x-e.x, dy=CORE.y-e.y, dz=CORE.z-e.z, d=Math.hypot(dx,dy,dz)||1, v=1500*dt;
     e.x+=dx/d*v; e.y+=dy/d*v; e.z+=dz/d*v;
-    if(d<90){ damageTower(e.dmg*3.5); applyBurn(3.0); burst(CORE.x,CORE.y,CORE.z,[1,.6,.2],260,3);
+    if(d<90){ damageTowerFromEnemy(e, e.dmg*3.5); applyBurn(3.0); burst(CORE.x,CORE.y,CORE.z,[1,.6,.2],260,3);
       bossMeshes[e.mi||0].edgeMats.forEach(m=>m.color.setHex(B.col));
       e.orbR=Math.hypot(e.x,e.z)||300; e.ang=Math.atan2(e.z,e.x); e.tgtR=srand(300,460); e.chargeCd=srand(10,15); e.dashState=0; }
   }
@@ -1416,19 +1511,20 @@ function drawTracers(){ if(!RENDER){ tracers.length=0; return; } let n=0; for(le
 const MAXEB = 128;
 const ebul = new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}), MAXEB);
 ebul.instanceMatrix.setUsage(THREE.DynamicDrawUsage); ebul.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(MAXEB*3),3); ebul.frustumCulled=false; scene.add(ebul);
-const EB=new Array(MAXEB); for(let i=0;i<MAXEB;i++) EB[i]={active:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,dmg:0};
+const EB=new Array(MAXEB); for(let i=0;i<MAXEB;i++) EB[i]={active:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,dmg:0,si:-1,sid:0};
 const ebcl=ebul.instanceColor.array, ebdm=new THREE.Object3D(); let ebcur=0;
 const EB_SPEED=120;   // 鈍足の球
 function fireEnemyBullet(e, dm, speed){ const p=EB[ebcur]; ebcur=(ebcur+1)%MAXEB; const sp=speed||EB_SPEED;
   const dx=CORE.x-e.x, dy=CORE.y-e.y, dz=CORE.z-e.z, d=Math.hypot(dx,dy,dz)||1;
-  p.active=true; p.x=e.x; p.y=e.y; p.z=e.z; p.vx=dx/d*sp; p.vy=dy/d*sp; p.vz=dz/d*sp; p.dmg=(dm!==undefined?dm:e.dmg);
+  p.active=true; p.x=e.x; p.y=e.y; p.z=e.z; p.vx=dx/d*sp; p.vy=dy/d*sp; p.vz=dz/d*sp; p.dmg=(dm!==undefined?dm:e.dmg); p.si=-1; p.sid=e&&e.id||0;
+  for(let si=0; si<MAXE; si++){ const en=E[si]; if(en && en.active && en.id===e.id){ p.si=si; break; } }
 }
 function updateEnemyBullets(dt){
   for(let i=0;i<MAXEB;i++){ const p=EB[i], i3=i*3;
     if(!p.active){ ebcl[i3]=ebcl[i3+1]=ebcl[i3+2]=0; ebdm.position.set(0,-99999,0); ebdm.scale.set(0,0,0); ebdm.updateMatrix(); ebul.setMatrixAt(i,ebdm.matrix); continue; }
     p.x+=p.vx*dt; p.y+=p.vy*dt; p.z+=p.vz*dt;
     const d=Math.hypot(p.x-CORE.x,p.y-CORE.y,p.z-CORE.z);
-    if(d<70){ damageTower(p.dmg); burst(p.x,p.y,p.z,[.42,1,.45],22,1.1); p.active=false; continue; }
+    if(d<70){ const src = (p.si>=0 && E[p.si].active && E[p.si].id===p.sid) ? E[p.si] : null; if(src){ damageTowerFromEnemy(src,p.dmg); } else { damageTower(p.dmg); } burst(p.x,p.y,p.z,[.42,1,.45],22,1.1); p.active=false; continue; }
     if(Math.hypot(p.x,p.z)>1700 || p.y<-150){ p.active=false; continue; }
     ebdm.position.set(p.x,p.y,p.z); ebdm.rotation.set(p.x*0.03,p.z*0.03,0); ebdm.scale.set(8.5,8.5,8.5); ebdm.updateMatrix(); ebul.setMatrixAt(i,ebdm.matrix);
     ebcl[i3]=.42; ebcl[i3+1]=1; ebcl[i3+2]=.45;
@@ -1467,7 +1563,8 @@ function updateProjectiles(dt){
 
 function towerFire(dt){
   game.fireCd -= dt;
-  const interval = 1/(game.fireRate*(game.skillBuffs.rofMul||1));
+  const slowMul = game.eliteSlowUntil>0 ? 0.5 : 1;
+  const interval = 1/(game.fireRate*(game.skillBuffs.rofMul||1)*slowMul);
   while(game.fireCd <= 0){
     game.fireCd += interval;
     // 射程内の最も近い敵を multishot 体
@@ -1498,7 +1595,7 @@ const game = {
   hp:1000, maxhp:1000, regen:0,
   dmg:10, fireRate:2, range:520, multishot:1, multiCarry:0, critChance:0.05, critPower:1.8,
   harvestMul:1, skillPow:1, slowLv:0, slow:0, cash:0, dr:0, cashMul:1, vuln:1,
-  armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
+  armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null, eliteSlowUntil:0,
   upgradeBoost:{red:1,blue:1,green:1,yellow:1,purple:1}, statusEffectMul:1,
   res:{red:0,blue:0,green:0,yellow:0,purple:0},
   mining:{red:0,blue:0,green:0,yellow:0,purple:0},
@@ -1515,7 +1612,7 @@ function resetGame(){
   eLvMul = previewELvMul();
   Object.assign(game,{ state:'playing', runLive:true, t:0, fireCd:0, hp:1600, maxhp:1600, regen:18,
     dmg:16, fireRate:2.4, range:520, multishot:1, multiCarry:0, critChance:0.05, critPower:1.8, harvestMul:1, skillPow:1, slowLv:0, cash:0, dr:0, cashMul:1, vuln:1,
-    armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null,
+    armor:0, barrier:0, shield:0, swPow:1, swInterval:4, swCd:4, hitLog:[], burn:0, blueAura:null, eliteSlowUntil:0,
     upgradeBoost:{red:1,blue:1,green:1,yellow:1,purple:1}, statusEffectMul:1,
     res:{red:0,blue:0,green:0,yellow:0,purple:0}, mining:{red:0,blue:0,green:0,yellow:0,purple:0}, lv:{},
     skillUnlocked:false, skillCharge:0, skillMax:18, kills:0, score:0, wave:1, startWave:1, spawnCd:0,
@@ -1588,13 +1685,15 @@ function buyMining(c){ if(applyMining(c)){ toast(CRES[c]+'採掘機 設置 ×'+g
 function applyPurchasesUpTo(tick){ const P=game.purchases; while(game._pidx<P.length && P[game._pidx].tick<=tick){ const e=P[game._pidx]; if(e.m){ applyMining(e.m); } else { const s=STATS.find(x=>x.k===e.k); if(s) applyStat(s); } game._pidx++; } }
 
 function recentHits(){ const cut=game.t-10, L=game.hitLog; while(L.length && L[0]<cut) L.shift(); return L.length; }
-function damageTower(d){ if(!isRunLive()) return;
+function damageTower(d, ctx={}){
+  if(!isRunLive()) return;
+  const opts = ctx || {};
   const rt = activeModuleRuntime();
   if(rt) d *= (rt.frenzyWaveAtkMul||1);
   const _in={d}; dispatch('onTowerHurt',DT,_in); d=_in.d; if(d<=0){ game.hitLog.push(game.t); return; }
   const reduction = game.armor * Math.max(0, (1+(game.armorDecayBoost||0)) - recentHits()/100);   // 過去10秒の被弾が多いほど防御力は減衰（飽和）
   let dd = Math.max(0, d - reduction) * (1 - game.dr) * (game.dmgTakenMul||1);
-  if(game.shield>0){ if(game.shield>=dd){ game.shield-=dd; dd=0; } else { dd-=game.shield; game.shield=0; } }
+  if(!opts.ignoreBarrier && game.shield>0){ if(game.shield>=dd){ game.shield-=dd; dd=0; } else { dd-=game.shield; game.shield=0; } }
   if(rt && rt.barrierBurnPct>0 && game.barrier>0) game.barrier = Math.max(0, game.barrier - game.barrier*rt.barrierBurnPct);
   game.hp-=dd; game.hitLog.push(game.t); dispatch('onTowerHurtPost',DT,dd);
   if(game.hp<=0){ game.hp=0; if(!tryReviveSkill()) finishRun(false); } }
@@ -2124,6 +2223,14 @@ const TOWER_MOD_DRAW_COST=25, TOWER_MOD_CAT_DRAW_COST=60, TOWER_MOD_WALK_DUST=50
 const TOWER_ADDON_SLOTS=3;
 const TOWER_ADDON_SUBS={common:0,rare:1,epic:2,legend:3,mythic:4,celestial:5};
 const TOWER_ADDON_TOKEN_BY_RARITY={common:3,rare:8,epic:28,legend:95,mythic:320,celestial:1200};
+const ADDON_RARITY_WEIGHTS_GENERIC=[['common',52],['rare',38],['epic',10]];
+const SWEET_ADDON_REWARD_BY_RARITY={
+  rare:{tokenMul:1.35,chance:0.18,weights:[['common',30],['rare',52],['epic',18]]},
+  epic:{tokenMul:2.2,chance:0.28,weights:[['common',25],['rare',65],['epic',10]]},
+  legend:{tokenMul:4.0,chance:0.42,weights:[['epic',45],['legend',55]]},
+  mythic:{tokenMul:7.5,chance:0.58,weights:[['legend',55],['mythic',45]]},
+  celestial:{tokenMul:14,chance:0.78,weights:[['mythic',55],['celestial',45]]},
+};
 const TOWER_ADDON_STATS={
   turret:['dmgPct','fireRatePct','rangePct','critChanceFlat','critPowerFlat','bossDmgPct'],
   barrier:['barrierFlat','shieldFlat','regenFlat','drFlat','dmgTakenMul'],
@@ -2213,46 +2320,43 @@ function modRollRarity(minRank=0){
   if(r<0.342 && minRank<=1) return 'epic';
   return minRank>=1?'epic':'rare';
 }
-function rollAddonEffectRarity(){
-  const r=modRng();
-  if(r<0.01) return 'celestial';
-  if(r<0.05) return 'mythic';
-  if(r<0.17) return 'legend';
-  if(r<0.45) return 'epic';
-  if(r<0.72) return 'rare';
-  return 'common';
+function rollAddonRarityFromWeights(weights){
+  const rows=(weights&&weights.length)?weights:ADDON_RARITY_WEIGHTS_GENERIC;
+  return modWeightedPick(rows.map(r=>r[0]), rows.map(r=>r[1]));
+}
+function rollAddonEffectRarity(maxRank=4){
+  const rows=[['common',28],['rare',27],['epic',28],['legend',12],['mythic',4],['celestial',1]]
+    .filter(r=>(TOWER_MOD_RARITIES[r[0]]||TOWER_MOD_RARITIES.common).rank<=maxRank);
+  return rollAddonRarityFromWeights(rows);
 }
 function modRollAddonRarity(minRank=-1){
   ensureTowerMods();
-  if(minRank>=0) return modRollRarity(minRank);
-  const r=modRng();
-  if(r<0.002) return 'celestial';
-  if(r<0.018) return 'mythic';
-  if(r<0.065) return 'legend';
-  if(r<0.205) return 'epic';
-  if(r<0.555) return 'rare';
-  return 'common';
+  if(minRank>=1) return 'epic';
+  if(minRank>=0) return rollAddonRarityFromWeights([['rare',75],['epic',25]]);
+  return rollAddonRarityFromWeights(ADDON_RARITY_WEIGHTS_GENERIC);
 }
-function randomAddonEffect(cat, main){
+function randomAddonEffect(cat, main, maxRank=4){
   const pool=TOWER_ADDON_STATS[cat]||TOWER_ADDON_STATS.reactor;
   const stat=pool[Math.floor(modRng()*pool.length)];
-  const rarity=main?null:rollAddonEffectRarity();
+  const rarity=main?null:rollAddonEffectRarity(maxRank);
   return {stat, rarity:rarity||'main', value:TOWER_ADDON_STAT_BASE[stat]};
 }
-function createTowerAddon(cat=null, minRank=-1){
+function createTowerAddon(cat=null, minRank=-1, opts=null){
   ensureTowerMods();
   const c=cat||TOWER_MOD_CATS[Math.floor(modRng()*TOWER_MOD_CATS.length)].id;
-  const rarity=modRollAddonRarity(minRank), n=TOWER_ADDON_SUBS[rarity]||0;
+  const rarity=(opts&&opts.rarity) || (opts&&opts.weights?rollAddonRarityFromWeights(opts.weights):modRollAddonRarity(minRank)), n=TOWER_ADDON_SUBS[rarity]||0;
+  const subMaxRank=(TOWER_MOD_RARITIES[rarity]||TOWER_MOD_RARITIES.rare).rank;
   const uid='ta-'+hash32(c,rarity,Date.now(),meta.towerMods.seed,Object.keys(meta.towerMods.addons).length).toString(36)+'-'+modRandInt(1000,9999);
   const ad={uid,cat:c,rarity,main:randomAddonEffect(c,true),subs:[],lockedSubs:[],lockedSubCount:0};
-  for(let i=0;i<n;i++) ad.subs.push(randomAddonEffect(c,false));
+  for(let i=0;i<n;i++) ad.subs.push(randomAddonEffect(c,false,subMaxRank));
   syncAddonLocks(ad);
   meta.towerMods.addons[uid]=ad;
   return ad;
 }
-function grantTowerAddon(cat=null, minRank=-1, reason='アドオン'){
-  const ad=createTowerAddon(cat,minRank), rr=TOWER_MOD_RARITIES[ad.rarity], ci=TOWER_MOD_CAT_BY_ID[ad.cat];
+function grantTowerAddon(cat=null, minRank=-1, reason='アドオン', opts=null){
+  const ad=createTowerAddon(cat,minRank,opts), rr=TOWER_MOD_RARITIES[ad.rarity], ci=TOWER_MOD_CAT_BY_ID[ad.cat];
   lastModReveal=reason+' '+ci.name+'アドオン '+rr.label+' 入手';
+  queueAddonEvent(ad, reason);
   if(RENDER) toast(lastModReveal);
   saveMeta();
   if(game.state==='mod') buildMods();
@@ -2385,10 +2489,19 @@ function grantTowerModBattleReward(kind){
 function grantTowerModResultReward(clear,wave){
   ensureTowerMods();
   const base=Math.max(5,Math.floor(Math.sqrt(Math.max(1,wave))*2))*(clear?2:1);
-  meta.towerMods.addonTokens+=base;
-  if(RENDER) toast('戦闘精算 アドオントークン+'+fmt(base));
+  const sweetReward=(currentField&&currentField.sweetspot)?SWEET_ADDON_REWARD_BY_RARITY[currentField.rarity]:null;
+  const tokenGain=Math.max(1, Math.round(base*(sweetReward?sweetReward.tokenMul:1)));
+  meta.towerMods.addonTokens+=tokenGain;
+  if(RENDER) toast('戦闘精算 アドオントークン+'+fmt(tokenGain));
   saveMeta();
-  if(clear || wave>=1000){ if(modRng()<Math.min(0.45,0.08+wave/18000)) grantTowerAddon(null,wave>=2500?1:0,'到達報酬'); }
+  if(clear || wave>=1000){
+    if(sweetReward){
+      const chance=Math.min(0.9, sweetReward.chance + Math.min(0.12, wave/20000));
+      if(modRng()<chance) grantTowerAddon(null,-1,'高密度到達報酬',{weights:sweetReward.weights});
+    } else if(modRng()<Math.min(0.35,0.08+wave/22000)){
+      grantTowerAddon(null,wave>=2500?1:0,'到達報酬');
+    }
+  }
 }
 function showMods(){ ensureTowerMods(); game.state='mod'; setOverlayView('state-mod'); controls.autoRotate=!REDUCED; setTab('mode-mod'); buildMods(); }
 function buildMods(){ try{
@@ -2406,9 +2519,9 @@ function buildMods(){ try{
     d.appendChild(b); d.appendChild(s); d.addEventListener('click',()=>{ modCat=c.id; if(inst) openTowerModDetail(inst.uid); else buildMods(); }); slots.appendChild(d);
   }
   const cats=$('modcats'); cats.textContent='';
-  for(const c of TOWER_MOD_CATS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c.id===modCat?' on':''); t.style.color=COLORHEX[c.color]; const count=fmt(tm.catDust[c.id]||0); t.title=c.name+'片 '+count; t.setAttribute('aria-label',c.name+'片 '+count); const ic=document.createElement('span'); ic.className='ctab-icon'; ic.appendChild(iconEl(c.icon)); const num=document.createElement('span'); num.className='ctab-count'; num.textContent=count; t.append(ic,num); if(c.id===modCat)t.style.borderColor=COLORHEX[c.color]; t.addEventListener('click',()=>{modCat=c.id; buildMods();}); cats.appendChild(t); }
+  for(const c of TOWER_MOD_CATS){ const t=document.createElement('button'); t.type='button'; t.className='ctab'+(c.id===modCat?' on':''); t.style.color=COLORHEX[c.color]; const count=fmt(tm.catDust[c.id]||0); t.title=c.name+'片 '+count; t.setAttribute('aria-label',c.name+'片 '+count); const ic=document.createElement('span'); ic.className='ctab-icon'; ic.appendChild(iconEl(c.icon)); const label=document.createElement('span'); label.className='ctab-label'; label.textContent=c.name; const num=document.createElement('span'); num.className='ctab-count'; num.textContent=count; t.append(ic,label,num); if(c.id===modCat)t.style.borderColor=COLORHEX[c.color]; t.addEventListener('click',()=>{modCat=c.id; buildMods();}); cats.appendChild(t); }
   const list=$('modlist'); list.textContent='';
-  const bodyHead=document.createElement('div'); bodyHead.className='skcard'; bodyHead.style.setProperty('--ac',COLORHEX[catInfo.color]); bodyHead.innerHTML='<div class="skhd"><div class="skn">STEP 1: '+catInfo.name+' 素体</div><span class="skbadge">アドオン倍率 ×'+addonMulForCat(modCat).toFixed(2)+'</span></div><div class="skd">このカテゴリの本体です。1つだけ装備でき、対応アドオンの効果倍率を決めます。</div>'; list.appendChild(bodyHead);
+  const bodyHead=document.createElement('div'); bodyHead.className='skcard modsection'; bodyHead.style.setProperty('--ac',COLORHEX[catInfo.color]); bodyHead.innerHTML='<div class="skhd"><div class="skn">STEP 1: '+catInfo.name+' 素体</div><span class="skbadge">アドオン倍率 ×'+addonMulForCat(modCat).toFixed(2)+'</span></div><div class="skd">このカテゴリの本体です。1つだけ装備でき、対応アドオンの効果倍率を決めます。</div>'; list.appendChild(bodyHead);
   const owned=Object.values(tm.owned).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || b.level-a.level);
   if(!owned.length){ const empty=document.createElement('div'); empty.className='modempty'; empty.textContent=catInfo.name+'素体をまだ持っていません。上の素体箱から入手します。'; list.appendChild(empty); }
   for(const inst of owned){ const def=TOWER_MOD_DEF_BY_ID[inst.defId], rr=TOWER_MOD_RARITIES[def.rarity], eq=tm.equip[def.cat]===inst.uid;
@@ -2418,7 +2531,7 @@ function buildMods(){ try{
     const foot=document.createElement('div'); foot.className='mfoot'; foot.innerHTML='<span>Lv '+fmt(inst.level)+' / ★'+fmt(inst.stars||0)+'</span><b>'+(eq?'装備中':'未装備')+'</b>';
     tile.appendChild(top); tile.appendChild(st); tile.appendChild(foot); tile.addEventListener('click',()=>openTowerModDetail(inst.uid)); list.appendChild(tile);
   }
-  const adHead=document.createElement('div'); adHead.className='skcard'; adHead.style.setProperty('--ac',COLORHEX[catInfo.color]); adHead.innerHTML='<div class="skhd"><div class="skn">STEP 2: '+catInfo.name+' アドオン</div><span class="skbadge">装備 '+fmt((tm.addonEquip[modCat]||[]).filter(Boolean).length)+'/'+TOWER_ADDON_SLOTS+'</span></div><div class="skd">素体に追加する小型パーツです。Commonはメイン効果のみ、Rare以上はサブ効果が付きます。</div>'; list.appendChild(adHead);
+  const adHead=document.createElement('div'); adHead.className='skcard modsection'; adHead.style.setProperty('--ac',COLORHEX[catInfo.color]); adHead.innerHTML='<div class="skhd"><div class="skn">STEP 2: '+catInfo.name+' アドオン</div><span class="skbadge">装備 '+fmt((tm.addonEquip[modCat]||[]).filter(Boolean).length)+'/'+TOWER_ADDON_SLOTS+'</span></div><div class="skd">素体に追加する小型パーツです。Commonはメイン効果のみ、Rare以上はサブ効果が付きます。</div>'; list.appendChild(adHead);
   const addons=Object.values(tm.addons).filter(x=>x.cat===modCat).sort((a,b)=>TOWER_MOD_RARITIES[b.rarity].rank-TOWER_MOD_RARITIES[a.rarity].rank || (b.subs||[]).length-(a.subs||[]).length);
   if(!addons.length){ const empty=document.createElement('div'); empty.className='modempty'; empty.textContent=catInfo.name+'アドオンをまだ持っていません。探索補給や戦闘報酬で入手します。'; list.appendChild(empty); }
   for(const ad of addons){ const rr=TOWER_MOD_RARITIES[ad.rarity], eq=(tm.addonEquip[ad.cat]||[]).indexOf(ad.uid)>=0;
@@ -3101,9 +3214,17 @@ function requestSupplySpots(){
   supplySpots=fallbackSupplySpots(avatarLL[0],avatarLL[1],cell);
   drawSupplyMarkers();
   const seq=++_supplySeq; _supplyFetchBusy=true;
+  fetchCloudNearbySpots(avatarLL[0],avatarLL[1],SUPPLY_FAST_RADIUS).then(data=>{
+    if(seq!==_supplySeq) return;
+    const rows=data&&Array.isArray(data.supply)?data.supply:[];
+    if(rows.length){
+      supplySpots=rows.map(s=>({id:s.id,name:s.name,type:s.type||'補給',lat:Number(s.lat),lng:Number(s.lng),source:s.source||'postgres',tags:s.tags||{}}));
+      drawSupplyMarkers(); updateMapWalkHud(); renderCellCard();
+    }
+  }).catch(()=>{});
   fetchFacilitySupplySpots(avatarLL[0],avatarLL[1],cell).then(spots=>{
     if(seq!==_supplySeq) return;
-    if(spots&&spots.length) supplySpots=spots;
+    if(spots&&spots.length){ supplySpots=spots; syncCloudSupplySpots(spots); }
     drawSupplyMarkers(); updateMapWalkHud(); renderCellCard();
   }).catch(()=>{ drawSupplyMarkers(); updateMapWalkHud(); renderCellCard(); })
     .finally(()=>{ if(seq===_supplySeq) _supplyFetchBusy=false; });
@@ -3205,40 +3326,63 @@ function drawTowerMarkers(){
     marker.addTo(LMAP); towerMarkers.push(marker);
   }
 }
-function claimSupplySpot(spot){
+function supplyClaimBucket(ts=Date.now()){ return Math.floor(ts/SUPPLY_COOLDOWN_MS); }
+function rollSupplyRewards(spot, ms, ts=Date.now()){
+  const rng=makeRNG(hash32('supply-claim',spot.id,supplyClaimBucket(ts),supplyClaimAt(spot.id)));
+  let powder=rng.chance(0.55)?rng.int(1,3):0;
+  let tokens=rng.int(5,12);
+  let dust=rng.int(1,5);
+  const cat=TOWER_MOD_CATS[rng.int(0,TOWER_MOD_CATS.length-1)].id;
+  const catDust=rng.chance(0.45)?1:0;
+  const addonRoll=rng.chance(0.08);
+  const today=supplyDayKey(ts), yesterday=supplyYesterdayKey();
+  let dailyBonus=false, streakBonus=false;
+  let nextStreak=Number(ms.streak)||0, nextLastDay=ms.lastDay||'';
+  if(ms.lastDay!==today){
+    dailyBonus=true;
+    nextStreak=ms.lastDay===yesterday?Math.min(7,(Number(ms.streak)||0)+1):1;
+    nextLastDay=today;
+    if(nextStreak>=7){ streakBonus=true; nextStreak=0; }
+    powder+=1; tokens+=5; dust+=2;
+    if(streakBonus){ powder+=5; tokens+=30; dust+=12; }
+  }
+  return {powder,tokens,dust,cat,catDust,addonRoll,dailyBonus,streakBonus,nextStreak,nextLastDay};
+}
+function applySupplyRewards(spot, reward, claimedAt=Date.now()){
+  const ms=ensureMapSupply(); ensureTowerMods();
+  const r=Object.assign({powder:0,tokens:0,dust:0,cat:null,catDust:0,addonRoll:false,dailyBonus:false,streakBonus:false}, reward||{});
+  let addon=null;
+  if(r.nextLastDay!==undefined) ms.lastDay=r.nextLastDay;
+  if(r.nextStreak!==undefined) ms.streak=Math.max(0, Number(r.nextStreak)||0);
+  meta.blackPowder+=Math.max(0, Number(r.powder)||0);
+  meta.towerMods.addonTokens+=Math.max(0, Number(r.tokens)||0);
+  meta.towerMods.dust+=Math.max(0, Number(r.dust)||0);
+  if(r.catDust && r.cat) meta.towerMods.catDust[r.cat]=(meta.towerMods.catDust[r.cat]||0)+Math.max(0, Number(r.catDust)||0);
+  if(r.addonRoll){ addon=createTowerAddon(null,-1); queueAddonEvent(addon, '補給', {spotId:spot.id}); }
+  ms.claims[spot.id]=claimedAt;
+  if(r.powder) queueBlackPowderLedger(r.powder, '補給', {spotId:spot.id, placement:'supply'});
+  saveMeta(); refreshCurrencyDisplays();
+  const bits=[]; if(r.powder) bits.push('黒色火薬+'+r.powder); bits.push('トークン+'+r.tokens); bits.push('改装片+'+r.dust); if(r.catDust) bits.push((TOWER_MOD_CAT_BY_ID[r.cat]||{}).name+'片+'+r.catDust); if(addon) bits.push('アドオン入手'); if(r.dailyBonus) bits.push('初回補給'); if(r.streakBonus) bits.push('7日連続');
+  toast('施設補給: '+bits.join(' / '));
+  drawSupplyMarkers(); renderCellCard();
+}
+async function claimSupplySpot(spot){
   if(!spot) return;
   const ms=ensureMapSupply(); ensureTowerMods();
   const dist=supplySpotDistance(spot);
   if(dist>SUPPLY_INTERACT_RANGE && !devMode){ toast('もう少し近づく必要があります'); renderCellCard(); return; }
   const left=supplyCooldownLeft(spot);
   if(left>0){ toast('再補給まで '+Math.ceil(left/60000)+'分'); renderCellCard(); return; }
-  const rng=makeRNG(hash32('supply-claim',spot.id,Math.floor(Date.now()/SUPPLY_COOLDOWN_MS),supplyClaimAt(spot.id)));
-  let powder=rng.chance(0.55)?rng.int(1,3):0;
-  let tokens=rng.int(5,12);
-  let dust=rng.int(1,5);
-  const cat=TOWER_MOD_CATS[rng.int(0,TOWER_MOD_CATS.length-1)].id;
-  const catDust=rng.chance(0.45)?1:0;
-  let addon=null;
-  const today=supplyDayKey(Date.now()), yesterday=supplyYesterdayKey();
-  let dailyBonus=false, streakBonus=false;
-  if(ms.lastDay!==today){
-    dailyBonus=true;
-    ms.streak=ms.lastDay===yesterday?Math.min(7,(Number(ms.streak)||0)+1):1;
-    ms.lastDay=today;
-    if(ms.streak>=7){ streakBonus=true; ms.streak=0; }
-    powder+=1; tokens+=5; dust+=2;
-    if(streakBonus){ powder+=5; tokens+=30; dust+=12; }
+  const ts=Date.now(), bucket=supplyClaimBucket(ts);
+  let reward=rollSupplyRewards(spot, ms, ts), claimedAt=ts;
+  if(cloudEnabled()){
+    try{
+      const res=await cloudRequest('/api/v1/claims/supply',{method:'POST',body:{anonymousId:cloudAnonymousId(),spotId:spot.id,cooldownBucket:bucket,idempotencyKey:'supply:'+spot.id+':'+bucket,rewards:reward}});
+      if(res&&res.rewards) reward=res.rewards;
+      if(res&&res.claimedAt) claimedAt=new Date(res.claimedAt).getTime()||ts;
+    }catch(e){ console.log('cloud supply claim skipped', e); }
   }
-  meta.blackPowder+=powder;
-  meta.towerMods.addonTokens+=tokens;
-  meta.towerMods.dust+=dust;
-  if(catDust) meta.towerMods.catDust[cat]=(meta.towerMods.catDust[cat]||0)+catDust;
-  if(rng.chance(0.08)) addon=createTowerAddon(null,-1);
-  ms.claims[spot.id]=Date.now();
-  saveMeta(); refreshCurrencyDisplays();
-  const bits=[]; if(powder) bits.push('黒色火薬+'+powder); bits.push('トークン+'+tokens); bits.push('改装片+'+dust); if(catDust) bits.push((TOWER_MOD_CAT_BY_ID[cat]||{}).name+'片+'+catDust); if(addon) bits.push('アドオン入手'); if(dailyBonus) bits.push('初回補給'); if(streakBonus) bits.push('7日連続');
-  toast('施設補給: '+bits.join(' / '));
-  drawSupplyMarkers(); renderCellCard();
+  applySupplyRewards(spot, reward, claimedAt);
 }
 function sweetSpotPopupHtml(cellId){
   const ll=GeoCell.cellToLatLng(cellId), f=fieldFromCell(cellId, todBucketAt(Date.now(),ll[1]), Date.now());
@@ -3285,6 +3429,7 @@ function drawCells(){
       marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
       marker.addTo(LMAP); sweetMarkers.push(marker);
     }
+    syncCloudSweetSpots(sweetSpotItems);
   }
   requestSupplySpots();
   drawTowerMarkers();
@@ -3445,6 +3590,7 @@ function showHome(){ game.state='home'; setOverlayView('state-home'); controls.a
 /* ===== ラン進行 ===== */
 function runStep(dt){
   if(game.ended) return;                 // ラン終了後は前面/追いつき双方で確実に停止（端tick一致）
+  game.eliteSlowUntil = Math.max(0, (game.eliteSlowUntil||0) - dt);
   applyActsUpTo(game.tick);              // アクティブスキル入力をFG/CU同位置で適用（決定論）
   game.t = game.tick * DT;
   const modRt = refreshModuleRuntime() || {};
@@ -3578,10 +3724,11 @@ function refreshRewardAdButton(){
     btn.textContent=rewardAdBusy?'広告再生中…':(rewardAdAvailable()?('広告を見る +'+REWARD_AD_BLACK_POWDER+' 黒色火薬'):'広告未接続');
   }
 }
-function grantBlackPowder(amount, reason){
+function grantBlackPowder(amount, reason, metaInfo={}){
   const v=Math.max(0, Math.floor(Number(amount)||0));
   if(v<=0) return;
   meta.blackPowder += v;
+  queueBlackPowderLedger(v, reason, metaInfo);
   saveMeta();
   refreshCurrencyDisplays();
   if(reason) toast(reason+' +'+fmt(v)+' 黒色火薬');
@@ -3633,7 +3780,8 @@ async function showRewardedAd(placement='result_reward_black_powder'){
     rewardAdBusy=true; refreshRewardAdButton(); toast('広告再生中…');
     try{
       await new Promise(r=>setTimeout(r,1500));
-      grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬');
+      queueAdReward(placement, REWARD_AD_BLACK_POWDER, {mock:true});
+      grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement});
       return true;
     }finally{ rewardAdBusy=false; refreshRewardAdButton(); }
   }
@@ -3646,13 +3794,13 @@ async function showRewardedAd(placement='result_reward_black_powder'){
       await bridge.prepareRewardVideoAd({ adId, isTesting:!!AD_CONFIG.testing, npa:!!AD_CONFIG.npa, immersiveMode:true });
       const res=await bridge.showRewardVideoAd();
       const rewarded=!!res;
-      if(rewarded){ grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬'); }
+      if(rewarded){ queueAdReward(placement, REWARD_AD_BLACK_POWDER, res||{}); grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement}); }
       else toast('広告は完了しませんでした');
       return rewarded;
     }
     const res=await bridge.showRewarded({ placement, reward:{ type:'blackPowder', amount:REWARD_AD_BLACK_POWDER } });
     const rewarded=!!(res && (res.rewarded===true || res.ok===true || res.reward===true));
-    if(rewarded){ grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬'); }
+    if(rewarded){ queueAdReward(placement, REWARD_AD_BLACK_POWDER, res||{}); grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement}); }
     else toast('広告は完了しませんでした');
     return rewarded;
   }catch(e){ console.log('showRewardedAd', e); toast('広告の再生に失敗しました'); return false; }
@@ -3669,11 +3817,145 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
 }
 
 /* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
-const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
-function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live'}; localStorage.setItem(META_KEY, JSON.stringify({spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,milestones:meta.milestones,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings})); }catch(e){} }
+const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1', CLOUD_ID_KEY='fw.cloud.anonymousId.v1', CLOUD_QUEUE_KEY='fw.cloud.events.v1';
+const CLOUD_CONFIG=Object.assign({apiBaseUrl:null}, window.FireworksApiConfig || {});
+let cloudSaveTimer=null, cloudRunTimer=null, cloudFlushBusy=false;
+function cloudApiBase(){ return String(CLOUD_CONFIG.apiBaseUrl||'').replace(/\/+$/,''); }
+function cloudEnabled(){ return !!cloudApiBase() && typeof fetch==='function'; }
+function cloudAnonymousId(){
+  let id=''; try{ id=localStorage.getItem(CLOUD_ID_KEY)||''; }catch(e){}
+  if(!id){ id=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():('anon-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)); try{ localStorage.setItem(CLOUD_ID_KEY,id); }catch(e){} }
+  return id;
+}
+function cloudEventId(prefix){ return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); }
+function metaSnapshot(){
+  if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live'};
+  return {spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,milestones:meta.milestones,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings,_cloudUpdatedAt:meta.cloudUpdatedAt||Date.now()};
+}
+function runSnapshot(){
+  if(!game.seedInfo || !isRunLive()) return null;
+  return { v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), towerMods:game.towerModLoadout||{bodies:[],addons:[]}, wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell, _cloudUpdatedAt:Date.now() };
+}
+async function cloudRequest(path, options={}){
+  const init=Object.assign({method:'GET'}, options);
+  const headers=Object.assign({'Content-Type':'application/json'}, init.headers||{});
+  if(init.body && typeof init.body!=='string') init.body=JSON.stringify(init.body);
+  init.headers=headers;
+  const res=await fetch(cloudApiBase()+path, init);
+  if(!res.ok) throw new Error('cloud '+res.status);
+  return res.json();
+}
+function readCloudQueue(){ try{ const q=JSON.parse(localStorage.getItem(CLOUD_QUEUE_KEY)||'[]'); return Array.isArray(q)?q:[]; }catch(e){ return []; } }
+function writeCloudQueue(q){ try{ localStorage.setItem(CLOUD_QUEUE_KEY, JSON.stringify(q.slice(-200))); }catch(e){} }
+function queueCloudEvent(kind, payload){
+  if(!cloudEnabled()) return;
+  const item={kind, payload:Object.assign({},payload||{}), ts:Date.now(), idempotencyKey:(payload&&payload.idempotencyKey)||cloudEventId(kind)};
+  const q=readCloudQueue(); q.push(item); writeCloudQueue(q); setTimeout(flushCloudEvents, 150);
+}
+async function flushCloudEvents(){
+  if(!cloudEnabled()||cloudFlushBusy) return;
+  cloudFlushBusy=true;
+  const q=readCloudQueue(), keep=[];
+  try{
+    for(const ev of q){
+      const body=Object.assign({anonymousId:cloudAnonymousId(), idempotencyKey:ev.idempotencyKey}, ev.payload||{});
+      const path=ev.kind==='adReward'?'/api/v1/events/ad-reward':ev.kind==='addon'?'/api/v1/events/addon':'/api/v1/events/black-powder';
+      try{ await cloudRequest(path,{method:'POST',body}); }
+      catch(e){ keep.push(ev); }
+    }
+  }finally{ writeCloudQueue(keep); cloudFlushBusy=false; }
+}
+function queueBlackPowderLedger(amount, reason, metaInfo={}){
+  const v=Math.floor(Number(amount)||0);
+  if(v) queueCloudEvent('blackPowder',{amount:v,reason,placement:metaInfo.placement||null,meta:metaInfo});
+}
+function queueAdReward(placement, amount, raw={}){
+  queueCloudEvent('adReward',{placement,rewardType:'blackPowder',amount,provider:currentPlatform(),adUnitId:rewardedAdUnitId(),raw});
+}
+function queueAddonEvent(ad, source, payload={}){
+  if(!ad) return;
+  queueCloudEvent('addon',{eventType:'acquired',addonUid:ad.uid,cat:ad.cat,rarity:ad.rarity,source,payload:Object.assign({main:ad.main,subs:ad.subs},payload)});
+}
+function scheduleCloudSave(){
+  if(!cloudEnabled()) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(pushCloudSave, 900);
+}
+async function pushCloudSave(){
+  if(!cloudEnabled()) return;
+  try{
+    await cloudRequest('/api/v1/bootstrap',{method:'POST',body:{anonymousId:cloudAnonymousId()}});
+    await cloudRequest('/api/v1/save',{method:'PUT',body:{anonymousId:cloudAnonymousId(),save:metaSnapshot(),clientUpdatedAt:new Date(meta.cloudUpdatedAt||Date.now()).toISOString()}});
+    await flushCloudEvents();
+  }catch(e){ console.log('cloud save skipped', e); }
+}
+function scheduleCloudRunSave(){
+  if(!cloudEnabled()) return;
+  clearTimeout(cloudRunTimer);
+  cloudRunTimer=setTimeout(pushCloudRun, 600);
+}
+async function pushCloudRun(){
+  if(!cloudEnabled()) return;
+  const run=runSnapshot();
+  if(!run) return;
+  try{
+    await cloudRequest('/api/v1/run',{method:'PUT',body:{anonymousId:cloudAnonymousId(),run,clientUpdatedAt:new Date(run._cloudUpdatedAt).toISOString()}});
+  }catch(e){ console.log('cloud run save skipped', e); }
+}
+async function clearCloudRun(){
+  if(!cloudEnabled()) return;
+  try{ await cloudRequest('/api/v1/run',{method:'DELETE',body:{anonymousId:cloudAnonymousId()}}); }
+  catch(e){ console.log('cloud run clear skipped', e); }
+}
+function validRunSave(sv){ return sv && sv.deployTs>1.5e12 && sv.deployTs<=Date.now()+60000 && sv.cellId; }
+async function restoreCloudRunIfUseful(){
+  if(!cloudEnabled() || isRunLive()) return;
+  try{
+    const remote=await cloudRequest('/api/v1/run?anonymousId='+encodeURIComponent(cloudAnonymousId()));
+    const run=remote&&remote.state&&remote.state.run;
+    if(validRunSave(run)){
+      localStorage.setItem(RUN_KEY, JSON.stringify(run));
+      restoreRun(run);
+      toast('クラウド戦闘を復元しました');
+    }
+  }catch(e){ console.log('cloud run restore skipped', e); }
+}
+async function bootstrapCloudSync(){
+  if(!cloudEnabled()) return;
+  try{
+    await cloudRequest('/api/v1/bootstrap',{method:'POST',body:{anonymousId:cloudAnonymousId()}});
+    const remote=await cloudRequest('/api/v1/save?anonymousId='+encodeURIComponent(cloudAnonymousId()));
+    const save=remote&&remote.state&&remote.state.save;
+    if(save && Number(save._cloudUpdatedAt||0) > Number(meta.cloudUpdatedAt||0)){
+      localStorage.setItem(META_KEY, JSON.stringify(save));
+      loadMeta(); refreshCurrencyDisplays();
+      if(game.state==='mod') buildMods(); else if(game.state==='skills') buildSkills(); else if(game.state==='shop') buildShop(); else if(game.state==='home') buildHome();
+      toast('クラウドセーブを同期しました');
+    }else{
+      scheduleCloudSave();
+    }
+    await restoreCloudRunIfUseful();
+    await flushCloudEvents();
+  }catch(e){ console.log('cloud bootstrap skipped', e); }
+}
+function syncCloudSupplySpots(spots){
+  if(!cloudEnabled()||!Array.isArray(spots)||!spots.length) return;
+  cloudRequest('/api/v1/spots/supply/bulk',{method:'POST',body:{spots}}).catch(e=>console.log('supply spot sync skipped', e));
+}
+function syncCloudSweetSpots(items){
+  if(!cloudEnabled()||!Array.isArray(items)||!items.length) return;
+  const spots=items.map(s=>{ const ll=GeoCell.cellToLatLng(s.cell); return {cellId:s.cell,lat:ll[0],lng:ll[1],field:s.field}; });
+  cloudRequest('/api/v1/spots/sweet/bulk',{method:'POST',body:{spots}}).catch(e=>console.log('sweet spot sync skipped', e));
+}
+async function fetchCloudNearbySpots(lat,lng,radius=900){
+  if(!cloudEnabled()) return null;
+  return cloudRequest('/api/v1/spots/nearby?lat='+encodeURIComponent(lat)+'&lng='+encodeURIComponent(lng)+'&radius='+encodeURIComponent(radius));
+}
+function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); meta.cloudUpdatedAt=Date.now(); localStorage.setItem(META_KEY, JSON.stringify(metaSnapshot())); scheduleCloudSave(); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
   meta.blackPowder=Math.max(0, Number(m.blackPowder)||0);
+  meta.cloudUpdatedAt=Math.max(0, Number(m._cloudUpdatedAt||m.cloudUpdatedAt)||0);
   meta.towerSlots=Math.max(1, Math.min(TOWER_SLOT_MAX, Number(m.towerSlots)||1));
   const mb=(m.bank&&typeof m.bank==='object')?m.bank:{}; meta.bank={red:0,blue:0,green:0,yellow:0,purple:0}; for(const c of COLORS) meta.bank[c]=Math.max(0, Number(mb[c])||0);   // 数値強制（壊れた保存でNaN通貨を防ぐ）
   meta.perm=(m.perm&&typeof m.perm==='object')?m.perm:{}; for(const k in meta.perm) meta.perm[k]=Math.max(0, meta.perm[k]|0);
@@ -3698,9 +3980,9 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,N):[]; while(meta.skillEquip.length<N)meta.skillEquip.push(null);
   meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
   }catch(e){ console.log('loadMeta',e); } }
-function saveRun(){ try{ if(!game.seedInfo || !isRunLive()) return; localStorage.setItem(RUN_KEY, JSON.stringify({ v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), towerMods:game.towerModLoadout||{bodies:[],addons:[]}, wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell })); }catch(e){} }
+function saveRun(){ try{ const run=runSnapshot(); if(!run) return; localStorage.setItem(RUN_KEY, JSON.stringify(run)); scheduleCloudRunSave(); }catch(e){} }
 function loadRun(){ try{ const s=localStorage.getItem(RUN_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
-function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
+function clearRun(){ try{ localStorage.removeItem(RUN_KEY); clearCloudRun(); }catch(e){} }
 
 /* ===== 放置追いつき：deploy地点から同一runStepを描画なしで再生（近似ゼロ） ===== */
 const MAX_CATCHUP_STEPS = Math.ceil(7*24*3600/DT);   // 1週間ぶん（上限）
@@ -3833,6 +4115,7 @@ $('totitle').addEventListener('click', ()=>{ game.runLive=false; game.ended=true
 renderer.render(scene,camera);
 if(!REDUCED) for(let i=0;i<4;i++) spawnShell();
 loadMeta();                                                  // 恒久メタ復元
+bootstrapCloudSync();
 loadParallelRuns();
 updateParallelTowerRuns(true);
 /* 【一時・今だけ】スノーストームをテスト用に付与（未所持なら開放＋装備） */
@@ -3842,7 +4125,7 @@ if(!meta.skillOwned.snowstorm){ meta.skillOwned.snowstorm={level:5,dup:3,pot:2};
   saveMeta(); }
 try{ const _sv=loadRun(); if(_sv && _sv.deployTs>1.5e12 && _sv.deployTs<=Date.now()+60000) restoreRun(_sv); else if(_sv) clearRun(); }catch(e){ clearRun(); console.log('restoreRun failed',e); }   // 進行中ランがあればレジューム（破損/異常なdeployTsは破棄）
 if(!isRunLive()){ showMap(); }
-window.addEventListener('pagehide', ()=>{ if(isRunLive()) saveRun(); saveParallelRuns(); });
+window.addEventListener('pagehide', ()=>{ if(isRunLive()){ saveRun(); pushCloudRun(); } saveParallelRuns(); flushCloudEvents(); pushCloudSave(); });
 requestAnimationFrame(loop);   // ループは常時稼働（REDUCEDでも sim は進む／描画・演出のみ抑制）
 </script>
 </body>
