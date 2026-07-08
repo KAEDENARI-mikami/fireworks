@@ -26,6 +26,20 @@ npm run play:preflight
 npm run play:bundle
 ```
 
+For local machine publishing (signing keystore at `$HOME/.fireworks-play/fireworks-upload.jks`), load env once and run:
+
+```bash
+source scripts/play-env.sh
+npm run play:bundle
+```
+
+If you rotate the signing key/version, update:
+
+```bash
+export FIREWORKS_VERSION_CODE=2
+export FIREWORKS_VERSION_NAME="1.1"
+```
+
 `cap:sync:android` copies `index.html`, `manifest.webmanifest`, `sw.js`, `icon.svg`, and `fireworks.config.js` into `web/`, then syncs them into the Android project.
 
 ## Upload-key signing
