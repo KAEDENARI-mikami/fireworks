@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Fireworks — 位置情報 × 放置 × ローグライク タワーディフェンス。時空間データベースを用いた Web アプリの企画（課題7）。">
+<meta name="description" content="Fireworks — 位置情報 × 放置 × ローグライク タワーディフェンス。">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#05060E">
 <title>Fireworks</title>
@@ -29,8 +29,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Reggae+One&family=DotGothic16&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="window.__leafletFailed=true"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" integrity="sha256-qx5w1Z7EBGW65+cDDaLzzPKBM/1QLmK9WY7vut/XpzI=" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous" onerror="window.__leafletFailed=true"></script>
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js" integrity="sha256-RamwepGJzlYFTGIKlHzPQeKR5YyV6bYVM7dAqqZe5cs=" crossorigin="anonymous" onerror="window.__openFreeMapFailed=true"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js" integrity="sha256-HDM2eWLndVwaFtH4Vlj9yWtbqjb4Gt/KlJMXTNG1Js4=" crossorigin="anonymous" onerror="window.__openFreeMapFailed=true"></script>
 
 <style>
 :root{
@@ -304,6 +307,30 @@ body.state-mod #modebar{display:flex;}
 #result button.ad:hover:not(:disabled){color:var(--void); background:var(--gold);}
 #result button:disabled{opacity:.45; cursor:default;}
 
+/* 暗号化セーブの書き出し・復元 */
+.title-actions{display:flex;flex-direction:column;align-items:center;gap:.62rem;}
+.title-actions .start{margin:0;}
+.title-save{cursor:pointer;font-family:"DotGothic16",monospace;font-size:.68rem;letter-spacing:.12em;padding:.46rem .8rem;color:var(--dim);background:transparent;border:1px solid rgba(234,240,255,.22);border-radius:3px;}
+.title-save:hover{color:var(--cyan);border-color:var(--cyan);}
+#savevault{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;padding:1rem;background:rgba(2,3,8,.8);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);}
+#savevault.open{display:flex;}
+.savevault-dialog{width:min(480px,100%);max-height:calc(100vh - 2rem);overflow:auto;padding:1rem;border:1px solid rgba(60,240,255,.48);border-radius:8px;background:linear-gradient(180deg,rgba(12,16,29,.98),rgba(3,5,12,.98));box-shadow:0 20px 54px rgba(0,0,0,.58),0 0 28px rgba(60,240,255,.12);font-family:"DotGothic16",monospace;}
+.savevault-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.72rem;}
+.savevault-head h2{margin:0;color:var(--cyan);font-size:1rem;font-weight:400;letter-spacing:.08em;}
+.savevault-close{width:30px;height:30px;cursor:pointer;color:var(--dim);background:transparent;border:1px solid rgba(234,240,255,.2);border-radius:3px;font:inherit;font-size:1.1rem;line-height:1;}
+.savevault-close:hover{color:var(--ink);border-color:var(--ink);}
+.savevault-section{display:grid;gap:.5rem;padding:.72rem 0;}
+.savevault-section+.savevault-section{border-top:1px solid rgba(234,240,255,.12);}
+.savevault-section h3{margin:0;color:var(--ink);font-size:.78rem;font-weight:400;}
+.savevault-section p,.savevault-status{margin:0;color:var(--dim);font-size:.61rem;line-height:1.55;}
+.savevault-section label{display:grid;gap:.28rem;color:var(--ink);font-size:.66rem;}
+.savevault-section input{width:100%;box-sizing:border-box;min-height:39px;padding:.55rem .62rem;color:var(--ink);background:rgba(234,240,255,.05);border:1px solid rgba(234,240,255,.22);border-radius:3px;font:inherit;font-size:.72rem;}
+.savevault-section input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(60,240,255,.12);}
+.savevault-actions{display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap;margin-top:.12rem;}
+.savevault-actions button{cursor:pointer;min-height:38px;padding:.5rem .72rem;color:var(--void);background:linear-gradient(135deg,var(--cyan),var(--gold));border:0;border-radius:3px;font:inherit;font-size:.68rem;letter-spacing:.04em;}
+.savevault-actions button:disabled{opacity:.5;cursor:default;}
+.savevault-status{min-height:1.55em;padding-top:.2rem;}
+
 /* 状態によって表示切替 */
 body.state-playing .title, body.state-playing .meta, body.state-playing .hint{ display:none; }
 body.state-playing #hud{ display:block; }
@@ -372,6 +399,10 @@ body.state-map #mapui{display:flex; flex-direction:column; align-items:flex-end;
 .sweet-pop-mod span{color:var(--dim);}
 .leaflet-container{background:#05060E;}
 .leaflet-div-icon{background:transparent;border:none;}
+.leaflet-bottom{bottom:calc(64px + env(safe-area-inset-bottom));}
+.leaflet-bottom.leaflet-right{right:auto;left:0;}
+.leaflet-control-attribution{max-width:calc(100vw - 16px);margin:0 5px 3px!important;padding:1px 4px!important;border:1px solid rgba(234,240,255,.10);border-radius:2px;background:rgba(5,6,14,.58)!important;color:rgba(174,183,203,.68)!important;font-size:7px!important;line-height:1.2!important;white-space:normal;text-align:left;}
+.leaflet-control-attribution a{color:rgba(200,248,255,.72)!important;}
 .map-avatar{width:54px;height:62px;position:relative;filter:drop-shadow(0 12px 8px rgba(0,0,0,.45));transform:scale(1);transform-origin:50% 90%;}
 .map-avatar .core{position:absolute;left:50%;top:43%;width:28px;height:28px;transform:translate(-50%,-50%) rotate(45deg);border:2px solid #fff;background:linear-gradient(135deg,var(--cyan),#0d1730);box-shadow:0 0 18px var(--cyan);border-radius:6px;}
 .map-avatar .ring{position:absolute;left:50%;bottom:0;width:58px;height:22px;transform:translateX(-50%) rotateX(68deg);border-radius:50%;border:1px solid rgba(60,240,255,.45);background:rgba(60,240,255,.08);animation:spotPulse 2.2s ease-out infinite;}
@@ -468,10 +499,33 @@ body.state-catchup #catchup{display:flex;}
 <!-- タイトル -->
 <main class="title">
   <h1 class="logo">Fireworks<span class="sub">GEO ／ IDLE-TD ／ ROGUELIKE</span></h1>
-  <button class="start" id="start" type="button">GAME START</button>
+  <div class="title-actions">
+    <button class="start" id="start" type="button">GAME START</button>
+    <button class="title-save" id="opensavevault" type="button">セーブデータ</button>
+  </div>
 </main>
 <div class="hint" aria-hidden="true">DRAG TO ORBIT</div>
-<footer class="meta">課題 7 ／ 時空間データベース Web アプリ企画 ・ 2026.06.16</footer>
+
+<div id="savevault" aria-hidden="true">
+  <div class="savevault-dialog" role="dialog" aria-modal="true" aria-labelledby="savevaulttitle">
+    <div class="savevault-head"><h2 id="savevaulttitle">セーブデータ</h2><button class="savevault-close" id="closesavevault" type="button" aria-label="閉じる">×</button></div>
+    <section class="savevault-section">
+      <h3>暗号化して書き出す</h3>
+      <p>パスフレーズを失うと、このバックアップは復元できません。</p>
+      <label>パスフレーズ<input id="saveexportpass" type="password" minlength="12" autocomplete="new-password" placeholder="12文字以上"></label>
+      <label>パスフレーズ（確認）<input id="saveexportconfirm" type="password" minlength="12" autocomplete="new-password" placeholder="もう一度入力"></label>
+      <div class="savevault-actions"><button id="saveexport" type="button">暗号化して書き出す</button></div>
+    </section>
+    <section class="savevault-section">
+      <h3>暗号化バックアップを復元</h3>
+      <input id="savefile" type="file" accept=".fwsave,application/json" hidden>
+      <label>バックアップファイル<input id="savefilename" type="text" readonly placeholder="ファイルを選択"></label>
+      <label>パスフレーズ<input id="saveimportpass" type="password" autocomplete="current-password" placeholder="書き出し時のパスフレーズ"></label>
+      <div class="savevault-actions"><button id="saveselectfile" type="button">ファイルを選択</button><button id="saveimport" type="button">復元する</button></div>
+    </section>
+    <p class="savevault-status" id="savevaultstatus" aria-live="polite"></p>
+  </div>
+</div>
 
 <!-- HUD -->
 <div id="hud" aria-hidden="true">
@@ -485,7 +539,6 @@ body.state-catchup #catchup{display:flex;}
   <div class="res" id="res"></div>
   <button class="speedbtn" id="speedbtn" type="button">▶▶ 5×</button>
   <button class="retreatbtn" id="retreatbtn" type="button">■ 切り上げ</button>
-  <button class="debugbtn" id="debugCrystalBoss" type="button">DEBUG クリスタライン</button>
   <div class="toast" id="toast"></div>
   <div id="castlayer" aria-hidden="true"></div>
   <div class="hpwrap"><div class="lab"><span>TOWER HP</span><span id="hptext">1000</span></div><div class="hpbar"><i id="hpfill"></i></div></div>
@@ -573,7 +626,8 @@ body.state-catchup #catchup{display:flex;}
   <button class="mtab" id="mode-mod" type="button">改装</button>
   <button class="mtab" id="mode-research" type="button">リサーチ</button>
   <button class="mtab" id="mode-shop" type="button">ショップ</button>
-  <button class="mtab" id="mode-map" type="button">🧭 探索</button>
+  <button class="mtab" id="mode-map" type="button">🧭 出撃</button>
+  <button class="mtab" id="mode-save" type="button">セーブ</button>
   <button class="mtab" id="mode-title" type="button">タイトル</button>
 </nav>
 
@@ -2711,7 +2765,6 @@ function createTowerAddon(cat=null, minRank=-1, opts=null){
 function grantTowerAddon(cat=null, minRank=-1, reason='アドオン', opts=null){
   const ad=createTowerAddon(cat,minRank,opts), rr=TOWER_MOD_RARITIES[ad.rarity], ci=TOWER_MOD_CAT_BY_ID[ad.cat];
   lastModReveal=reason+' '+ci.name+'アドオン '+rr.label+' 入手';
-  queueAddonEvent(ad, reason);
   if(RENDER) toast(lastModReveal);
   saveMeta();
   if(game.state==='mod') buildMods();
@@ -3318,26 +3371,8 @@ function lonToTileX(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
 function latToTileY(lat,z){ const r=lat*Math.PI/180, n=Math.pow(2,z); return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n); }
 function tileXToLon(x,z){ return x/Math.pow(2,z)*360-180; }
 function tileYToLat(y,z){ const n=Math.PI-2*Math.PI*y/Math.pow(2,z); return 180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))); }
-function mapTileUrl(x,y,z){
-  const subs='abcd', s=subs[Math.abs(x+y)%subs.length];
-  return 'https://'+s+'.basemaps.cartocdn.com/dark_all/'+z+'/'+x+'/'+y+'.png';
-}
 function addMapTileFloor(){
-  if(!avatarLL) return;
-  const z=MAP_TILE_ZOOM, cx=lonToTileX(avatarLL[1],z), cy=latToTileY(avatarLL[0],z);
-  const n=Math.pow(2,z);
-  for(let tx=cx-MAP_TILE_RADIUS; tx<=cx+MAP_TILE_RADIUS; tx++){
-    for(let ty=cy-MAP_TILE_RADIUS; ty<=cy+MAP_TILE_RADIUS; ty++){
-      if(ty<0||ty>=n) continue;
-      const x=((tx%n)+n)%n, west=tileXToLon(tx,z), east=tileXToLon(tx+1,z), north=tileYToLat(ty,z), south=tileYToLat(ty+1,z);
-      const nw=mapLocalPos(north,west), se=mapLocalPos(south,east), center=mapLocalPos((north+south)/2,(west+east)/2);
-      const w=Math.abs(se.x-nw.x), d=Math.abs(se.z-nw.z);
-      const mat=new THREE.MeshBasicMaterial({color:0x0B101B,transparent:true,opacity:.94,side:THREE.DoubleSide});
-      const tile=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat);
-      tile.rotation.x=-Math.PI/2; tile.position.set(center.x, -0.2, center.z); map3D.field.add(tile);
-      mapTileLoader.load(mapTileUrl(x,ty,z), tex=>{ tex.colorSpace=THREE.SRGBColorSpace; mat.map=tex; mat.color.set(0xffffff); mat.needsUpdate=true; }, undefined, ()=>{ mat.color.set(0x101827); mat.opacity=.72; });
-    }
-  }
+  // The legacy 3D exploration floor is disabled. Keep it provider-free if it is restored later.
 }
 function buildMapField(){
   clearObj(map3D.field); clearObj(map3D.labels);
@@ -3485,31 +3520,6 @@ function fallbackSupplySpots(lat,lng,cell){
   }
   return out;
 }
-async function fetchFacilitySupplySpots(lat,lng,cell){
-  const radius=modeFast()?SUPPLY_FAST_RADIUS:SUPPLY_FETCH_RADIUS;
-  const q='[out:json][timeout:7];('
-    +'node(around:'+radius+','+lat+','+lng+')[amenity];'
-    +'node(around:'+radius+','+lat+','+lng+')[tourism];'
-    +'node(around:'+radius+','+lat+','+lng+')[leisure];'
-    +'node(around:'+radius+','+lat+','+lng+')[shop];'
-    +'node(around:'+radius+','+lat+','+lng+')[historic];'
-    +'node(around:'+radius+','+lat+','+lng+')[public_transport];'
-    +');out 80;';
-  const ctrl=new AbortController(), to=setTimeout(()=>ctrl.abort(),8000);
-  try{
-    const res=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q),{signal:ctrl.signal});
-    if(!res.ok) throw new Error('overpass '+res.status);
-    const json=await res.json(), seen=new Set(), out=[];
-    for(const e of (json.elements||[])){
-      if(typeof e.lat!=='number'||typeof e.lon!=='number') continue;
-      const tags=e.tags||{}, id='osm:'+e.type+':'+e.id; if(seen.has(id)) continue; seen.add(id);
-      const name=tags['name:ja']||tags.name||supplyTypeLabel(tags);
-      out.push({id,name,type:supplyTypeLabel(tags),lat:e.lat,lng:e.lon,source:'osm',tags});
-    }
-    out.sort((a,b)=>haversine(lat,lng,a.lat,a.lng)-haversine(lat,lng,b.lat,b.lng));
-    return out.slice(0,36);
-  }finally{ clearTimeout(to); }
-}
 function mapFeatureLabel(tags){
   if(!tags) return '';
   const name=tags['name:ja']||tags.name||tags['addr:housename']||'';
@@ -3517,32 +3527,7 @@ function mapFeatureLabel(tags){
   return name;
 }
 async function fetchMapFeatures(lat,lng,cell){
-  const radius=MAP_FEATURE_RADIUS;
-  const q='[out:json][timeout:7];('
-    +'way(around:'+radius+','+lat+','+lng+')[highway];'
-    +'way(around:'+radius+','+lat+','+lng+')[building];'
-    +'node(around:'+radius+','+lat+','+lng+')[name];'
-    +');out tags geom center 160;';
-  const ctrl=new AbortController(), to=setTimeout(()=>ctrl.abort(),8000);
-  try{
-    const res=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q),{signal:ctrl.signal});
-    if(!res.ok) throw new Error('overpass map '+res.status);
-    const json=await res.json(), roads=[], buildings=[], labels=[];
-    for(const e of (json.elements||[])){
-      const tags=e.tags||{};
-      if(e.type==='way' && Array.isArray(e.geometry)){
-        if(tags.highway) roads.push({id:e.id,tags,geometry:e.geometry});
-        else if(tags.building) buildings.push({id:e.id,tags,geometry:e.geometry});
-        const name=mapFeatureLabel(tags);
-        if(name && e.center && typeof e.center.lat==='number') labels.push({name,type:tags.highway?'道路':tags.building?'建物':'地点',lat:e.center.lat,lng:e.center.lon,source:'osm'});
-      }else if(e.type==='node' && typeof e.lat==='number'){
-        const name=mapFeatureLabel(tags);
-        if(name) labels.push({name,type:supplyTypeLabel(tags),lat:e.lat,lng:e.lon,source:'osm'});
-      }
-    }
-    labels.sort((a,b)=>haversine(lat,lng,a.lat,a.lng)-haversine(lat,lng,b.lat,b.lng));
-    return {cell, roads, buildings, labels:labels.slice(0,24)};
-  }finally{ clearTimeout(to); }
+  return {cell, roads:[], buildings:[], labels:[]};
 }
 function requestMapFeatures(){
   if(!map3D.active) return;
@@ -3567,27 +3552,20 @@ function requestSupplySpots(){
   _lastSupplyFetchAt = performance.now();
   _supplyCenterCell=key;
   supplySpots=fallbackSupplySpots(avatarLL[0],avatarLL[1],cell);
-  drawSupplyMarkers();
-  const seq=++_supplySeq; _supplyFetchBusy=true;
-  fetchCloudNearbySpots(avatarLL[0],avatarLL[1],SUPPLY_FAST_RADIUS).then(data=>{
-    if(seq!==_supplySeq) return;
-    const rows=data&&Array.isArray(data.supply)?data.supply:[];
-    if(rows.length){
-      supplySpots=rows.map(s=>({id:s.id,name:s.name,type:s.type||'補給',lat:Number(s.lat),lng:Number(s.lng),source:s.source||'postgres',tags:s.tags||{}}));
-      drawSupplyMarkers(); updateMapWalkHud(); renderCellCard();
-    }
-  }).catch(()=>{});
-  fetchFacilitySupplySpots(avatarLL[0],avatarLL[1],cell).then(spots=>{
-    if(seq!==_supplySeq) return;
-    if(spots&&spots.length){ supplySpots=spots; syncCloudSupplySpots(spots); }
-    drawSupplyMarkers(); updateMapWalkHud(); renderCellCard();
-  }).catch(()=>{ drawSupplyMarkers(); updateMapWalkHud(); renderCellCard(); })
-    .finally(()=>{ if(seq===_supplySeq) _supplyFetchBusy=false; });
+  drawSupplyMarkers(); updateMapWalkHud(); renderCellCard();
 }
 function leafletReady(){ return !window.__leafletFailed && typeof L!=='undefined'; }
 function ensureMap(){ if(LMAP || !leafletReady()) return LMAP;
-  LMAP=L.map('map',{zoomControl:false, attributionControl:false,minZoom:MAP_MIN_ZOOM,maxZoom:MAP_MAX_ZOOM}).setView([VENUE.lat,VENUE.lng],MAP_MIN_ZOOM);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:MAP_MAX_ZOOM, subdomains:'abcd'}).addTo(LMAP);
+  LMAP=L.map('map',{zoomControl:false, attributionControl:true,minZoom:MAP_MIN_ZOOM,maxZoom:MAP_MAX_ZOOM}).setView([VENUE.lat,VENUE.lng],MAP_MIN_ZOOM);
+  if(LMAP.attributionControl) LMAP.attributionControl.setPrefix(false);
+  if(!window.__openFreeMapFailed && typeof maplibregl!=='undefined' && typeof L.maplibreGL==='function'){
+    L.maplibreGL({
+      style:'https://tiles.openfreemap.org/styles/dark',
+      attributionControl:{customAttribution:'<a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>'}
+    }).addTo(LMAP);
+  }else if(LMAP.attributionControl){
+    LMAP.attributionControl.addAttribution('<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>');
+  }
   LMAP.on('click', e=>{ if(devMode) setAvatar(e.latlng.lat, e.latlng.lng); });
   return LMAP; }
 let _lastFix=null;
@@ -3713,9 +3691,8 @@ function applySupplyRewards(spot, reward, claimedAt=Date.now()){
   meta.towerMods.addonTokens+=Math.max(0, Number(r.tokens)||0);
   meta.towerMods.dust+=Math.max(0, Number(r.dust)||0);
   if(r.catDust && r.cat) meta.towerMods.catDust[r.cat]=(meta.towerMods.catDust[r.cat]||0)+Math.max(0, Number(r.catDust)||0);
-  if(r.addonRoll){ addon=createTowerAddon(null,-1); queueAddonEvent(addon, '補給', {spotId:spot.id}); }
+  if(r.addonRoll) addon=createTowerAddon(null,-1);
   ms.claims[spot.id]=claimedAt;
-  if(r.powder) queueBlackPowderLedger(r.powder, '補給', {spotId:spot.id, placement:'supply'});
   saveMeta(); refreshCurrencyDisplays();
   const bits=[]; if(r.powder) bits.push('黒色火薬+'+r.powder); bits.push('トークン+'+r.tokens); bits.push('改装片+'+r.dust); if(r.catDust) bits.push((TOWER_MOD_CAT_BY_ID[r.cat]||{}).name+'片+'+r.catDust); if(addon) bits.push('アドオン入手'); if(r.dailyBonus) bits.push('初回補給'); if(r.streakBonus) bits.push('7日連続');
   toast('施設補給: '+bits.join(' / '));
@@ -3728,16 +3705,8 @@ async function claimSupplySpot(spot){
   if(dist>SUPPLY_INTERACT_RANGE && !devMode){ toast('もう少し近づく必要があります'); renderCellCard(); return; }
   const left=supplyCooldownLeft(spot);
   if(left>0){ toast('再補給まで '+Math.ceil(left/60000)+'分'); renderCellCard(); return; }
-  const ts=Date.now(), bucket=supplyClaimBucket(ts);
-  let reward=rollSupplyRewards(spot, ms, ts), claimedAt=ts;
-  if(cloudEnabled()){
-    try{
-      const res=await cloudRequest('/api/v1/claims/supply',{method:'POST',body:{anonymousId:cloudAnonymousId(),spotId:spot.id,cooldownBucket:bucket,idempotencyKey:'supply:'+spot.id+':'+bucket,rewards:reward}});
-      if(res&&res.rewards) reward=res.rewards;
-      if(res&&res.claimedAt) claimedAt=new Date(res.claimedAt).getTime()||ts;
-    }catch(e){ console.log('cloud supply claim skipped', e); }
-  }
-  applySupplyRewards(spot, reward, claimedAt);
+  const ts=Date.now(), reward=rollSupplyRewards(spot, ms, ts);
+  applySupplyRewards(spot, reward, ts);
 }
 function sweetSpotPopupHtml(cellId){
   const ll=GeoCell.cellToLatLng(cellId), f=fieldFromCell(cellId, todBucketAt(Date.now(),ll[1]), Date.now());
@@ -3784,7 +3753,6 @@ function drawCells(){
       marker.on('click', e=>{ if(e&&e.originalEvent) L.DomEvent.stop(e.originalEvent); mapSpotCell=null; selectedSupplySpot=null; selectedMapTowerId=null; setMapPanelOpen(true); renderCellCard(); marker.openPopup(); });
       marker.addTo(LMAP); sweetMarkers.push(marker);
     }
-    syncCloudSweetSpots(sweetSpotItems);
   }
   requestSupplySpots();
   drawTowerMarkers();
@@ -3905,7 +3873,7 @@ function renderCellCard(){
   }
   const go=document.createElement('button'); go.className='mapgo'; go.type='button';
   const canParallel=isRunLive() && canStartParallelTower();
-  go.textContent=canParallel?(sweetActive?'第二塔をこの圏内へ':'第二塔をこの地点へ'):(isRunLive()?'戦闘へ戻る':(hellOn?'シブヤ地獄へ出撃':(sweetActive?'この圏内仕様で出撃':'この地点へ出撃')));
+  go.textContent=canParallel?'第二塔を出撃':(isRunLive()?'戦闘へ戻る':'出撃');
   go.addEventListener('click', ()=>{ if(canParallel) startParallelTowerRun(cell); else if(isRunLive()) showCombat(); else deployFromCell(cell); }); card.appendChild(go);
   const ctrls=document.createElement('div'); ctrls.className='mapbtns';
   const updatePos=document.createElement('button'); updatePos.type='button'; updatePos.textContent='位置更新';
@@ -4084,20 +4052,18 @@ function grantBlackPowder(amount, reason, metaInfo={}){
   const v=Math.max(0, Math.floor(Number(amount)||0));
   if(v<=0) return;
   meta.blackPowder += v;
-  queueBlackPowderLedger(v, reason, metaInfo);
   saveMeta();
   refreshCurrencyDisplays();
   if(reason) toast(reason+' +'+fmt(v)+' 黒色火薬');
 }
 function rewardedAdUnitId(){
   const cfg = AD_CONFIG || {};
-  if(cfg.rewardedAdId) return cfg.rewardedAdId;
+  const p=currentPlatform();
   if(cfg.rewardedAdIds){
-    const p=currentPlatform();
     if(p==='ios' && cfg.rewardedAdIds.ios) return cfg.rewardedAdIds.ios;
     if(p==='android' && cfg.rewardedAdIds.android) return cfg.rewardedAdIds.android;
   }
-  const p=currentPlatform();
+  if(cfg.rewardedAdId && !cfg.rewardedAdIds) return cfg.rewardedAdId;
   return p==='ios' ? ADMOB_TEST_REWARDED.ios : ADMOB_TEST_REWARDED.android;
 }
 async function initializeAdSystem(){
@@ -4136,7 +4102,6 @@ async function showRewardedAd(placement='result_reward_black_powder'){
     rewardAdBusy=true; refreshRewardAdButton(); toast('広告再生中…');
     try{
       await new Promise(r=>setTimeout(r,1500));
-      queueAdReward(placement, REWARD_AD_BLACK_POWDER, {mock:true});
       grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement});
       return true;
     }finally{ rewardAdBusy=false; refreshRewardAdButton(); }
@@ -4150,13 +4115,13 @@ async function showRewardedAd(placement='result_reward_black_powder'){
       await bridge.prepareRewardVideoAd({ adId, isTesting:!!AD_CONFIG.testing, npa:!!AD_CONFIG.npa, immersiveMode:true });
       const res=await bridge.showRewardVideoAd();
       const rewarded=!!res;
-      if(rewarded){ queueAdReward(placement, REWARD_AD_BLACK_POWDER, res||{}); grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement}); }
+      if(rewarded) grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement});
       else toast('広告は完了しませんでした');
       return rewarded;
     }
     const res=await bridge.showRewarded({ placement, reward:{ type:'blackPowder', amount:REWARD_AD_BLACK_POWDER } });
     const rewarded=!!(res && (res.rewarded===true || res.ok===true || res.reward===true));
-    if(rewarded){ queueAdReward(placement, REWARD_AD_BLACK_POWDER, res||{}); grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement}); }
+    if(rewarded) grantBlackPowder(REWARD_AD_BLACK_POWDER, '広告報酬', {placement});
     else toast('広告は完了しませんでした');
     return rewarded;
   }catch(e){ console.log('showRewardedAd', e); toast('広告の再生に失敗しました'); return false; }
@@ -4172,146 +4137,22 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(e=>console.log('sw register failed', e)); });
 }
 
-/* ===== 永続化（localStorage：メタ恒久＋ランは決定論コアのみ） ===== */
-const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1', CLOUD_ID_KEY='fw.cloud.anonymousId.v1', CLOUD_QUEUE_KEY='fw.cloud.events.v1';
-const CLOUD_CONFIG=Object.assign({apiBaseUrl:null}, window.FireworksApiConfig || {});
-let cloudSaveTimer=null, cloudRunTimer=null, cloudFlushBusy=false;
-function cloudApiBase(){ return String(CLOUD_CONFIG.apiBaseUrl||'').replace(/\/+$/,''); }
-function cloudEnabled(){ return !!cloudApiBase() && typeof fetch==='function'; }
-function cloudAnonymousId(){
-  let id=''; try{ id=localStorage.getItem(CLOUD_ID_KEY)||''; }catch(e){}
-  if(!id){ id=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():('anon-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)); try{ localStorage.setItem(CLOUD_ID_KEY,id); }catch(e){} }
-  return id;
-}
-function cloudEventId(prefix){ return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); }
+/* ===== 永続化（端末内自動セーブ＋暗号化バックアップ） ===== */
+const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
+const BACKUP_FORMAT='fireworks-save', BACKUP_VERSION=1, BACKUP_AAD='fireworks-save/v1', BACKUP_KDF_ITERATIONS=600000;
 function metaSnapshot(){
   if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live'};
-  return {spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,milestones:meta.milestones,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings,_cloudUpdatedAt:meta.cloudUpdatedAt||Date.now()};
+  return {spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,milestones:meta.milestones,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings};
 }
 function runSnapshot(){
   if(!game.seedInfo || !isRunLive()) return null;
-  return { v:1, deployTs:game.seedInfo.deployTs, cellId:game.seedInfo.cellId, runSeed:game.seedInfo.runSeed||0, todBucket:(currentField?currentField.todBucket:0), purchases:game.purchases, acts:game.acts, skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})), towerMods:game.towerModLoadout||{bodies:[],addons:[]}, wave:game.wave, hp:Math.round(game.hp), hell:!!game.hell, _cloudUpdatedAt:Date.now() };
-}
-async function cloudRequest(path, options={}){
-  const init=Object.assign({method:'GET'}, options);
-  const headers=Object.assign({'Content-Type':'application/json'}, init.headers||{});
-  if(init.body && typeof init.body!=='string') init.body=JSON.stringify(init.body);
-  init.headers=headers;
-  const res=await fetch(cloudApiBase()+path, init);
-  if(!res.ok) throw new Error('cloud '+res.status);
-  return res.json();
-}
-function readCloudQueue(){ try{ const q=JSON.parse(localStorage.getItem(CLOUD_QUEUE_KEY)||'[]'); return Array.isArray(q)?q:[]; }catch(e){ return []; } }
-function writeCloudQueue(q){ try{ localStorage.setItem(CLOUD_QUEUE_KEY, JSON.stringify(q.slice(-200))); }catch(e){} }
-function queueCloudEvent(kind, payload){
-  if(!cloudEnabled()) return;
-  const item={kind, payload:Object.assign({},payload||{}), ts:Date.now(), idempotencyKey:(payload&&payload.idempotencyKey)||cloudEventId(kind)};
-  const q=readCloudQueue(); q.push(item); writeCloudQueue(q); setTimeout(flushCloudEvents, 150);
-}
-async function flushCloudEvents(){
-  if(!cloudEnabled()||cloudFlushBusy) return;
-  cloudFlushBusy=true;
-  const q=readCloudQueue(), keep=[];
-  try{
-    for(const ev of q){
-      const body=Object.assign({anonymousId:cloudAnonymousId(), idempotencyKey:ev.idempotencyKey}, ev.payload||{});
-      const path=ev.kind==='adReward'?'/api/v1/events/ad-reward':ev.kind==='addon'?'/api/v1/events/addon':'/api/v1/events/black-powder';
-      try{ await cloudRequest(path,{method:'POST',body}); }
-      catch(e){ keep.push(ev); }
-    }
-  }finally{ writeCloudQueue(keep); cloudFlushBusy=false; }
-}
-function queueBlackPowderLedger(amount, reason, metaInfo={}){
-  const v=Math.floor(Number(amount)||0);
-  if(v) queueCloudEvent('blackPowder',{amount:v,reason,placement:metaInfo.placement||null,meta:metaInfo});
-}
-function queueAdReward(placement, amount, raw={}){
-  queueCloudEvent('adReward',{placement,rewardType:'blackPowder',amount,provider:currentPlatform(),adUnitId:rewardedAdUnitId(),raw});
-}
-function queueAddonEvent(ad, source, payload={}){
-  if(!ad) return;
-  queueCloudEvent('addon',{eventType:'acquired',addonUid:ad.uid,cat:ad.cat,rarity:ad.rarity,source,payload:Object.assign({main:ad.main,subs:ad.subs},payload)});
-}
-function scheduleCloudSave(){
-  if(!cloudEnabled()) return;
-  clearTimeout(cloudSaveTimer);
-  cloudSaveTimer=setTimeout(pushCloudSave, 900);
-}
-async function pushCloudSave(){
-  if(!cloudEnabled()) return;
-  try{
-    await cloudRequest('/api/v1/bootstrap',{method:'POST',body:{anonymousId:cloudAnonymousId()}});
-    await cloudRequest('/api/v1/save',{method:'PUT',body:{anonymousId:cloudAnonymousId(),save:metaSnapshot(),clientUpdatedAt:new Date(meta.cloudUpdatedAt||Date.now()).toISOString()}});
-    await flushCloudEvents();
-  }catch(e){ console.log('cloud save skipped', e); }
-}
-function scheduleCloudRunSave(){
-  if(!cloudEnabled()) return;
-  clearTimeout(cloudRunTimer);
-  cloudRunTimer=setTimeout(pushCloudRun, 600);
-}
-async function pushCloudRun(){
-  if(!cloudEnabled()) return;
-  const run=runSnapshot();
-  if(!run) return;
-  try{
-    await cloudRequest('/api/v1/run',{method:'PUT',body:{anonymousId:cloudAnonymousId(),run,clientUpdatedAt:new Date(run._cloudUpdatedAt).toISOString()}});
-  }catch(e){ console.log('cloud run save skipped', e); }
-}
-async function clearCloudRun(){
-  if(!cloudEnabled()) return;
-  try{ await cloudRequest('/api/v1/run',{method:'DELETE',body:{anonymousId:cloudAnonymousId()}}); }
-  catch(e){ console.log('cloud run clear skipped', e); }
+  return {v:1,deployTs:game.seedInfo.deployTs,cellId:game.seedInfo.cellId,runSeed:game.seedInfo.runSeed||0,todBucket:(currentField?currentField.todBucket:0),purchases:game.purchases,acts:game.acts,skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})),towerMods:game.towerModLoadout||{bodies:[],addons:[]},wave:game.wave,hp:Math.round(game.hp),hell:!!game.hell};
 }
 function validRunSave(sv){ return sv && sv.deployTs>1.5e12 && sv.deployTs<=Date.now()+60000 && sv.cellId; }
-async function restoreCloudRunIfUseful(){
-  if(!cloudEnabled() || isRunLive()) return;
-  try{
-    const remote=await cloudRequest('/api/v1/run?anonymousId='+encodeURIComponent(cloudAnonymousId()));
-    const run=remote&&remote.state&&remote.state.run;
-    if(validRunSave(run)){
-      localStorage.setItem(RUN_KEY, JSON.stringify(run));
-      restoreRun(run);
-      toast('クラウド戦闘を復元しました');
-    }
-  }catch(e){ console.log('cloud run restore skipped', e); }
-}
-async function bootstrapCloudSync(){
-  if(!cloudEnabled()) return;
-  try{
-    await cloudRequest('/api/v1/bootstrap',{method:'POST',body:{anonymousId:cloudAnonymousId()}});
-    const remote=await cloudRequest('/api/v1/save?anonymousId='+encodeURIComponent(cloudAnonymousId()));
-    const save=remote&&remote.state&&remote.state.save;
-    if(save && Number(save._cloudUpdatedAt||0) > Number(meta.cloudUpdatedAt||0)){
-      localStorage.setItem(META_KEY, JSON.stringify(save));
-      loadMeta(); refreshCurrencyDisplays();
-      if(game.state==='mod') buildMods(); else if(game.state==='skills') buildSkills(); else if(game.state==='shop') buildShop(); else if(game.state==='home') buildHome();
-      toast('クラウドセーブを同期しました');
-    }else{
-      scheduleCloudSave();
-    }
-    await restoreCloudRunIfUseful();
-    await flushCloudEvents();
-  }catch(e){ console.log('cloud bootstrap skipped', e); }
-}
-function syncCloudSupplySpots(spots){
-  if(!cloudEnabled()||!Array.isArray(spots)||!spots.length) return;
-  cloudRequest('/api/v1/spots/supply/bulk',{method:'POST',body:{spots}}).catch(e=>console.log('supply spot sync skipped', e));
-}
-function syncCloudSweetSpots(items){
-  if(!cloudEnabled()||!Array.isArray(items)||!items.length) return;
-  const spots=items.map(s=>{ const ll=GeoCell.cellToLatLng(s.cell); return {cellId:s.cell,lat:ll[0],lng:ll[1],field:s.field}; });
-  cloudRequest('/api/v1/spots/sweet/bulk',{method:'POST',body:{spots}}).catch(e=>console.log('sweet spot sync skipped', e));
-}
-async function fetchCloudNearbySpots(lat,lng,radius=900){
-  if(!cloudEnabled()) return null;
-  return cloudRequest('/api/v1/spots/nearby?lat='+encodeURIComponent(lat)+'&lng='+encodeURIComponent(lng)+'&radius='+encodeURIComponent(radius));
-}
-function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); meta.cloudUpdatedAt=Date.now(); localStorage.setItem(META_KEY, JSON.stringify(metaSnapshot())); scheduleCloudSave(); }catch(e){} }
+function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); localStorage.setItem(META_KEY, JSON.stringify(metaSnapshot())); }catch(e){} }
 function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return; const m=JSON.parse(s);
   meta.spark=Math.max(0, Number(m.spark)||0);
   meta.blackPowder=Math.max(0, Number(m.blackPowder)||0);
-  meta.cloudUpdatedAt=Math.max(0, Number(m._cloudUpdatedAt||m.cloudUpdatedAt)||0);
   meta.towerSlots=Math.max(1, Math.min(TOWER_SLOT_MAX, Number(m.towerSlots)||1));
   const mb=(m.bank&&typeof m.bank==='object')?m.bank:{}; meta.bank={red:0,blue:0,green:0,yellow:0,purple:0}; for(const c of COLORS) meta.bank[c]=Math.max(0, Number(mb[c])||0);   // 数値強制（壊れた保存でNaN通貨を防ぐ）
   meta.perm=(m.perm&&typeof m.perm==='object')?m.perm:{}; for(const k in meta.perm) meta.perm[k]=Math.max(0, meta.perm[k]|0);
@@ -4336,9 +4177,78 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.skillEquip=Array.isArray(m.skillEquip)?m.skillEquip.slice(0,N):[]; while(meta.skillEquip.length<N)meta.skillEquip.push(null);
   meta.skillEquip=meta.skillEquip.map(id=>SKILL_BY_ID[id]?id:null);
   }catch(e){ console.log('loadMeta',e); } }
-function saveRun(){ try{ const run=runSnapshot(); if(!run) return; localStorage.setItem(RUN_KEY, JSON.stringify(run)); scheduleCloudRunSave(); }catch(e){} }
+function saveRun(){ try{ const run=runSnapshot(); if(!run) return; localStorage.setItem(RUN_KEY, JSON.stringify(run)); }catch(e){} }
 function loadRun(){ try{ const s=localStorage.getItem(RUN_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
-function clearRun(){ try{ localStorage.removeItem(RUN_KEY); clearCloudRun(); }catch(e){} }
+function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
+function base64FromBytes(bytes){ let text=''; for(let i=0;i<bytes.length;i+=0x8000) text+=String.fromCharCode(...bytes.subarray(i,i+0x8000)); return btoa(text); }
+function bytesFromBase64(text){ const raw=atob(text), bytes=new Uint8Array(raw.length); for(let i=0;i<raw.length;i++) bytes[i]=raw.charCodeAt(i); return bytes; }
+function backupCryptoReady(){ return !!(window.crypto&&crypto.subtle&&typeof TextEncoder!=='undefined'&&typeof TextDecoder!=='undefined'); }
+async function deriveBackupKey(passphrase, salt, iterations=BACKUP_KDF_ITERATIONS){
+  const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(passphrase),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+function currentBackupPayload(){
+  if(isRunLive()) saveRun();
+  let parallel=[]; try{ parallel=JSON.parse(localStorage.getItem(PARALLEL_RUNS_KEY)||'[]'); }catch(e){}
+  return {format:BACKUP_FORMAT,version:BACKUP_VERSION,createdAt:new Date().toISOString(),meta:metaSnapshot(),run:loadRun(),parallelRuns:Array.isArray(parallel)?parallel:[]};
+}
+async function encryptBackupPayload(payload, passphrase){
+  const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveBackupKey(passphrase,salt);
+  const plain=new TextEncoder().encode(JSON.stringify(payload));
+  const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(BACKUP_AAD)},key,plain);
+  return {format:BACKUP_FORMAT,version:BACKUP_VERSION,algorithm:'AES-256-GCM',kdf:'PBKDF2-SHA-256',iterations:BACKUP_KDF_ITERATIONS,salt:base64FromBytes(salt),iv:base64FromBytes(iv),ciphertext:base64FromBytes(new Uint8Array(cipher)),createdAt:payload.createdAt};
+}
+function isEncryptedBackup(envelope){ const iterations=Number(envelope&&envelope.iterations); return envelope&&envelope.format===BACKUP_FORMAT&&envelope.version===BACKUP_VERSION&&envelope.algorithm==='AES-256-GCM'&&envelope.kdf==='PBKDF2-SHA-256'&&iterations>=100000&&iterations<=1000000&&typeof envelope.salt==='string'&&typeof envelope.iv==='string'&&typeof envelope.ciphertext==='string'; }
+async function decryptBackupPayload(envelope, passphrase){
+  if(!isEncryptedBackup(envelope)) throw new Error('invalid backup format');
+  const key=await deriveBackupKey(passphrase,bytesFromBase64(envelope.salt),Number(envelope.iterations));
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytesFromBase64(envelope.iv),additionalData:new TextEncoder().encode(BACKUP_AAD)},key,bytesFromBase64(envelope.ciphertext));
+  const payload=JSON.parse(new TextDecoder().decode(plain));
+  if(!payload||payload.format!==BACKUP_FORMAT||payload.version!==BACKUP_VERSION||!payload.meta||typeof payload.meta!=='object'||!Array.isArray(payload.parallelRuns)) throw new Error('invalid backup contents');
+  return payload;
+}
+function backupFilename(){ const d=new Date(), stamp=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0'); return 'fireworks-save-'+stamp+'.fwsave'; }
+async function shareOrDownloadBackup(envelope){
+  const file=new File([JSON.stringify(envelope)],backupFilename(),{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file],title:'Fireworks save'}); return true; }catch(e){ if(e&&e.name==='AbortError') return false; }
+  }
+  const url=URL.createObjectURL(file), link=document.createElement('a'); link.href=url; link.download=file.name; document.body.appendChild(link); link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  return true;
+}
+function saveVaultStatus(message){ const el=$('savevaultstatus'); if(el) el.textContent=message||''; }
+function openSaveVault(){ $('savevault').classList.add('open'); $('savevault').setAttribute('aria-hidden','false'); saveVaultStatus('端末内の進行を、暗号化したバックアップとして保存できます。'); }
+function closeSaveVault(){ $('savevault').classList.remove('open'); $('savevault').setAttribute('aria-hidden','true'); }
+async function exportEncryptedBackup(){
+  const pass=$('saveexportpass').value, confirmPass=$('saveexportconfirm').value;
+  if(pass.length<12){ saveVaultStatus('パスフレーズは12文字以上にしてください。'); return; }
+  if(pass!==confirmPass){ saveVaultStatus('確認用パスフレーズが一致しません。'); return; }
+  if(!backupCryptoReady()){ saveVaultStatus('この環境は暗号化バックアップに対応していません。'); return; }
+  const button=$('saveexport'); button.disabled=true; saveVaultStatus('暗号化しています…');
+  try{ const saved=await shareOrDownloadBackup(await encryptBackupPayload(currentBackupPayload(),pass)); if(saved){ $('saveexportpass').value=''; $('saveexportconfirm').value=''; saveVaultStatus('暗号化バックアップを作成しました。'); }else saveVaultStatus('書き出しを取り消しました。'); }
+  catch(e){ console.log('backup export failed',e); saveVaultStatus('書き出しに失敗しました。'); }
+  finally{ button.disabled=false; }
+}
+function selectedBackupFile(){ const input=$('savefile'); return input&&input.files&&input.files[0]; }
+async function importEncryptedBackup(){
+  if(isRunLive()){ saveVaultStatus('戦闘中は復元できません。'); return; }
+  const file=selectedBackupFile(), pass=$('saveimportpass').value;
+  if(!file){ saveVaultStatus('バックアップファイルを選択してください。'); return; }
+  if(!pass){ saveVaultStatus('パスフレーズを入力してください。'); return; }
+  if(file.size>5*1024*1024){ saveVaultStatus('ファイルサイズが大きすぎます。'); return; }
+  const button=$('saveimport'); button.disabled=true; saveVaultStatus('復元内容を確認しています…');
+  try{
+    const payload=await decryptBackupPayload(JSON.parse(await file.text()),pass);
+    if(!confirm('現在の端末内セーブを、このバックアップで置き換えます。よろしいですか？')){ saveVaultStatus('復元を取り消しました。'); return; }
+    localStorage.setItem(META_KEY,JSON.stringify(payload.meta));
+    if(validRunSave(payload.run)) localStorage.setItem(RUN_KEY,JSON.stringify(payload.run)); else localStorage.removeItem(RUN_KEY);
+    localStorage.setItem(PARALLEL_RUNS_KEY,JSON.stringify(payload.parallelRuns));
+    saveVaultStatus('復元しました。再起動します…');
+    setTimeout(()=>location.reload(),350);
+  }catch(e){ console.log('backup import failed',e); saveVaultStatus('復元できませんでした。ファイルかパスフレーズを確認してください。'); }
+  finally{ button.disabled=false; }
+}
 
 /* ===== 放置追いつき：deploy地点から同一runStepを描画なしで再生（近似ゼロ） ===== */
 const MAX_CATCHUP_STEPS = Math.ceil(7*24*3600/DT);   // 1週間ぶん（上限）
@@ -4440,11 +4350,19 @@ function startGame(opts){
 // セル出撃：そのセルの手続きフィールドでランを開始（地図UIから呼ぶ）
 function deployFromCell(cellId){ if(!cellId) cellId=GeoCell.latLngToCell(VENUE.lat,VENUE.lng); const ts=Date.now(); const lng=GeoCell.cellToLatLng(cellId)[1]; currentField=fieldFromCell(cellId, todBucketAt(ts,lng), ts); startGame({cellId, deployTs:ts, runSeed:0}); }
 $('start').addEventListener('click', showMap);
+$('opensavevault').addEventListener('click', openSaveVault);
+$('closesavevault').addEventListener('click', closeSaveVault);
+$('savevault').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeSaveVault(); });
+$('saveexport').addEventListener('click', exportEncryptedBackup);
+$('saveselectfile').addEventListener('click', ()=>$('savefile').click());
+$('savefile').addEventListener('change', ()=>{ const file=selectedBackupFile(); $('savefilename').value=file?file.name:''; saveVaultStatus(file?'復元用のパスフレーズを入力してください。':''); });
+$('saveimport').addEventListener('click', importEncryptedBackup);
 $('retry').addEventListener('click', ()=>startGame());
 $('tohome').addEventListener('click', showHome);
 $('mode-combat').addEventListener('click', showCombat);
 $('mode-base').addEventListener('click', showHome);
 $('mode-map').addEventListener('click', showMap);
+$('mode-save').addEventListener('click', openSaveVault);
 $('maptoggle').addEventListener('click', ()=>{ setMapPanelOpen(!mapPanelOpen); if(mapPanelOpen) renderCellCard(); });
 $('mode-skill').addEventListener('click', showSkills);
 $('mode-mod').addEventListener('click', showMods);
@@ -4466,26 +4384,16 @@ function retreatTap(){ if(!isRunLive()) return; const btn=$('retreatbtn');
   _retreatArm=true; if(btn){ btn.classList.add('arm'); btn.textContent='■ 確定?'; } toast('もう一度タップで切り上げ（報酬は全額持ち帰り）');
   _retreatT=setTimeout(()=>{ _retreatArm=false; if(btn){ btn.classList.remove('arm'); btn.textContent='■ 切り上げ'; } }, 3000); }
 $('retreatbtn').addEventListener('click', retreatTap);
-$('debugCrystalBoss').addEventListener('click', ()=>{
-  startDebugCrystalBoss();
-  if(typeof showCombat === 'function') showCombat();
-});
 $('totitle').addEventListener('click', ()=>{ game.runLive=false; game.ended=true; clearRun(); game.state='title'; setViewState('state-title', false); controls.autoRotate=!REDUCED; for(let i=0;i<MAXE;i++) E[i].active=false; hideBossMeshes(); hideFortressFx(); hideBeams(); });
 
 renderer.render(scene,camera);
 if(!REDUCED) for(let i=0;i<4;i++) spawnShell();
 loadMeta();                                                  // 恒久メタ復元
-bootstrapCloudSync();
 loadParallelRuns();
 updateParallelTowerRuns(true);
-/* 【一時・今だけ】スノーストームをテスト用に付与（未所持なら開放＋装備） */
-if(!meta.skillOwned.snowstorm){ meta.skillOwned.snowstorm={level:5,dup:3,pot:2};
-  const _mx=3+resLv('extraSlot'); while(meta.skillEquip.length<_mx) meta.skillEquip.push(null);
-  if(meta.skillEquip.indexOf('snowstorm')<0){ let s=meta.skillEquip.indexOf(null); if(s<0)s=0; meta.skillEquip[s]='snowstorm'; }
-  saveMeta(); }
 try{ const _sv=loadRun(); if(_sv && _sv.deployTs>1.5e12 && _sv.deployTs<=Date.now()+60000) restoreRun(_sv); else if(_sv) clearRun(); }catch(e){ clearRun(); console.log('restoreRun failed',e); }   // 進行中ランがあればレジューム（破損/異常なdeployTsは破棄）
 if(!isRunLive()){ showMap(); }
-window.addEventListener('pagehide', ()=>{ if(isRunLive()){ saveRun(); pushCloudRun(); } saveParallelRuns(); flushCloudEvents(); pushCloudSave(); });
+window.addEventListener('pagehide', ()=>{ if(isRunLive()) saveRun(); saveParallelRuns(); });
 requestAnimationFrame(loop);   // ループは常時稼働（REDUCEDでも sim は進む／描画・演出のみ抑制）
 </script>
 </body>

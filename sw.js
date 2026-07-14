@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fireworks-shell-v1';
+const CACHE_NAME = 'fireworks-shell-v2';
 const ASSETS = ['.', './index.html', './manifest.webmanifest', './icon.svg', './fireworks.config.js'];
 
 self.addEventListener('install', event => {
