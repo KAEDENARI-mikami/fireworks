@@ -315,6 +315,8 @@ body.state-mod #modebar{display:flex;}
 #result button:hover{color:var(--void); background:var(--cyan);}
 #result button.ad{color:var(--gold); background:rgba(255,214,107,.06); border-color:var(--gold);}
 #result button.ad:hover:not(:disabled){color:var(--void); background:var(--gold);}
+#result button.share{color:var(--green); background:rgba(107,224,107,.06); border-color:var(--green);}
+#result button.share:hover{color:var(--void); background:var(--green);}
 #result button:disabled{opacity:.45; cursor:default;}
 
 /* 暗号化セーブの書き出し・復元 */
@@ -745,6 +747,7 @@ body.state-catchup #catchup{display:flex;}
   <div class="stat" id="rmilestone" style="font-size:.76rem;color:var(--dim); min-height:1.2rem"></div>
   <div class="btns">
     <button id="rewardad" class="ad" type="button">広告を見る +5 黒色火薬</button>
+    <button id="resultshare" class="share" type="button">結果を共有</button>
     <button id="tohome" type="button">拠点へ</button>
     <button id="retry" type="button">もう一度</button>
     <button id="totitle" type="button">タイトルへ</button>
@@ -4250,6 +4253,23 @@ function showResult(){ if(!game.result || game.resultShown) return; game.resultS
   controls.autoRotate=!REDUCED;
   if((r.clear||r.retreat) && RENDER){ for(let i=0;i<8;i++) setTimeout(()=>burst(rand(-300,300),CORE.y+rand(40,200),rand(-200,200),PAL[Math.floor(Math.random()*PAL.length)],200,3),i*140); }
 }
+function resultSharePayload(){
+  const r=game.result||{};
+  const wave=Math.max(0,Math.floor(Number(r.wave)||0));
+  const score=Math.max(0,Math.floor(Number(r.sc)||0));
+  const url=new URL('./',location.href);
+  url.searchParams.set('utm_source','share'); url.searchParams.set('utm_medium','organic'); url.searchParams.set('utm_campaign','result');
+  return {title:'Fireworks: Sparking Defense',text:'FireworksでWAVE '+fmt(wave)+'を突破。現実の場所を資源フィールドに変える位置情報タワーディフェンス。SCORE '+fmt(score),url:url.toString()};
+}
+async function shareResult(){
+  const payload=resultSharePayload();
+  try{
+    if(typeof navigator.share==='function'){ await navigator.share(payload); toast('結果を共有しました'); return; }
+    const text=payload.text+' '+payload.url;
+    if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){ await navigator.clipboard.writeText(text); toast('共有文をコピーしました'); return; }
+    toast('共有リンクを開いてください');
+  }catch(e){ if(e&&e.name==='AbortError') return; toast('共有の準備に失敗しました'); }
+}
 const REWARD_AD_BLACK_POWDER=5;
 let rewardAdBusy=false;
 let adsInitPromise=null;
@@ -4683,6 +4703,7 @@ $('mode-shop').addEventListener('click', showShop);
 $('start').addEventListener('click', ()=>{ meta.settings.hasStarted=true; saveMeta(); showMap({firstLaunch:true}); });
 $('rewardad').addEventListener('click', ()=>{ showRewardedAd('result_reward_black_powder'); });
 $('shoprewardad').addEventListener('click', ()=>{ showRewardedAd('shop_reward_black_powder'); });
+$('resultshare').addEventListener('click', shareResult);
 $('skgacha').addEventListener('click', gachaPull);
 $('skfree10').addEventListener('click', gachaFree10);
 $('moddraw').addEventListener('click', ()=>drawTowerMod(null,TOWER_MOD_DRAW_COST));
