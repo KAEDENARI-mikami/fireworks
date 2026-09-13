@@ -3,13 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Fireworks — 位置情報 × 放置 × ローグライク タワーディフェンス。">
+<meta name="description" content="歩いて見つけた場所が、花火塔の戦場になる。位置情報と放置型タワーディフェンスを組み合わせたFireworks。">
+<link rel="canonical" href="https://kaedenari-mikami.github.io/fireworks/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fireworks: Sparking Defense">
+<meta property="og:description" content="歩いて見つけた場所が、花火塔の戦場になる。位置情報×放置タワーディフェンス。">
+<meta property="og:url" content="https://kaedenari-mikami.github.io/fireworks/">
+<meta property="og:image" content="https://kaedenari-mikami.github.io/fireworks/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Fireworks: Sparking Defense">
+<meta name="twitter:description" content="歩いて見つけた場所が、花火塔の戦場になる。">
+<meta name="twitter:image" content="https://kaedenari-mikami.github.io/fireworks/icon-512.png">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#05060E">
-<title>Fireworks</title>
+<title>Fireworks: Sparking Defense</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="fireworks.config.js"></script>
 <script>
 (() => {
@@ -310,7 +320,11 @@ body.state-mod #modebar{display:flex;}
 /* 暗号化セーブの書き出し・復元 */
 .title-actions{display:flex;flex-direction:column;align-items:center;gap:.62rem;}
 .title-actions .start{margin:0;}
-.title-save{cursor:pointer;font-family:"DotGothic16",monospace;font-size:.68rem;letter-spacing:.12em;padding:.46rem .8rem;color:var(--dim);background:transparent;border:1px solid rgba(234,240,255,.22);border-radius:3px;}
+.title-utility{display:flex;align-items:center;justify-content:center;gap:.45rem;flex-wrap:wrap;}
+.title-copy{max-width:min(32rem,88vw);margin:-.2rem 0 .1rem;color:var(--ink);font-size:.75rem;line-height:1.7;letter-spacing:.08em;text-wrap:balance;}
+.title-store{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:.4rem .72rem;color:var(--gold);border:1px solid rgba(255,214,107,.42);border-radius:3px;background:rgba(255,214,107,.06);font-size:.64rem;letter-spacing:.08em;text-decoration:none;pointer-events:auto;}
+.title-store:hover{color:var(--void);background:var(--gold);}
+.title-save{pointer-events:auto;cursor:pointer;font-family:"DotGothic16",monospace;font-size:.68rem;letter-spacing:.12em;padding:.46rem .8rem;color:var(--dim);background:transparent;border:1px solid rgba(234,240,255,.22);border-radius:3px;}
 .title-save:hover{color:var(--cyan);border-color:var(--cyan);}
 #savevault{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;padding:1rem;background:rgba(2,3,8,.8);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);}
 #savevault.open{display:flex;}
@@ -331,6 +345,39 @@ body.state-mod #modebar{display:flex;}
 .savevault-actions button:disabled{opacity:.5;cursor:default;}
 .savevault-status{min-height:1.55em;padding-top:.2rem;}
 
+/* ゲーム説明（辞典） */
+#gameguide{display:none;position:fixed;inset:0;z-index:101;align-items:center;justify-content:center;padding:1rem;background:rgba(2,3,8,.84);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);}
+#gameguide.open{display:flex;}
+.guide-dialog{width:min(760px,100%);max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(60,240,255,.48);border-radius:8px;background:linear-gradient(180deg,rgba(12,16,29,.99),rgba(3,5,12,.99));box-shadow:0 20px 54px rgba(0,0,0,.58),0 0 28px rgba(60,240,255,.12);font-family:"DotGothic16",monospace;}
+.guide-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1rem .72rem;border-bottom:1px solid rgba(234,240,255,.12);}
+.guide-head h2{margin:0;color:var(--cyan);font-size:1rem;font-weight:400;letter-spacing:0;}
+.guide-close{width:30px;height:30px;flex:none;cursor:pointer;color:var(--dim);background:transparent;border:1px solid rgba(234,240,255,.2);border-radius:3px;font:inherit;font-size:1.1rem;line-height:1;}
+.guide-close:hover{color:var(--ink);border-color:var(--ink);}
+.guide-tools{display:grid;gap:.55rem;padding:.72rem 1rem;border-bottom:1px solid rgba(234,240,255,.1);}
+.guide-search{width:100%;min-height:40px;padding:.55rem .66rem;color:var(--ink);background:rgba(234,240,255,.05);border:1px solid rgba(234,240,255,.2);border-radius:3px;font:inherit;font-size:.72rem;}
+.guide-search:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(60,240,255,.12);}
+.guide-filters{display:flex;gap:.38rem;overflow-x:auto;padding-bottom:2px;}
+.guide-filter{min-height:30px;flex:none;cursor:pointer;padding:.3rem .65rem;color:var(--dim);background:transparent;border:1px solid rgba(234,240,255,.16);border-radius:999px;font:inherit;font-size:.64rem;white-space:nowrap;}
+.guide-filter:hover{color:var(--ink);border-color:rgba(234,240,255,.35);}
+.guide-filter.on{color:var(--void);background:var(--cyan);border-color:var(--cyan);}
+.guide-list{overflow-y:auto;padding:0 1rem .35rem;scrollbar-color:rgba(60,240,255,.35) transparent;}
+.guide-entry{--ac:var(--cyan);display:grid;grid-template-columns:minmax(112px,150px) minmax(0,1fr);gap:.7rem;padding:.72rem .12rem;border-bottom:1px solid rgba(234,240,255,.1);}
+.guide-entry:last-of-type{border-bottom:0;}
+.guide-term{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;min-width:0;}
+.guide-term h3{margin:0;color:var(--ink);font-family:"Reggae One",sans-serif;font-size:.84rem;font-weight:400;line-height:1.35;overflow-wrap:anywhere;}
+.guide-tag{color:var(--ac);font-size:.54rem;line-height:1.2;letter-spacing:0;}
+.guide-desc{margin:0;color:var(--dim);font-size:.68rem;line-height:1.62;overflow-wrap:anywhere;}
+.guide-desc b{color:var(--ink);font-weight:400;}
+.guide-empty{padding:1.5rem .2rem;text-align:center;color:var(--dim);font-size:.7rem;}
+@media (max-width:560px){
+  .guide-dialog{max-height:calc(100vh - 1rem);}
+  .guide-head{padding:.75rem .8rem .62rem;}
+  .guide-tools{padding:.62rem .8rem;}
+  .guide-list{padding:0 .8rem .25rem;}
+  .guide-entry{grid-template-columns:1fr;gap:.32rem;padding:.66rem .08rem;}
+  .guide-term{flex-direction:row;align-items:baseline;justify-content:space-between;gap:.55rem;}
+}
+
 /* 状態によって表示切替 */
 body.state-playing .title, body.state-playing .meta, body.state-playing .hint{ display:none; }
 body.state-playing #hud{ display:block; }
@@ -349,6 +396,8 @@ body.state-map #modebar{display:flex;}
 #map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 52%,rgba(5,6,14,.18),rgba(5,6,14,.64) 100%);z-index:400;}
 .mapwalkhud{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + .75rem);transform:translateX(-50%);z-index:10;width:min(560px,94vw);pointer-events:none;font-family:"DotGothic16",monospace;perspective:900px;}
 body.state-map .mapwalkhud{display:flex;gap:.45rem;align-items:center;justify-content:space-between;}
+.mapnotice{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 3.45rem);transform:translateX(-50%);z-index:15;width:min(560px,90vw);padding:.48rem .72rem;color:var(--ink);background:rgba(5,6,14,.9);border:1px solid rgba(60,240,255,.34);border-radius:6px;box-shadow:0 8px 22px rgba(0,0,0,.38);font-size:.66rem;line-height:1.45;text-align:center;pointer-events:none;}
+body.state-map .mapnotice.on{display:block;}
 .walkpill{min-height:34px;display:flex;align-items:center;gap:.35rem;padding:.38rem .62rem;border:1px solid rgba(234,240,255,.18);border-radius:999px;background:linear-gradient(180deg,rgba(10,12,22,.88),rgba(5,6,14,.82));box-shadow:0 10px 22px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06);color:var(--ink);font-size:.68rem;white-space:nowrap;transform:rotateX(5deg);}
 .walkpill b{color:var(--cyan);font-size:.76rem;}
 .walkpill.spot b{color:var(--green);}
@@ -500,8 +549,13 @@ body.state-catchup #catchup{display:flex;}
 <main class="title">
   <h1 class="logo">Fireworks<span class="sub">GEO ／ IDLE-TD ／ ROGUELIKE</span></h1>
   <div class="title-actions">
+    <p class="title-copy">歩いて見つけた場所が、花火塔の戦場になる。</p>
     <button class="start" id="start" type="button">GAME START</button>
-    <button class="title-save" id="opensavevault" type="button">セーブデータ</button>
+    <a class="title-store" href="https://apps.apple.com/jp/app/fireworks-sparking-defense/id6789903323?utm_source=web&amp;utm_medium=owned&amp;utm_campaign=launch" target="_blank" rel="noopener">iPhone / iPad版を入手</a>
+    <div class="title-utility">
+      <button class="title-save" id="opengameguide" type="button">ゲーム説明</button>
+      <button class="title-save" id="opensavevault" type="button">セーブデータ</button>
+    </div>
   </div>
 </main>
 <div class="hint" aria-hidden="true">DRAG TO ORBIT</div>
@@ -524,6 +578,143 @@ body.state-catchup #catchup{display:flex;}
       <div class="savevault-actions"><button id="saveselectfile" type="button">ファイルを選択</button><button id="saveimport" type="button">復元する</button></div>
     </section>
     <p class="savevault-status" id="savevaultstatus" aria-live="polite"></p>
+  </div>
+</div>
+
+<div id="gameguide" aria-hidden="true">
+  <div class="guide-dialog" role="dialog" aria-modal="true" aria-labelledby="gameguidetitle">
+    <div class="guide-head">
+      <h2 id="gameguidetitle">ゲーム説明 ／ DICTIONARY</h2>
+      <button class="guide-close" id="closegameguide" type="button" aria-label="閉じる">×</button>
+    </div>
+    <div class="guide-tools">
+      <input class="guide-search" id="gameguidesearch" type="search" inputmode="search" autocomplete="off" placeholder="用語を検索" aria-label="ゲーム用語を検索">
+      <div class="guide-filters" aria-label="説明カテゴリ">
+        <button class="guide-filter on" type="button" data-guide-filter="all">すべて</button>
+        <button class="guide-filter" type="button" data-guide-filter="basic">基本</button>
+        <button class="guide-filter" type="button" data-guide-filter="explore">探索</button>
+        <button class="guide-filter" type="button" data-guide-filter="combat">戦闘</button>
+        <button class="guide-filter" type="button" data-guide-filter="growth">成長</button>
+      </div>
+    </div>
+    <div class="guide-list" id="gameguidelist">
+      <article class="guide-entry" data-guide-category="basic" style="--ac:var(--cyan)">
+        <div class="guide-term"><span class="guide-tag">基本</span><h3>Fireworks</h3></div>
+        <p class="guide-desc">現実の位置情報を資源フィールドへ変え、中央の打ち上げ台を守る放置型タワーディフェンス。探索、出撃、強化を繰り返して最高WAVEを伸ばす。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="basic" style="--ac:var(--gold)">
+        <div class="guide-term"><span class="guide-tag">基本</span><h3>出撃</h3></div>
+        <p class="guide-desc">探索マップで現在地のフィールドを読み込み、防衛戦を開始すること。場所ごとの密度、スイートスポット、モジュールがそのランへ固定される。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="basic" style="--ac:var(--green)">
+        <div class="guide-term"><span class="guide-tag">基本</span><h3>放置進行</h3></div>
+        <p class="guide-desc">進行中のランは端末内へ保存される。再開時は、離れていた時間の戦闘を同じルールで追いつき計算する。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="basic" style="--ac:var(--purple)">
+        <div class="guide-term"><span class="guide-tag">基本</span><h3>セーブデータ</h3></div>
+        <p class="guide-desc">通常の進行は端末内に自動保存される。「セーブデータ」では、パスフレーズ付きのAES-256-GCM暗号化バックアップを書き出し・復元できる。</p>
+      </article>
+
+      <article class="guide-entry" data-guide-category="explore" style="--ac:var(--cyan)">
+        <div class="guide-term"><span class="guide-tag">探索</span><h3>フィールド</h3></div>
+        <p class="guide-desc">現実の座標を約75m単位のセルへ分けた戦闘地点。同じ場所は決定論的に同じ基礎密度を持ち、時間帯によって各色の実効密度が変化する。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="explore" style="--ac:var(--red)">
+        <div class="guide-term"><span class="guide-tag">探索</span><h3>5色密度</h3></div>
+        <p class="guide-desc"><b>赤・青・緑・黄・紫</b>の資源量と敵性能を決める土地の値。高密度ほど採取量が増える一方、敵も強くなる。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="explore" style="--ac:var(--blue)">
+        <div class="guide-term"><span class="guide-tag">探索</span><h3>敵レベル倍率</h3></div>
+        <p class="guide-desc"><b>1 + 総密度 ÷ 300</b>を基礎の密度係数とし、その上に色密度項を加える合成値。総密度は全体の土台、各色は対応する敵能力への補正として働く。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="explore" style="--ac:var(--gold)">
+        <div class="guide-term"><span class="guide-tag">探索</span><h3>スイートスポット</h3></div>
+        <p class="guide-desc">地図上に現れる高密度域。偏り型と均等型があり、通常地点より資源・敵・報酬が大きく、固有のモジュールも付与される。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="explore" style="--ac:var(--purple)">
+        <div class="guide-term"><span class="guide-tag">探索</span><h3>スポットレア度</h3></div>
+        <p class="guide-desc"><b>レア 350–500 / エピック 700–1000 / レジェンド 1500–2000 / ミシック 4000–5000 / セレスティアル 8000–10000</b>。数値は総密度の範囲。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="explore" style="--ac:var(--yellow)">
+        <div class="guide-term"><span class="guide-tag">探索</span><h3>モジュール</h3></div>
+        <p class="guide-desc">スイートスポットに固定される追加ルール。「頑丈」「迅速」など、敵やプレイヤー、報酬へ影響する。レア度に応じたコスト枠の中で組み合わされる。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="explore" style="--ac:var(--green)">
+        <div class="guide-term"><span class="guide-tag">探索</span><h3>補給施設</h3></div>
+        <p class="guide-desc">探索マップ上の回収地点。近づいて回収すると黒色火薬、アドオントークン、改装片などを獲得できる。</p>
+      </article>
+
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--cyan)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>WAVE</h3></div>
+        <p class="guide-desc">敵の進行単位。1WAVEは20秒で、敵のHPと攻撃力はWAVEごとに<b>×1.005</b>される。倍率に上限はない。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--red)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>ボス</h3></div>
+        <p class="guide-desc">25WAVEごとに出現する大型敵。通常のエリート抽選対象外で、撃破するとアドオントークンと低確率のアドオンを得る。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--green)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>$</h3></div>
+        <p class="guide-desc">そのランだけで使う戦闘資金。敵撃破で獲得し、火力・防御・採掘機などを強化する。ラン終了時にリセットされる。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--green)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>採掘機</h3></div>
+        <p class="guide-desc">$で購入する色別の採取装置。設置した色の資源を戦闘中に採取し、台数を増やすほど採取量が増える。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--purple)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>Tier 2 敵</h3></div>
+        <p class="guide-desc">WAVE 50以降に混ざる特殊敵。スキル軽減、撃破時分裂、遠距離ビームなど、通常敵とは異なる固有能力を持つ。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--gold)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>Tier 1 エリート</h3></div>
+        <p class="guide-desc">非ボスへ付与される強化個体。HP×5・攻撃×2。炎は1秒炎上、氷は1秒間射撃間隔×2、雷は攻撃がバリアを無視する。出現率は100WAVEごとに1%上昇し、最大25%。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--red)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>Tier 2 エリート</h3></div>
+        <p class="guide-desc">HP×10・攻撃×3。月は防御力を攻撃5回分削り、呪は最大HPとバリア合計の1%を追加ダメージにし、旗は死亡時に10体の増援を呼ぶ。出現率は300WAVEごとに1%上昇し最大10%、Tier 2敵では3ポイント減る。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="combat" style="--ac:var(--yellow)">
+        <div class="guide-term"><span class="guide-tag">戦闘</span><h3>切り上げ</h3></div>
+        <p class="guide-desc">進行中のランを自分で終了して精算する操作。確認のため3秒以内に2回押す。到達分の報酬は持ち帰れる。</p>
+      </article>
+
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--red)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>5色資源</h3></div>
+        <p class="guide-desc">戦闘で採取して持ち帰る恒常資源。各色に対応した拠点強化と、同色スキルのレベル上げに使う。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--cyan)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>SPARK</h3></div>
+        <p class="guide-desc">到達WAVEやスコアから得る恒常通貨。主にスキルガチャで使い、マイルストーンからも獲得できる。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--powder)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>黒色火薬</h3></div>
+        <p class="guide-desc">ショップと改装箱で使う恒常通貨。マイルストーン、補給施設、任意の報酬広告などから獲得できる。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--blue)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>恒常強化</h3></div>
+        <p class="guide-desc">持ち帰った5色資源を使って、初期火力・HP・採取効率などを永続的に上げる拠点機能。次の出撃から反映される。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--yellow)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>スキル</h3></div>
+        <p class="guide-desc">SPARKガチャで獲得し、同色資源でレベルを上げる特殊能力。基本は3枠装備で、研究により4枠目を解禁できる。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--purple)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>リサーチ</h3></div>
+        <p class="guide-desc">現実の徒歩距離で進む恒常研究。最大3件を同時にセットでき、必要距離へ達すると効果が解禁される。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--cyan)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>タワー改装</h3></div>
+        <p class="guide-desc">砲台・バリア装置・装甲・発信装置・リアクターの5カテゴリを組む恒常装備。各カテゴリは素体1個とアドオン3個で構成される。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--green)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>アドオン</h3></div>
+        <p class="guide-desc">素体へ追加する小型パーツ。Commonはメイン効果のみで、Rare以上はレア度に応じたサブ効果を持つ。高レアのスイートスポットほど高位アドオンを狙いやすい。</p>
+      </article>
+      <article class="guide-entry" data-guide-category="growth" style="--ac:var(--gold)">
+        <div class="guide-term"><span class="guide-tag">成長</span><h3>マイルストーン</h3></div>
+        <p class="guide-desc">最高到達WAVEの初回報酬。WAVE 10・40・75で黒色火薬、20・30・50・100でSPARKを受け取る。</p>
+      </article>
+      <p class="guide-empty" id="gameguideempty" hidden>一致する用語がありません。</p>
+    </div>
   </div>
 </div>
 
@@ -637,6 +828,7 @@ body.state-catchup #catchup{display:flex;}
   <div class="walkpill spot" id="walkspots">スポット <b>0</b></div>
   <div class="walkpill" id="walkdist">歩行 <b>0m</b></div>
 </div>
+<div class="mapnotice" id="mapnotice" role="status" aria-live="polite"></div>
 <div class="mapcenter" aria-hidden="true"></div>
 <div id="mapui" class="collapsed">
   <button class="maptoggle" id="maptoggle" type="button" title="出撃UI" aria-label="出撃UIを開く"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-target"></use></svg><span>出撃</span></button>
@@ -975,10 +1167,10 @@ grid.material.transparent=true; grid.material.opacity=.14; grid.material.depthWr
   const s=new THREE.Points(g,new THREE.PointsMaterial({size:7,map:spriteTex,vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true,fog:false}));
   s.frustumCulled=false; scene.add(s); })();
 
-(function city(){ const maxR=REDUCED?720:980, cell=142, jit=18, tints=[[.24,.94,1],[.48,.36,1],[1,.30,.78],[.30,1,.70]], list=[];
+(function city(){ const maxR=REDUCED?720:980, innerR=REDUCED?430:710, cell=142, jit=18, tints=[[.24,.94,1],[.48,.36,1],[1,.30,.78],[.30,1,.70]], list=[];
   for(let gx=-maxR;gx<=maxR;gx+=cell) for(let gz=-maxR;gz<=maxR;gz+=cell){
     const cx=gx+rand(-jit,jit), cz=gz+rand(-jit,jit), dist=Math.hypot(cx,cz);
-    if(dist<180||dist>maxR) continue; if(Math.random()>(REDUCED?0.5:0.72)) continue;
+    if(dist<innerR||dist>maxR) continue; if(Math.random()>(REDUCED?0.5:0.72)) continue;
     list.push({cx,cz,w:rand(34,82),d:rand(34,82),h:rand(38,250)*(dist>640?.7:1),t:tints[Math.floor(Math.random()*tints.length)],br:rand(.4,.9)}); }
   const bodies=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color:0x070B1A}), list.length);
   const dm=new THREE.Object3D(), ep=[], ec=[];
@@ -992,18 +1184,65 @@ grid.material.transparent=true; grid.material.opacity=.14; grid.material.depthWr
   scene.add(new THREE.LineSegments(eg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false}))); })();
 
 let beacon;
-(function tower(){ const grp=new THREE.Group(), L=16, baseHW=72, hw=(y)=>baseHW*Math.pow(1-0.8*(y/H),1.35)+4;
-  const corner=(lv,j)=>{ const y=H*(lv/L),w=hw(y),cs=[[w,w],[w,-w],[-w,-w],[-w,w]]; return new THREE.Vector3(cs[j][0],y,cs[j][1]); };
-  const pts=[]; for(let i=0;i<L;i++){ const A=[corner(i,0),corner(i,1),corner(i,2),corner(i,3)];
-    for(let j=0;j<4;j++){ const a=A[j],b=A[(j+1)%4]; pts.push(a.x,a.y,a.z,b.x,b.y,b.z); }
-    if(i<L-1){ const B=[corner(i+1,0),corner(i+1,1),corner(i+1,2),corner(i+1,3)];
-      for(let j=0;j<4;j++){ const j2=(j+1)%4; pts.push(A[j].x,A[j].y,A[j].z,B[j].x,B[j].y,B[j].z); pts.push(A[j].x,A[j].y,A[j].z,B[j2].x,B[j2].y,B[j2].z); pts.push(A[j2].x,A[j2].y,A[j2].z,B[j].x,B[j].y,B[j].z); } } }
-  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
-  grp.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false})));
-  const mastTop=H+80, mg=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute([0,H,0,0,mastTop,0],3));
-  grp.add(new THREE.LineSegments(mg,new THREE.LineBasicMaterial({color:0xFF3DAE,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false})));
+(function launchPad(){
+  const grp=new THREE.Group();
+  const dark=(color=0x0A1324,opacity=.9)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity,side:THREE.DoubleSide,depthWrite:true});
+  const glow=(color,opacity=.75)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+  const edge=(mesh,parent,color=0x3CF0FF,opacity=.72)=>{
+    const lines=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry),new THREE.LineBasicMaterial({color,transparent:true,opacity,blending:THREE.AdditiveBlending,depthWrite:false}));
+    lines.position.copy(mesh.position); lines.rotation.copy(mesh.rotation); lines.scale.copy(mesh.scale); parent.add(lines);
+  };
+  const solid=(parent,geometry,material,pos,rot,edgeColor,edgeOpacity)=>{
+    const mesh=new THREE.Mesh(geometry,material); mesh.position.set(pos[0],pos[1],pos[2]);
+    if(rot) mesh.rotation.set(rot[0],rot[1],rot[2]); parent.add(mesh);
+    if(edgeColor!==null) edge(mesh,parent,edgeColor===undefined?0x3CF0FF:edgeColor,edgeOpacity===undefined?.7:edgeOpacity);
+    return mesh;
+  };
+
+  // 円形の耐熱発射床。中心の当たり判定と迎撃起点は従来のCOREを維持する。
+  solid(grp,new THREE.CylinderGeometry(112,126,18,32),dark(0x07101E,.96),[0,9,0],null,0x3CF0FF,.7);
+  solid(grp,new THREE.CylinderGeometry(98,108,8,32),dark(0x14213A,.94),[0,22,0],null,0xFFD66B,.62);
+  solid(grp,new THREE.RingGeometry(56,96,48),glow(0x3CF0FF,.18),[0,26.5,0],[-Math.PI/2,0,0],null);
+  const padLines=[];
+  for(let i=0;i<12;i++){ const a=i*Math.PI/6; padLines.push(Math.cos(a)*54,27,Math.sin(a)*54,Math.cos(a)*104,27,Math.sin(a)*104); }
+  const padGeo=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(padLines,3));
+  grp.add(new THREE.LineSegments(padGeo,new THREE.LineBasicMaterial({color:0x3CF0FF,transparent:true,opacity:.32,blending:THREE.AdditiveBlending,depthWrite:false})));
+
+  // 支持架台と点火制御部。
+  const rack=new THREE.Group(); rack.position.y=26; grp.add(rack);
+  [[0,38,-50],[0,38,50],[-50,38,0],[50,38,0]].forEach((p,i)=>{
+    const rot=i<2?[0,0,i===0?.18:-.18]:[0,0,i===2?.18:-.18];
+    solid(rack,new THREE.BoxGeometry(i<2?104:10,10,i<2?10:104),dark(0x111C32,.94),p,rot,0xB46BFF,.66);
+  });
+  solid(rack,new THREE.BoxGeometry(126,12,12),dark(0x10192D,.96),[0,72,-58],null,0x3CF0FF,.7);
+  solid(rack,new THREE.BoxGeometry(126,12,12),dark(0x10192D,.96),[0,72,58],null,0x3CF0FF,.7);
+  solid(rack,new THREE.BoxGeometry(12,12,104),dark(0x10192D,.96),[-58,72,0],null,0x3CF0FF,.7);
+  solid(rack,new THREE.BoxGeometry(12,12,104),dark(0x10192D,.96),[58,72,0],null,0x3CF0FF,.7);
+  solid(grp,new THREE.BoxGeometry(42,28,26),dark(0x1B1730,.96),[0,42,104],[-.08,0,0],0xFF3DAE,.78);
+  solid(grp,new THREE.BoxGeometry(26,5,16),glow(0xFFD66B,.62),[0,47,118],[-.08,0,0],null);
+
+  // 花火玉を収める7本の発射筒。外周は少し外向きにして打ち上げ台らしい輪郭にする。
+  const tubeLayout=[
+    [0,0,242,0xFFD66B],[-38,-22,206,0x3CF0FF],[38,-22,206,0xFF3DAE],[-38,22,206,0xB46BFF],
+    [38,22,206,0x6BE06B],[0,-44,218,0xFF6A5E],[0,44,218,0x4FA8FF]
+  ];
+  for(const [x,z,tubeH,color] of tubeLayout){
+    const tube=new THREE.Group(), outward=Math.hypot(x,z)?0.075:0;
+    tube.position.set(x,42,z); tube.rotation.x=z?Math.sign(z)*outward:0; tube.rotation.z=x?-Math.sign(x)*outward:0; grp.add(tube);
+    solid(tube,new THREE.CylinderGeometry(10,13,tubeH,16,1,true),dark(0x0B1425,.94),[0,tubeH/2,0],null,color,.82);
+    solid(tube,new THREE.TorusGeometry(11.5,2.2,8,24),glow(color,.88),[0,tubeH,0],[Math.PI/2,0,0],null);
+    solid(tube,new THREE.CylinderGeometry(8.5,8.5,2,16),glow(color,.32),[0,tubeH-2,0],null,null);
+  }
+
+  // 筒をまとめる二段の固定リングと、中央点火灯。
+  [112,188].forEach((y,i)=>{
+    solid(grp,new THREE.TorusGeometry(i?61:68,3.2,8,36),glow(i?0xB46BFF:0x3CF0FF,.62),[0,y,0],[Math.PI/2,0,0],null);
+  });
+  const beaconY=H+20;
   beacon=new THREE.Sprite(new THREE.SpriteMaterial({map:spriteTex,color:0xFFD66B,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
-  beacon.position.set(0,mastTop,0); beacon.scale.set(30,30,1); grp.add(beacon); scene.add(grp); })();
+  beacon.position.set(0,beaconY,0); beacon.scale.set(30,30,1); grp.add(beacon);
+  scene.add(grp);
+})();
 
 /* ===== 花火パーティクル（ブロック） ===== */
 const MAXP = 4200;
@@ -2380,8 +2619,21 @@ function buildRes(){ const el=$('res'); el.innerHTML='';
     const btn=document.createElement('button'); btn.className='up'; btn.id='mine-'+c; btn.textContent='採掘 $'+fmt(2000); btn.addEventListener('click',()=>buyMining(c));
     row.appendChild(sw); row.appendChild(v); row.appendChild(btn); mbody.appendChild(row); });
   el.appendChild(mbody); }
-let toastT=0;
-function toast(s){ if(!RENDER) return; const el=$('toast'); el.textContent=s; el.style.opacity='1'; toastT=1.2; }
+let toastT=0, mapToastTimer=null;
+function toast(s){
+  if(!RENDER) return;
+  if(game.state==='map'){
+    const mapEl=$('mapnotice');
+    if(mapEl){
+      mapEl.textContent=s;
+      mapEl.classList.add('on');
+      if(mapToastTimer) clearTimeout(mapToastTimer);
+      mapToastTimer=setTimeout(()=>{ mapEl.classList.remove('on'); mapEl.textContent=''; mapToastTimer=null; }, 4500);
+      return;
+    }
+  }
+  const el=$('toast'); el.textContent=s; el.style.opacity='1'; toastT=1.2;
+}
 function setBossLabel(t){ if(!RENDER) return; const bl=document.querySelector('#bosshp .bl'); if(bl) bl.textContent=t; }
 function updateHUD(dt){
   $('time').textContent = game.phase==='boss' ? 'BOSS戦' : '交戦中';
@@ -2437,7 +2689,7 @@ function milestoneSummary(grants){
 }
 const meta = { spark:0, blackPowder:0, towerSlots:1, bank:{red:0,blue:0,green:0,yellow:0,purple:0}, perm:{}, skillOwned:{}, skillEquip:[null,null,null], research:{dist:0,node:{},slots:[null,null,null]}, free10Done:false, items:{}, armedShibuya:false, mapSupply:{claims:{},lastDay:'',streak:0,task:null},
   towerMods:{owned:{}, equip:{turret:null,barrier:null,armor:null,transmitter:null,reactor:null}, addons:{}, addonEquip:{turret:[null,null,null],barrier:[null,null,null],armor:[null,null,null],transmitter:[null,null,null],reactor:[null,null,null]}, dust:0, catDust:{turret:0,barrier:0,armor:0,transmitter:0,reactor:0}, addonTokens:0, pity:0, legendPity:0, seed:0, walkBank:0},
-  milestones: normalizeMilestoneState(), settings:{combatObserverMode:'live'} };
+  milestones: normalizeMilestoneState(), settings:{combatObserverMode:'live',hasStarted:false} };
 const PERM = [
   // 既存項目（基礎コスト ×100）
   {c:'red',   k:'p_dmg',   name:'初期火力',   cost:2000, r:2.0, fn:(lv)=>{ game.dmg*=1+0.18*lv; }, val:(lv)=>'+'+Math.round(18*lv)+'%'},
@@ -3897,8 +4149,9 @@ function startGPS(){
     err=>{ if(!gpsLocked && game.state==='map'){ devMode=true; toast('GPS取得不可（'+(err&&err.code===1?'許可が必要':'信号なし')+'）：DEVモードで移動可'); } },   // 拒否/失敗→DEV移動（VENUEは既に表示済）
     {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
 }
-function showMap(){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=false; controls.enablePan=false; setTab('mode-map');
-  setMapPanelOpen(false);
+function showTitle(){ game.state='title'; setViewState('state-title', false); controls.autoRotate=!REDUCED; controls.enabled=false; controls.enablePan=false; }
+function showMap(options){ game.state='map'; setOverlayView('state-map'); controls.autoRotate=false; controls.enabled=false; controls.enablePan=false; setTab('mode-map');
+  setMapPanelOpen(!!(options&&options.firstLaunch));
   if(meta.spark===0 && !game._mapHinted){ game._mapHinted=true; setTimeout(()=>toast('探索: 補給施設で素材回収 / 高密度地点で出撃'), 500); }   // 初回のみガイド
   const m=ensureMap(); if(m){ setTimeout(()=>{ try{ m.invalidateSize(); drawCells(); }catch(e){} },80); }
   if(!avatarLL) setAvatar(VENUE.lat, VENUE.lng);   // 即・既定地点を表示（GPS/Leaflet失敗でも常に出撃可能）
@@ -4027,7 +4280,10 @@ function currentPlatform(){
   return /iphone|ipad|ipod/i.test(navigator.userAgent)?'ios':(/android/i.test(navigator.userAgent)?'android':'web');
 }
 function getAdMobBridge(){
-  const bridge = window.Capacitor?.Plugins?.AdMob || window.Capacitor?.Plugins?.FireworksAds || window.FireworksAds || window.androidRewardedAds || null;
+  // `window.FireworksAds` is the facade exported by this file below. Including
+  // it here makes the facade discover itself as the native bridge and causes
+  // initializeAdSystem() to await itself forever on the Web build.
+  const bridge = window.Capacitor?.Plugins?.AdMob || window.Capacitor?.Plugins?.FireworksAds || window.androidRewardedAds || window.__fireworksNativeAds || null;
   return bridge || null;
 }
 function getRewardedAdBridge(){
@@ -4044,8 +4300,9 @@ function rewardAdAvailable(){ return !!getRewardedAdBridge() || canUseLocalRewar
 function refreshRewardAdButton(){
   for(const id of ['rewardad','shoprewardad']){
     const btn=$(id); if(!btn) continue;
-    btn.disabled=rewardAdBusy || !rewardAdAvailable();
-    btn.textContent=rewardAdBusy?'広告再生中…':(rewardAdAvailable()?('広告を見る +'+REWARD_AD_BLACK_POWDER+' 黒色火薬'):'広告未接続');
+    const available=rewardAdAvailable();
+    btn.disabled=rewardAdBusy || !available;
+    btn.textContent=rewardAdBusy?'広告再生中…':(available?('広告を見る +'+REWARD_AD_BLACK_POWDER+' 黒色火薬'):(isNativeRuntime()?'広告を準備できません':'広告報酬はアプリ版で利用'));
   }
 }
 function grantBlackPowder(amount, reason, metaInfo={}){
@@ -4136,17 +4393,30 @@ function showCombat(){ if(!isRunLive()){ showHome(); return; } game.state='playi
 if('serviceWorker' in navigator && location.protocol!=='file:'){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(e=>console.log('sw register failed', e)); });
 }
+let hiddenAt=0;
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    hiddenAt=Date.now();
+    if(isRunLive()) saveRun();
+    return;
+  }
+  if(!hiddenAt || !isRunLive() || catchup.active) { hiddenAt=0; return; }
+  hiddenAt=0;
+  const targetTick=Math.floor(Math.max(0, Date.now()-game.seedInfo.deployTs)/1000/DT);
+  if(targetTick>game.tick+1) startCatchUp(targetTick);
+});
 
 /* ===== 永続化（端末内自動セーブ＋暗号化バックアップ） ===== */
 const META_KEY='fw.meta.v1', RUN_KEY='fw.run.v1';
 const BACKUP_FORMAT='fireworks-save', BACKUP_VERSION=1, BACKUP_AAD='fireworks-save/v1', BACKUP_KDF_ITERATIONS=600000;
 function metaSnapshot(){
-  if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live'};
+  if(!meta.settings||typeof meta.settings!=='object') meta.settings={combatObserverMode:'live',hasStarted:false};
+  meta.settings.hasStarted=!!meta.settings.hasStarted;
   return {spark:meta.spark,blackPowder:meta.blackPowder,towerSlots:meta.towerSlots,bank:meta.bank,perm:meta.perm,skillOwned:meta.skillOwned,skillEquip:meta.skillEquip,research:meta.research,gachaSeed:meta.gachaSeed,free10Done:meta.free10Done,items:meta.items,armedShibuya:meta.armedShibuya,milestones:meta.milestones,towerMods:meta.towerMods,mapSupply:meta.mapSupply,settings:meta.settings};
 }
 function runSnapshot(){
   if(!game.seedInfo || !isRunLive()) return null;
-  return {v:1,deployTs:game.seedInfo.deployTs,cellId:game.seedInfo.cellId,runSeed:game.seedInfo.runSeed||0,todBucket:(currentField?currentField.todBucket:0),purchases:game.purchases,acts:game.acts,skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})),towerMods:game.towerModLoadout||{bodies:[],addons:[]},wave:game.wave,hp:Math.round(game.hp),hell:!!game.hell};
+  return {v:1,deployTs:game.seedInfo.deployTs,cellId:game.seedInfo.cellId,runSeed:game.seedInfo.runSeed||0,todBucket:(currentField?currentField.todBucket:0),purchases:game.purchases,acts:game.acts,skills:game.skillRT.map(S=>({id:S.def.id,lv:S.lv,pot:S.pot})),towerMods:game.towerModLoadout||{bodies:[],addons:[]},wave:game.wave,hp:Math.round(game.hp),hell:!!game.hell,timeScale:timeScale===5?5:1};
 }
 function validRunSave(sv){ return sv && sv.deployTs>1.5e12 && sv.deployTs<=Date.now()+60000 && sv.cellId; }
 function saveMeta(){ try{ ensureTowerMods(); ensureMapSupply(); localStorage.setItem(META_KEY, JSON.stringify(metaSnapshot())); }catch(e){} }
@@ -4167,8 +4437,10 @@ function loadMeta(){ try{ const s=localStorage.getItem(META_KEY); if(!s) return;
   meta.milestones=normalizeMilestoneState(m&&m.milestones);
   meta.mapSupply=(m.mapSupply&&typeof m.mapSupply==='object')?m.mapSupply:{claims:{}};
   ensureMapSupply();
-  meta.settings=(m.settings&&typeof m.settings==='object')?m.settings:{combatObserverMode:'live'};
+  const savedSettings=(m.settings&&typeof m.settings==='object')?m.settings:null;
+  meta.settings=savedSettings?Object.assign({combatObserverMode:'live',hasStarted:false},savedSettings):{combatObserverMode:'live',hasStarted:(meta.spark>0||meta.blackPowder>0||meta.research.dist>0||Object.keys(meta.items||{}).length>0)};
   meta.settings.combatObserverMode=meta.settings.combatObserverMode==='cinematic'?'cinematic':'live';
+  meta.settings.hasStarted=!!meta.settings.hasStarted;
   meta.towerMods=(m.towerMods&&typeof m.towerMods==='object')?m.towerMods:meta.towerMods; ensureTowerMods();
   meta.skillOwned=(m.skillOwned&&typeof m.skillOwned==='object')?m.skillOwned:{};
   for(const id in meta.skillOwned){ const def=SKILL_BY_ID[id]; if(!def){ delete meta.skillOwned[id]; continue; } const o=meta.skillOwned[id]; if(!o||typeof o!=='object'){ delete meta.skillOwned[id]; continue; }   // null/プリミティブ値で TypeError→サニタイズ中断を防ぐ
@@ -4250,6 +4522,39 @@ async function importEncryptedBackup(){
   finally{ button.disabled=false; }
 }
 
+let gameGuideFilter='all', gameGuideReturnFocus=null;
+function normalizedGuideText(value){ return String(value||'').normalize('NFKC').toLocaleLowerCase('ja'); }
+function updateGameGuide(){
+  const query=normalizedGuideText($('gameguidesearch').value.trim());
+  let visible=0;
+  document.querySelectorAll('#gameguidelist .guide-entry').forEach(entry=>{
+    const category=entry.dataset.guideCategory||'basic';
+    const categoryMatch=gameGuideFilter==='all'||category===gameGuideFilter;
+    const queryMatch=!query||normalizedGuideText(entry.textContent).includes(query);
+    entry.hidden=!(categoryMatch&&queryMatch);
+    if(!entry.hidden) visible++;
+  });
+  document.querySelectorAll('#gameguide [data-guide-filter]').forEach(button=>button.classList.toggle('on',button.dataset.guideFilter===gameGuideFilter));
+  $('gameguideempty').hidden=visible>0;
+}
+function openGameGuide(){
+  gameGuideReturnFocus=document.activeElement;
+  gameGuideFilter='all';
+  $('gameguidesearch').value='';
+  $('gameguide').classList.add('open');
+  $('gameguide').setAttribute('aria-hidden','false');
+  updateGameGuide();
+  setTimeout(()=>$('gameguidesearch').focus(),0);
+}
+function closeGameGuide(){
+  const guide=$('gameguide');
+  if(!guide.classList.contains('open')) return;
+  guide.classList.remove('open');
+  guide.setAttribute('aria-hidden','true');
+  if(gameGuideReturnFocus&&typeof gameGuideReturnFocus.focus==='function') gameGuideReturnFocus.focus();
+  gameGuideReturnFocus=null;
+}
+
 /* ===== 放置追いつき：deploy地点から同一runStepを描画なしで再生（近似ゼロ） ===== */
 const MAX_CATCHUP_STEPS = Math.ceil(7*24*3600/DT);   // 1週間ぶん（上限）
 function showCatchup(on){ const el=$('catchup'); if(el) el.style.display = on?'flex':'none'; }
@@ -4275,7 +4580,7 @@ function startCatchUp(targetTick){
     } else { setTimeout(slice, 0); }
   })();
 }
-/* セーブから決定論再生でレジューム（mid-run scalarは復元しない＝場+seed+購入ログのみ） */
+/* セーブから決定論再生でレジューム（戦闘速度はユーザー設定として復元） */
 function restoreRun(sv){
   currentField = fieldFromCell(sv.cellId, sv.todBucket||0, sv.deployTs);
   resetGame();
@@ -4294,6 +4599,8 @@ function restoreRun(sv){
   game.purchases=Array.isArray(sv.purchases)?sv.purchases.slice():[]; game._pidx=0;
   game.acts=Array.isArray(sv.acts)?sv.acts.slice():[]; game._aidx=0;
   game.state='playing'; game.runLive=true; game.ended=false;
+  timeScale=sv.timeScale===5?5:1;
+  const speedBtn=$('speedbtn'); if(speedBtn){ speedBtn.textContent=timeScale===1?'▶▶ 5×':'■ 1×'; speedBtn.classList.toggle('on',timeScale!==1); }
   controls.autoRotate=false; controls.target.copy(CORE);
   startCatchUp(Math.floor(Math.max(0, Date.now()-sv.deployTs)/1000/DT));
 }
@@ -4349,7 +4656,12 @@ function startGame(opts){
   controls.autoRotate=false; controls.target.copy(CORE); saveRun(); }
 // セル出撃：そのセルの手続きフィールドでランを開始（地図UIから呼ぶ）
 function deployFromCell(cellId){ if(!cellId) cellId=GeoCell.latLngToCell(VENUE.lat,VENUE.lng); const ts=Date.now(); const lng=GeoCell.cellToLatLng(cellId)[1]; currentField=fieldFromCell(cellId, todBucketAt(ts,lng), ts); startGame({cellId, deployTs:ts, runSeed:0}); }
-$('start').addEventListener('click', showMap);
+$('opengameguide').addEventListener('click', openGameGuide);
+$('closegameguide').addEventListener('click', closeGameGuide);
+$('gameguide').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeGameGuide(); });
+$('gameguidesearch').addEventListener('input', updateGameGuide);
+document.querySelectorAll('#gameguide [data-guide-filter]').forEach(button=>button.addEventListener('click',()=>{ gameGuideFilter=button.dataset.guideFilter||'all'; updateGameGuide(); }));
+window.addEventListener('keydown', e=>{ if(e.key==='Escape'&&$('gameguide').classList.contains('open')) closeGameGuide(); });
 $('opensavevault').addEventListener('click', openSaveVault);
 $('closesavevault').addEventListener('click', closeSaveVault);
 $('savevault').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeSaveVault(); });
@@ -4368,6 +4680,7 @@ $('mode-skill').addEventListener('click', showSkills);
 $('mode-mod').addEventListener('click', showMods);
 $('mode-research').addEventListener('click', showResearch);
 $('mode-shop').addEventListener('click', showShop);
+$('start').addEventListener('click', ()=>{ meta.settings.hasStarted=true; saveMeta(); showMap({firstLaunch:true}); });
 $('rewardad').addEventListener('click', ()=>{ showRewardedAd('result_reward_black_powder'); });
 $('shoprewardad').addEventListener('click', ()=>{ showRewardedAd('shop_reward_black_powder'); });
 $('skgacha').addEventListener('click', gachaPull);
@@ -4392,7 +4705,7 @@ loadMeta();                                                  // 恒久メタ復�
 loadParallelRuns();
 updateParallelTowerRuns(true);
 try{ const _sv=loadRun(); if(_sv && _sv.deployTs>1.5e12 && _sv.deployTs<=Date.now()+60000) restoreRun(_sv); else if(_sv) clearRun(); }catch(e){ clearRun(); console.log('restoreRun failed',e); }   // 進行中ランがあればレジューム（破損/異常なdeployTsは破棄）
-if(!isRunLive()){ showMap(); }
+if(!isRunLive()){ if(meta.settings&&meta.settings.hasStarted) showMap(); else showTitle(); }
 window.addEventListener('pagehide', ()=>{ if(isRunLive()) saveRun(); saveParallelRuns(); });
 requestAnimationFrame(loop);   // ループは常時稼働（REDUCEDでも sim は進む／描画・演出のみ抑制）
 </script>

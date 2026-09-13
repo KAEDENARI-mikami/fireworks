@@ -1,5 +1,5 @@
-const CACHE_NAME = 'fireworks-shell-v2';
-const ASSETS = ['.', './index.html', './manifest.webmanifest', './icon.svg', './fireworks.config.js'];
+const CACHE_NAME = 'fireworks-shell-v3';
+const ASSETS = ['.', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './fireworks.config.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

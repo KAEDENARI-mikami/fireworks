@@ -7,7 +7,7 @@ const root = resolve(here, '..');
 const outDir = resolve(root, 'web');
 
 mkdirSync(outDir, { recursive: true });
-for(const file of ['index.html','manifest.webmanifest','sw.js','icon.svg','fireworks.config.js','privacy-policy.html','app-ads.txt','ads.txt']){
+for(const file of ['index.html','manifest.webmanifest','sw.js','icon-192.png','icon-512.png','apple-touch-icon.png','fireworks.config.js','privacy-policy.html','app-ads.txt','ads.txt']){
   const src = resolve(root, file);
   const out = resolve(outDir, file);
   if(!existsSync(src)) continue;
