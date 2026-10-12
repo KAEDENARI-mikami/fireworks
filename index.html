@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="歩いて見つけた場所が、花火塔の戦場になる。位置情報と放置型タワーディフェンスを組み合わせたFireworks。">
-<link rel="canonical" href="https://kaedenari-mikami.github.io/fireworks/">
+<link rel="canonical" href="https://fireworks-377c2f.gitlab.io/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Fireworks: Sparking Defense">
 <meta property="og:description" content="歩いて見つけた場所が、花火塔の戦場になる。位置情報×放置タワーディフェンス。">
-<meta property="og:url" content="https://kaedenari-mikami.github.io/fireworks/">
-<meta property="og:image" content="https://kaedenari-mikami.github.io/fireworks/icon-512.png">
+<meta property="og:url" content="https://fireworks-377c2f.gitlab.io/">
+<meta property="og:image" content="https://fireworks-377c2f.gitlab.io/icon-512.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Fireworks: Sparking Defense">
 <meta name="twitter:description" content="歩いて見つけた場所が、花火塔の戦場になる。">
-<meta name="twitter:image" content="https://kaedenari-mikami.github.io/fireworks/icon-512.png">
+<meta name="twitter:image" content="https://fireworks-377c2f.gitlab.io/icon-512.png">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#05060E">
 <title>Fireworks: Sparking Defense</title>
@@ -371,7 +371,9 @@ body.state-mod #modebar{display:flex;}
 .notice-detail .notice-aside{padding-top:.8rem;border-top:1px solid rgba(234,240,255,.12);color:var(--dim);font-size:.68rem;}
 .notice-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;width:100%;margin:.7rem 0 .1rem;padding:.6rem 1rem;border:1px solid var(--cyan);border-radius:3px;background:rgba(60,240,255,.08);color:var(--cyan);font:inherit;font-size:.78rem;cursor:pointer;}
 .notice-action:hover{background:var(--cyan);color:var(--void);}
-.notice-trigger:focus-visible,.title-notice:focus-visible,#notices button:focus-visible,#notices [tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
+.notice-site-link{border-color:var(--gold);background:rgba(255,214,107,.08);color:var(--gold);text-decoration:none;}
+.notice-site-link:hover{background:var(--gold);color:var(--void);}
+.notice-trigger:focus-visible,.title-notice:focus-visible,#notices button:focus-visible,#notices a:focus-visible,#notices [tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
 @media (max-width:560px){
   .mtab{flex-basis:64px;font-size:.7rem;letter-spacing:0;}
   .notice-head{padding:.7rem .8rem;}
@@ -612,7 +614,7 @@ body.state-catchup #catchup{display:flex;}
       <button class="title-save" id="opensavevault" type="button">セーブデータ</button>
       <button class="title-save notice-trigger" id="opennotices" type="button" aria-haspopup="dialog" aria-controls="notices"><span>お知らせ</span><span class="notice-badge" data-notice-badge aria-hidden="true" hidden></span></button>
     </div>
-    <button class="title-notice" id="migrationnotice" type="button" aria-haspopup="dialog" aria-controls="notices" hidden><span class="notice-tag">重要</span><span>Web版の移行前に、セーブのバックアップをお願いします</span><span class="title-notice-arrow" aria-hidden="true">›</span></button>
+    <button class="title-notice" id="migrationnotice" type="button" aria-haspopup="dialog" aria-controls="notices" hidden><span class="notice-tag">重要</span><span>Web版の移行を開始しました。旧サイトのセーブはバックアップで引き継げます</span><span class="title-notice-arrow" aria-hidden="true">›</span></button>
   </div>
 </main>
 <div class="hint" aria-hidden="true">DRAG TO ORBIT</div>
@@ -631,7 +633,8 @@ body.state-catchup #catchup{display:flex;}
         <div class="notice-item-meta"><time id="noticedate"></time><span class="notice-tag" id="noticeimportance">重要</span></div>
         <h3 id="noticedetailtitle" tabindex="-1"></h3>
         <div id="noticebody"></div>
-        <button class="notice-action" id="noticebackup" type="button">セーブデータを開く ／ バックアップ</button>
+        <a class="notice-action notice-site-link" id="noticesitelink" target="_blank" rel="noopener noreferrer" hidden>新しいWeb版を開く（別タブ）</a>
+        <button class="notice-action" id="noticebackup" type="button">このサイトのセーブデータを開く</button>
       </article>
     </div>
   </div>
@@ -4589,22 +4592,28 @@ async function shareOrDownloadBackup(envelope){
 const NOTICE_READ_KEY='fw.notices.read.v1';
 // 新しい案内はここへ追加。本文を更新した場合は revision を増やす。
 const GAME_NOTICES=[{
-  id:'web-gitlab-migration', revision:1, date:'2026-10-12', important:true,
-  title:'Web版の移行とセーブデータ保護のお願い',
-  summary:'公開URLが変わると、新しいサイトでは初期状態になります。移行前にバックアップを保存してください。',
+  id:'web-gitlab-migration', revision:2, date:'2026-10-12', important:true,
+  title:'Web版の移行開始とセーブデータの引き継ぎ',
+  summary:'GitLabでの新しい公開先が確定しました。旧サイトの進行は、暗号化バックアップで新しいサイトへ引き継げます。',
   body:[
-    {type:'paragraph',text:'Web版の公開先をGitLabへ移行する予定です。公開URLが変わると、現在のセーブデータは自動で引き継がれず、新しいURLでは初期状態になります。'},
-    {type:'warning',text:'バックアップを取らずに旧サイトの公開が終了すると、これまでの進行を新しいサイトで復元できなくなるおそれがあります。移行前に、必ずバックアップを保存してください。'},
+    {type:'paragraph',text:'GitLabへのWeb版移行を開始し、新しい公開先が確定しました。下の「新しいWeb版を開く」から移動できます。旧サイトでの進行を引き継ぐ場合は、移動前に旧サイトでバックアップを保存してください。'},
+    {type:'paragraph',text:'旧サイトのセーブデータは、新しいURLへ自動では引き継がれません。新しいサイトを初めて開いたときは初期状態になります。旧サイトから暗号化バックアップを書き出し、新しいサイトで復元することで進行を引き継げます。'},
+    {type:'warning',text:'旧サイトはバックアップ取得用に維持しています。公開終了日は未定で、決まり次第このお知らせで案内してから終了します。バックアップを取らずに旧サイトの公開が終了すると、旧サイトでの進行を復元できなくなるおそれがあります。'},
     {type:'steps',items:[
       '旧サイトの「セーブデータ」を開き、12文字以上のパスフレーズを設定して「暗号化して書き出す」からバックアップファイルを保存します。',
       'バックアップファイルとパスフレーズを保管してください。パスフレーズを失うと復元できません。',
-      '新しいサイトの「セーブデータ」でファイルを選び、同じパスフレーズを入力して「復元する」を押します。'
+      '新しいサイトの「セーブデータ」でファイルを選び、同じパスフレーズを入力して「復元する」を押します。新しいサイトでもすでに進めている場合は、そのデータも先に書き出してください。復元すると、現在のセーブはバックアップの内容で置き換わります。'
     ]},
-    {type:'paragraph',text:'移行日時と新しい公開URLは、決まり次第このお知らせ欄で案内します。'},
+    {type:'paragraph',text:'この案内で、現在のサイトのセーブデータを削除・初期化することはありません。「このサイトのセーブデータ」は、今開いているサイトの保存データを扱います。旧サイトの進行を移す場合は、先に旧サイト側で書き出してください。'},
     {type:'aside',text:'対象はWeb版（ブラウザ・ホーム画面に追加したPWA）です。iOS／Androidのインストール済みアプリ内のセーブデータは、今回のWeb公開先の移行では初期化されません。'}
-  ], action:'savevault'
+  ], action:'savevault', siteLink:{url:'https://fireworks-377c2f.gitlab.io/',label:'新しいWeb版を開く（別タブ）'}
 }];
 function noticeReadId(notice){ return notice.id+'@'+notice.revision; }
+// 任意の siteLink: { url, label } は、公開先確定後に指定する。絶対HTTPS URLだけを表示。
+function noticeSiteURL(value){
+  if(typeof value!=='string') return null;
+  try{ const url=new URL(value); return url.protocol==='https:'?url.href:null; }catch(e){ return null; }
+}
 function loadNoticeReadIds(){
   try{
     const saved=JSON.parse(localStorage.getItem(NOTICE_READ_KEY)||'null');
@@ -4685,6 +4694,9 @@ function showNoticeDetail(id){
       body.append(paragraph);
     }
   }
+  const siteLink=$('noticesitelink'), siteURL=noticeSiteURL(notice.siteLink?.url);
+  siteLink.hidden=!siteURL; siteLink.removeAttribute('href');
+  if(siteURL){ siteLink.href=siteURL; siteLink.textContent=notice.siteLink.label||'新しいWeb版を開く（別タブ）'; }
   $('noticebackup').hidden=notice.action!=='savevault';
   $('noticescroll').scrollTop=0;
   markNoticeRead(notice);

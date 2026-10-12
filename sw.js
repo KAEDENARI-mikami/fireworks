@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fireworks-shell-v4-notices';
+const CACHE_NAME = 'fireworks-shell-v5-gitlab';
 const ASSETS = ['.', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './fireworks.config.js'];
 
 self.addEventListener('install', event => {
