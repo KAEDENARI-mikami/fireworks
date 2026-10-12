@@ -18,6 +18,14 @@
 
 Web本体は単一HTMLのPWAとして動作し、CapacitorでiOS / Androidへパッケージしています。地図表示にはLeaflet、MapLibre、OpenFreeMapを利用しています。
 
+## GitLabでの管理・公開
+
+GitLabへの移行用に、`.gitlab-ci.yml`を用意しています。デフォルトブランチへの更新時に`node scripts/sync-web.mjs`でWeb版を生成し、必要なファイルとJavaScript構文を検証して、`web/`だけをGitLab Pagesへ公開します。Web公開ジョブではnpm依存関係やネイティブSDKのインストールは不要です。
+
+ローカルでWeb版を生成する場合は`npm run sync:web`を実行してください。公開URLはGitLabプロジェクトの **Deploy > Pages** で確認します。GitLab 17.10以降のCI構文を使用しています。
+
+公開URLが変わると、Web版の端末内セーブは新サイトに自動では引き継がれません。旧サイトの「セーブデータ」から暗号化バックアップを書き出し、新サイトで復元してください。移行前の案内、コード・履歴の移送、公開URL・広告・ストア情報の切り替え手順は[GitLab移行手順](docs/GITLAB_MIGRATION.md)に記録しています。
+
 ## ライセンス
 
 個人開発・配布用リポジトリです。コードやアセットの利用条件は、各ファイルと配布サービスの規約を確認してください。

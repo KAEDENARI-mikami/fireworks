@@ -3,6 +3,7 @@ _*.html
 .DS_Store
 node_modules/
 web/
+output/
 
 # Native build outputs and local secrets
 android/.gradle/

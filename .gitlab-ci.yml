@@ -1,0 +1,40 @@
+# GitLab 17.10+; Pages publishes only the generated static web assets.
+deploy-pages:
+  image: node:22-alpine
+  stage: deploy
+  resource_group: pages
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  script:
+    - node scripts/sync-web.mjs
+    - |
+      node --input-type=module <<'NODE'
+      import { readFileSync, statSync } from 'node:fs';
+      import { spawnSync } from 'node:child_process';
+
+      const assets = ['index.html', 'manifest.webmanifest', 'sw.js', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'fireworks.config.js', 'privacy-policy.html', 'app-ads.txt', 'ads.txt'];
+      for (const file of assets) {
+        const stat = statSync(`web/${file}`);
+        if (!stat.isFile() || !stat.size) throw new Error(`Missing or empty Pages asset: ${file}`);
+      }
+      JSON.parse(readFileSync('web/manifest.webmanifest', 'utf8'));
+
+      function checkJavaScript(source, name, type = 'commonjs') {
+        const result = spawnSync(process.execPath, [`--input-type=${type}`, '--check'], { input: source, encoding: 'utf8' });
+        if (result.error) throw result.error;
+        if (result.status !== 0) throw new Error(`${name}: ${result.stderr}`);
+      }
+      for (const file of ['sw.js', 'fireworks.config.js']) {
+        checkJavaScript(readFileSync(`web/${file}`, 'utf8'), file);
+      }
+      const html = readFileSync('web/index.html', 'utf8');
+      for (const [index, match] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)].entries()) {
+        const [, attributes, source] = match;
+        if (/\bsrc\s*=/i.test(attributes)) continue;
+        if (/\btype\s*=\s*["'](?:importmap|application\/ld\+json)["']/i.test(attributes)) JSON.parse(source);
+        else checkJavaScript(source, `index.html script ${index + 1}`, /\btype\s*=\s*["']module["']/i.test(attributes) ? 'module' : 'commonjs');
+      }
+      console.log('Pages assets, manifest, and JavaScript syntax validated.');
+      NODE
+  pages:
+    publish: web
