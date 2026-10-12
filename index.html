@@ -166,7 +166,7 @@ body.state-home .title, body.state-home .meta, body.state-home .hint{display:non
 .pc-cost{font-size:.72rem; color:var(--dim);}
 /* モードバー（下部） */
 #modebar{display:none; position:fixed; left:0; right:0; bottom:0; z-index:11; height:58px;
-  background:linear-gradient(0deg, rgba(5,6,14,.97), rgba(5,6,14,.72)); border-top:1px solid rgba(234,240,255,.12);}
+  background:linear-gradient(0deg, rgba(5,6,14,.97), rgba(5,6,14,.72)); border-top:1px solid rgba(234,240,255,.12);overflow-x:auto;scrollbar-width:thin;scrollbar-color:rgba(60,240,255,.3) transparent;}
 body.state-home #modebar{display:flex;}
 body.state-playing #modebar{display:flex;}
 /* スキル画面 */
@@ -291,7 +291,7 @@ body.state-mod #modebar{display:flex;}
 .skcard .skbtns button:hover:not(:disabled){background:color-mix(in srgb, var(--ac) 30%, transparent); transform:translateY(-1px);}
 .skcard .skbtns button.eq{border-color:var(--cyan); color:var(--cyan); background:color-mix(in srgb, var(--cyan) 20%, transparent);}
 .skcard .skbtns button:disabled{opacity:.4; cursor:default;}
-.mtab{flex:1; pointer-events:auto; cursor:pointer; background:transparent; border:none; border-right:1px solid rgba(234,240,255,.07);
+.mtab{flex:1 0 68px; pointer-events:auto; cursor:pointer; background:transparent; border:none; border-right:1px solid rgba(234,240,255,.07);
   color:var(--dim); font-family:"DotGothic16",monospace; font-size:.78rem; letter-spacing:.1em; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; transition:color .2s, background .2s;}
 .mtab:last-child{border-right:none;}
 .mtab:hover:not(:disabled){color:var(--ink); background:rgba(234,240,255,.05);}
@@ -328,6 +328,59 @@ body.state-mod #modebar{display:flex;}
 .title-store:hover{color:var(--void);background:var(--gold);}
 .title-save{pointer-events:auto;cursor:pointer;font-family:"DotGothic16",monospace;font-size:.68rem;letter-spacing:.12em;padding:.46rem .8rem;color:var(--dim);background:transparent;border:1px solid rgba(234,240,255,.22);border-radius:3px;}
 .title-save:hover{color:var(--cyan);border-color:var(--cyan);}
+/* お知らせ：夜空に届く運営からの便り */
+.notice-trigger{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.32rem;}
+#mode-notices{flex-direction:row;color:var(--gold);font-size:.7rem;letter-spacing:0;}
+.notice-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;border-radius:999px;background:var(--gold);color:var(--void);font-size:.57rem;line-height:1;letter-spacing:0;font-variant-numeric:tabular-nums;}
+.notice-badge[hidden],.title-notice[hidden]{display:none;}
+.title-notice{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:.55rem;max-width:min(33rem,88vw);padding:.52rem .7rem;border:1px solid rgba(255,214,107,.4);border-left:3px solid var(--gold);border-radius:3px;background:rgba(255,214,107,.07);color:var(--ink);font:inherit;font-size:.65rem;line-height:1.6;text-align:left;}
+.title-notice:hover{background:rgba(255,214,107,.14);border-color:var(--gold);}
+.notice-tag{display:inline-block;flex:none;color:var(--gold);font-size:.6rem;letter-spacing:.05em;}
+.title-notice-arrow{margin-left:auto;color:var(--gold);}
+#notices{display:none;position:fixed;inset:0;z-index:102;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) max(1rem,env(safe-area-inset-right,0px)) max(1rem,env(safe-area-inset-bottom,0px)) max(1rem,env(safe-area-inset-left,0px));background:rgba(2,3,8,.84);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);}
+#notices.open{display:flex;}
+#notices [hidden]{display:none;}
+.notice-dialog{width:min(680px,100%);max-height:calc(100vh - 2rem);max-height:calc(100dvh - 2rem);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,214,107,.5);border-radius:8px;background:linear-gradient(180deg,rgba(16,18,30,.99),rgba(3,5,12,.99));box-shadow:0 20px 54px rgba(0,0,0,.58),0 0 28px rgba(255,214,107,.08);}
+.notice-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1rem .75rem;border-bottom:1px solid rgba(255,214,107,.18);}
+.notice-head h2{margin:0;color:var(--gold);font-size:1rem;font-weight:400;letter-spacing:.08em;}
+.notice-head h2 small{display:block;margin-top:.25rem;color:var(--dim);font-size:.56rem;letter-spacing:.2em;}
+.notice-close{flex:none;min-width:40px;min-height:40px;border:1px solid rgba(234,240,255,.2);border-radius:3px;background:transparent;color:var(--ink);font:inherit;font-size:1.2rem;cursor:pointer;}
+.notice-close:hover{border-color:var(--gold);color:var(--gold);}
+.notice-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-color:rgba(255,214,107,.35) transparent;}
+.notice-tools{display:flex;align-items:center;gap:.4rem;padding:.75rem 1rem;border-bottom:1px solid rgba(234,240,255,.1);}
+.notice-filter,.notice-back{min-height:36px;padding:.4rem .72rem;border:1px solid rgba(234,240,255,.18);border-radius:3px;background:transparent;color:var(--dim);font:inherit;font-size:.68rem;cursor:pointer;}
+.notice-filter[aria-pressed="true"]{border-color:var(--gold);background:rgba(255,214,107,.1);color:var(--gold);}
+.notice-count{margin-left:auto;color:var(--dim);font-size:.62rem;}
+.notice-list{list-style:none;padding:0 1rem 1rem;}
+.notice-item{display:block;width:100%;padding:1rem .1rem;border:0;border-bottom:1px solid rgba(234,240,255,.12);background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer;}
+.notice-item:hover{background:rgba(255,214,107,.045);}
+.notice-item-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;font-size:.62rem;color:var(--dim);}
+.notice-readstate{margin-left:auto;color:var(--dim);font-size:.6rem;}
+.notice-readstate.unread{color:var(--cyan);}
+.notice-item-title{display:block;font-size:.82rem;line-height:1.7;}
+.notice-item-summary{display:block;margin-top:.35rem;color:var(--dim);font-size:.68rem;line-height:1.75;}
+.notice-empty{padding:2.3rem 1rem;text-align:center;color:var(--dim);font-size:.74rem;}
+.notice-detail{padding:.8rem 1rem 1.1rem;}
+.notice-detail[hidden],#noticelistview[hidden]{display:none;}
+.notice-back{margin-bottom:.85rem;color:var(--ink);}
+.notice-detail h3{margin:.45rem 0 .8rem;font-family:"Reggae One",sans-serif;font-size:clamp(1rem,3.8vw,1.28rem);font-weight:400;line-height:1.6;overflow-wrap:anywhere;}
+.notice-detail p{margin:.7rem 0;color:var(--ink);font-size:.76rem;line-height:1.95;overflow-wrap:anywhere;}
+.notice-detail .notice-warning{padding:.8rem .9rem;border-left:3px solid var(--gold);background:rgba(255,214,107,.07);color:var(--gold);}
+.notice-steps{display:grid;gap:.65rem;margin:1rem 0;padding:1rem 1rem 1rem 2.3rem;border:1px solid rgba(60,240,255,.22);border-radius:4px;color:var(--ink);font-size:.74rem;line-height:1.9;}
+.notice-steps li::marker{color:var(--cyan);}
+.notice-detail .notice-aside{padding-top:.8rem;border-top:1px solid rgba(234,240,255,.12);color:var(--dim);font-size:.68rem;}
+.notice-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;width:100%;margin:.7rem 0 .1rem;padding:.6rem 1rem;border:1px solid var(--cyan);border-radius:3px;background:rgba(60,240,255,.08);color:var(--cyan);font:inherit;font-size:.78rem;cursor:pointer;}
+.notice-action:hover{background:var(--cyan);color:var(--void);}
+.notice-trigger:focus-visible,.title-notice:focus-visible,#notices button:focus-visible,#notices [tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
+@media (max-width:560px){
+  .mtab{flex-basis:64px;font-size:.7rem;letter-spacing:0;}
+  .notice-head{padding:.7rem .8rem;}
+  .notice-tools{padding:.65rem .8rem;}
+  .notice-list{padding:0 .8rem .8rem;}
+  .notice-detail{padding:.65rem .8rem .9rem;}
+  .title-notice{font-size:.61rem;}
+}
+@media (max-height:600px){body.state-title .title{padding-top:1rem;padding-bottom:2rem;}.title-actions{gap:.4rem;}.title-copy{font-size:.65rem;}.logo{font-size:clamp(2rem,7vw,4rem);}}
 #savevault{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;padding:1rem;background:rgba(2,3,8,.8);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);}
 #savevault.open{display:flex;}
 .savevault-dialog{width:min(480px,100%);max-height:calc(100vh - 2rem);overflow:auto;padding:1rem;border:1px solid rgba(60,240,255,.48);border-radius:8px;background:linear-gradient(180deg,rgba(12,16,29,.98),rgba(3,5,12,.98));box-shadow:0 20px 54px rgba(0,0,0,.58),0 0 28px rgba(60,240,255,.12);font-family:"DotGothic16",monospace;}
@@ -557,10 +610,32 @@ body.state-catchup #catchup{display:flex;}
     <div class="title-utility">
       <button class="title-save" id="opengameguide" type="button">ゲーム説明</button>
       <button class="title-save" id="opensavevault" type="button">セーブデータ</button>
+      <button class="title-save notice-trigger" id="opennotices" type="button" aria-haspopup="dialog" aria-controls="notices"><span>お知らせ</span><span class="notice-badge" data-notice-badge aria-hidden="true" hidden></span></button>
     </div>
+    <button class="title-notice" id="migrationnotice" type="button" aria-haspopup="dialog" aria-controls="notices" hidden><span class="notice-tag">重要</span><span>Web版の移行前に、セーブのバックアップをお願いします</span><span class="title-notice-arrow" aria-hidden="true">›</span></button>
   </div>
 </main>
 <div class="hint" aria-hidden="true">DRAG TO ORBIT</div>
+
+<div id="notices" aria-hidden="true">
+  <div class="notice-dialog" role="dialog" aria-modal="true" aria-labelledby="noticestitle" tabindex="-1">
+    <div class="notice-head"><h2 id="noticestitle">お知らせ<small>FIREWORKS ／ MESSAGES</small></h2><button class="notice-close" id="closenotices" type="button" aria-label="お知らせを閉じる">×</button></div>
+    <div class="notice-scroll" id="noticescroll">
+      <div id="noticelistview">
+        <div class="notice-tools" aria-label="お知らせの絞り込み"><button class="notice-filter" type="button" data-notice-filter="all" aria-pressed="true">すべて</button><button class="notice-filter" type="button" data-notice-filter="unread" aria-pressed="false">未読</button><span class="notice-count" id="noticecount" aria-live="polite"></span></div>
+        <ul class="notice-list" id="noticelist" aria-label="お知らせ一覧"></ul>
+        <p class="notice-empty" id="noticeempty" hidden>未読のお知らせはありません。</p>
+      </div>
+      <article class="notice-detail" id="noticedetail" aria-labelledby="noticedetailtitle" hidden>
+        <button class="notice-back" id="noticeback" type="button">‹ 一覧に戻る</button>
+        <div class="notice-item-meta"><time id="noticedate"></time><span class="notice-tag" id="noticeimportance">重要</span></div>
+        <h3 id="noticedetailtitle" tabindex="-1"></h3>
+        <div id="noticebody"></div>
+        <button class="notice-action" id="noticebackup" type="button">セーブデータを開く ／ バックアップ</button>
+      </article>
+    </div>
+  </div>
+</div>
 
 <div id="savevault" aria-hidden="true">
   <div class="savevault-dialog" role="dialog" aria-modal="true" aria-labelledby="savevaulttitle">
@@ -814,6 +889,7 @@ body.state-catchup #catchup{display:flex;}
   <div id="modlist"></div>
 </div>
 <nav id="modebar">
+  <button class="mtab notice-trigger" id="mode-notices" type="button" aria-haspopup="dialog" aria-controls="notices"><span>お知らせ</span><span class="notice-badge" data-notice-badge aria-hidden="true" hidden></span></button>
   <button class="mtab" id="mode-combat" type="button">戦闘</button>
   <button class="mtab on" id="mode-base" type="button">強化</button>
   <button class="mtab" id="mode-skill" type="button">スキル</button>
@@ -4509,9 +4585,136 @@ async function shareOrDownloadBackup(envelope){
   const url=URL.createObjectURL(file), link=document.createElement('a'); link.href=url; link.download=file.name; document.body.appendChild(link); link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   return true;
 }
+/* ===== 運営のお知らせ：本文の改訂で再び未読にできる独立した既読記録 ===== */
+const NOTICE_READ_KEY='fw.notices.read.v1';
+// 新しい案内はここへ追加。本文を更新した場合は revision を増やす。
+const GAME_NOTICES=[{
+  id:'web-gitlab-migration', revision:1, date:'2026-10-12', important:true,
+  title:'Web版の移行とセーブデータ保護のお願い',
+  summary:'公開URLが変わると、新しいサイトでは初期状態になります。移行前にバックアップを保存してください。',
+  body:[
+    {type:'paragraph',text:'Web版の公開先をGitLabへ移行する予定です。公開URLが変わると、現在のセーブデータは自動で引き継がれず、新しいURLでは初期状態になります。'},
+    {type:'warning',text:'バックアップを取らずに旧サイトの公開が終了すると、これまでの進行を新しいサイトで復元できなくなるおそれがあります。移行前に、必ずバックアップを保存してください。'},
+    {type:'steps',items:[
+      '旧サイトの「セーブデータ」を開き、12文字以上のパスフレーズを設定して「暗号化して書き出す」からバックアップファイルを保存します。',
+      'バックアップファイルとパスフレーズを保管してください。パスフレーズを失うと復元できません。',
+      '新しいサイトの「セーブデータ」でファイルを選び、同じパスフレーズを入力して「復元する」を押します。'
+    ]},
+    {type:'paragraph',text:'移行日時と新しい公開URLは、決まり次第このお知らせ欄で案内します。'},
+    {type:'aside',text:'対象はWeb版（ブラウザ・ホーム画面に追加したPWA）です。iOS／Androidのインストール済みアプリ内のセーブデータは、今回のWeb公開先の移行では初期化されません。'}
+  ], action:'savevault'
+}];
+function noticeReadId(notice){ return notice.id+'@'+notice.revision; }
+function loadNoticeReadIds(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(NOTICE_READ_KEY)||'null');
+    const known=new Set(GAME_NOTICES.map(noticeReadId));
+    return new Set(saved&&saved.version===1&&Array.isArray(saved.read)?saved.read.filter(id=>typeof id==='string'&&known.has(id)):[]);
+  }catch(e){ return new Set(); }
+}
+let noticeReadIds=loadNoticeReadIds(), noticeFilter='all', lastNoticeId=null;
+let accessibleModal=null;
+function modalFocusable(overlay){ return [...overlay.querySelectorAll('button,input,select,textarea,a[href],[tabindex="0"]')].filter(el=>!el.disabled&&!el.hidden&&el.getClientRects().length>0); }
+function beginModalFocus(overlay,initialFocus,returnFocus=document.activeElement){
+  const inertSiblings=[...document.body.children].filter(el=>el!==overlay).map(el=>({el,inert:el.inert}));
+  accessibleModal={overlay,returnFocus,inertSiblings};
+  for(const entry of inertSiblings) entry.el.inert=true;
+  (initialFocus||modalFocusable(overlay)[0]||overlay.querySelector('[role="dialog"]')).focus({preventScroll:true});
+}
+function endModalFocus(overlay,restoreFocus=true){
+  if(!accessibleModal||accessibleModal.overlay!==overlay) return;
+  const session=accessibleModal; accessibleModal=null;
+  for(const entry of session.inertSiblings) entry.el.inert=entry.inert;
+  if(restoreFocus){
+    const target=[session.returnFocus,$('mode-notices'),$('opennotices'),$('tohome')].find(el=>el?.isConnected&&!el.inert&&el.getClientRects().length);
+    if(target) target.focus({preventScroll:true});
+  }
+}
+function isNativeNoticeRuntime(){
+  try{ const platform=window.Capacitor?.getPlatform?.(); return platform==='ios'||platform==='android'||window.Capacitor?.isNativePlatform?.()===true; }
+  catch(e){ return false; }
+}
+function updateNoticeBadges(){
+  const unread=GAME_NOTICES.filter(notice=>!noticeReadIds.has(noticeReadId(notice))).length;
+  document.querySelectorAll('[data-notice-badge]').forEach(badge=>{ badge.hidden=unread===0; badge.textContent=String(unread); });
+  for(const id of ['opennotices','mode-notices']) $(id).setAttribute('aria-label','お知らせ'+(unread?'、未読'+unread+'件':''));
+  $('migrationnotice').hidden=isNativeNoticeRuntime()||!GAME_NOTICES.some(notice=>notice.id==='web-gitlab-migration');
+  $('noticecount').textContent='未読 '+unread+'件';
+}
+function markNoticeRead(notice){
+  noticeReadIds.add(noticeReadId(notice));
+  try{ localStorage.setItem(NOTICE_READ_KEY,JSON.stringify({version:1,read:[...noticeReadIds]})); }catch(e){}
+  updateNoticeBadges();
+}
+function renderNoticeList(){
+  const list=$('noticelist'); list.replaceChildren();
+  const messages=GAME_NOTICES.filter(notice=>noticeFilter!=='unread'||!noticeReadIds.has(noticeReadId(notice))).slice().sort((a,b)=>Number(b.important)-Number(a.important)||b.date.localeCompare(a.date));
+  for(const notice of messages){
+    const unread=!noticeReadIds.has(noticeReadId(notice));
+    const item=document.createElement('li'), button=document.createElement('button');
+    button.type='button'; button.className='notice-item'; button.dataset.noticeId=notice.id;
+    button.setAttribute('aria-label',notice.title+'、'+(notice.important?'重要、':'')+(unread?'未読':'既読')+'、'+notice.date);
+    const metaLine=document.createElement('span'); metaLine.className='notice-item-meta';
+    const date=document.createElement('time'); date.dateTime=notice.date; date.textContent=notice.date.replaceAll('-','.'); metaLine.append(date);
+    if(notice.important){ const tag=document.createElement('span'); tag.className='notice-tag'; tag.textContent='重要'; metaLine.append(tag); }
+    const readstate=document.createElement('span'); readstate.className='notice-readstate'+(unread?' unread':''); readstate.textContent=unread?'● 未読':'既読'; metaLine.append(readstate);
+    const title=document.createElement('span'); title.className='notice-item-title'; title.textContent=notice.title;
+    const summary=document.createElement('span'); summary.className='notice-item-summary'; summary.textContent=notice.summary;
+    button.append(metaLine,title,summary); button.addEventListener('click',()=>showNoticeDetail(notice.id)); item.append(button); list.append(item);
+  }
+  document.querySelectorAll('[data-notice-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.noticeFilter===noticeFilter)));
+  $('noticeempty').hidden=messages.length>0;
+  $('noticeempty').textContent=noticeFilter==='unread'?'未読のお知らせはありません。':'お知らせはありません。';
+}
+function showNoticeDetail(id){
+  const notice=GAME_NOTICES.find(message=>message.id===id); if(!notice) return;
+  lastNoticeId=id;
+  $('noticelistview').hidden=true; $('noticedetail').hidden=false;
+  $('noticedetailtitle').textContent=notice.title;
+  $('noticedate').dateTime=notice.date; $('noticedate').textContent=notice.date.replaceAll('-','.');
+  $('noticeimportance').hidden=!notice.important;
+  const body=$('noticebody'); body.replaceChildren();
+  for(const block of notice.body){
+    if(block.type==='steps'){
+      const steps=document.createElement('ol'); steps.className='notice-steps'; steps.setAttribute('aria-label','セーブデータを引き継ぐ手順');
+      for(const text of block.items){ const step=document.createElement('li'); step.textContent=text; steps.append(step); } body.append(steps);
+    }else{
+      const paragraph=document.createElement('p'); paragraph.textContent=block.text;
+      if(block.type==='warning') paragraph.className='notice-warning';
+      if(block.type==='aside') paragraph.className='notice-aside';
+      body.append(paragraph);
+    }
+  }
+  $('noticebackup').hidden=notice.action!=='savevault';
+  $('noticescroll').scrollTop=0;
+  markNoticeRead(notice);
+  $('noticedetailtitle').focus({preventScroll:true});
+}
+function showNoticeList(restoreItemFocus=false){
+  $('noticedetail').hidden=true; $('noticelistview').hidden=false;
+  renderNoticeList(); $('noticescroll').scrollTop=0;
+  if(restoreItemFocus){ const item=[...$('noticelist').querySelectorAll('button')].find(button=>button.dataset.noticeId===lastNoticeId); (item||document.querySelector('[data-notice-filter="'+noticeFilter+'"]')).focus({preventScroll:true}); }
+}
+function openNotices(id=null){
+  if($('notices').classList.contains('open')) return;
+  const origin=document.activeElement; noticeFilter='all';
+  $('notices').classList.add('open'); $('notices').setAttribute('aria-hidden','false');
+  showNoticeList(); beginModalFocus($('notices'),$('closenotices'),origin);
+  if(typeof id==='string') showNoticeDetail(id);
+}
+function closeNotices(restoreFocus=true){
+  $('notices').classList.remove('open'); $('notices').setAttribute('aria-hidden','true');
+  endModalFocus($('notices'),restoreFocus);
+}
 function saveVaultStatus(message){ const el=$('savevaultstatus'); if(el) el.textContent=message||''; }
-function openSaveVault(){ $('savevault').classList.add('open'); $('savevault').setAttribute('aria-hidden','false'); saveVaultStatus('端末内の進行を、暗号化したバックアップとして保存できます。'); }
-function closeSaveVault(){ $('savevault').classList.remove('open'); $('savevault').setAttribute('aria-hidden','true'); }
+function openSaveVault(returnFocus){
+  if($('savevault').classList.contains('open')) return;
+  const origin=returnFocus instanceof HTMLElement?returnFocus:document.activeElement;
+  $('savevault').classList.add('open'); $('savevault').setAttribute('aria-hidden','false');
+  saveVaultStatus('端末内の進行を、暗号化したバックアップとして保存できます。');
+  beginModalFocus($('savevault'),$('saveexportpass'),origin);
+}
+function closeSaveVault(){ $('savevault').classList.remove('open'); $('savevault').setAttribute('aria-hidden','true'); endModalFocus($('savevault')); }
 async function exportEncryptedBackup(){
   const pass=$('saveexportpass').value, confirmPass=$('saveexportconfirm').value;
   if(pass.length<12){ saveVaultStatus('パスフレーズは12文字以上にしてください。'); return; }
@@ -4676,6 +4879,36 @@ function startGame(opts){
   controls.autoRotate=false; controls.target.copy(CORE); saveRun(); }
 // セル出撃：そのセルの手続きフィールドでランを開始（地図UIから呼ぶ）
 function deployFromCell(cellId){ if(!cellId) cellId=GeoCell.latLngToCell(VENUE.lat,VENUE.lng); const ts=Date.now(); const lng=GeoCell.cellToLatLng(cellId)[1]; currentField=fieldFromCell(cellId, todBucketAt(ts,lng), ts); startGame({cellId, deployTs:ts, runSeed:0}); }
+$('opennotices').addEventListener('click',()=>openNotices());
+$('mode-notices').addEventListener('click',()=>openNotices());
+$('migrationnotice').addEventListener('click',()=>openNotices('web-gitlab-migration'));
+$('closenotices').addEventListener('click',()=>closeNotices());
+$('notices').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeNotices(); });
+$('noticeback').addEventListener('click',()=>showNoticeList(true));
+document.querySelectorAll('[data-notice-filter]').forEach(button=>button.addEventListener('click',()=>{ noticeFilter=button.dataset.noticeFilter; renderNoticeList(); }));
+$('noticebackup').addEventListener('click',()=>{ const origin=accessibleModal?.returnFocus; closeNotices(false); openSaveVault(origin); });
+document.addEventListener('keydown',e=>{
+  if(!accessibleModal) return;
+  // 下の地図操作へ矢印キーが届かないよう、モーダル内のキー操作を保つ。
+  e.stopPropagation();
+  if(e.key==='Escape'){ e.preventDefault(); if(accessibleModal.overlay===$('notices')) closeNotices(); else closeSaveVault(); return; }
+  if(e.key!=='Tab') return;
+  const focusable=modalFocusable(accessibleModal.overlay), first=focusable[0], last=focusable[focusable.length-1];
+  if(!first){ e.preventDefault(); accessibleModal.overlay.querySelector('[role="dialog"]').focus(); return; }
+  if(!focusable.includes(document.activeElement)){ e.preventDefault(); (e.shiftKey?last:first).focus(); }
+  else if(e.shiftKey&&document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey&&document.activeElement===last){ e.preventDefault(); first.focus(); }
+});
+document.addEventListener('focusin',e=>{ if(accessibleModal&&!accessibleModal.overlay.contains(e.target)) (modalFocusable(accessibleModal.overlay)[0]||accessibleModal.overlay.querySelector('[role="dialog"]')).focus({preventScroll:true}); });
+window.addEventListener('storage',e=>{
+  if(e.key!==NOTICE_READ_KEY&&e.key!==null) return;
+  noticeReadIds=loadNoticeReadIds(); updateNoticeBadges();
+  if($('notices').classList.contains('open')&&!$('noticelistview').hidden){
+    const focusedId=document.activeElement?.dataset?.noticeId; renderNoticeList();
+    if(focusedId){ const button=[...$('noticelist').querySelectorAll('button')].find(item=>item.dataset.noticeId===focusedId); (button||$('closenotices')).focus(); }
+  }
+});
+updateNoticeBadges();
 $('opengameguide').addEventListener('click', openGameGuide);
 $('closegameguide').addEventListener('click', closeGameGuide);
 $('gameguide').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeGameGuide(); });
