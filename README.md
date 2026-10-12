@@ -2,8 +2,13 @@
 
 現実の場所を資源フィールドに変える、位置情報 × 放置タワーディフェンス。
 
-- **Web版**: https://kaedenari-mikami.github.io/fireworks/
+ソース管理・更新・Web公開は[GitLab](https://gitlab.com/formless-group1/fireworks)へ移行しました。GitLabのソースは非公開です。このGitHubリポジトリと旧Web版は、移行前のセーブをバックアップできるよう維持しています。旧Web版の公開終了日は未定です。
+
+- **Web版**: https://fireworks-377c2f.gitlab.io/
+- **旧Web版（セーブのバックアップ用）**: https://kaedenari-mikami.github.io/fireworks/
 - **iPhone / iPad版**: https://apps.apple.com/jp/app/fireworks-sparking-defense/id6789903323
+
+旧サイトのセーブは新サイトに自動では引き継がれません。旧サイトの「セーブデータ」から暗号化バックアップを書き出し、新サイトで復元してください。復元すると、新サイトの現在のセーブはバックアップの内容で置き換わります。移行の案内はゲーム内の「お知らせ」でも読めます。
 
 ## 遊び方
 
