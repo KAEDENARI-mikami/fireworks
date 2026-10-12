@@ -36,7 +36,7 @@ iOS / Androidアプリの端末内保存はWeb公開ドメインとは別です�
 
 1. 認証済みGitLabアカウントの管理可能なnamespaceに空のプロジェクトを作成する。既存のプロジェクトを上書きしない。
 2. 作業中の変更を確認し、既存のAndroidアイコン変更と未追跡の`ios/`ソースを含む必要なファイルをGit管理へ取り込む。未追跡の仕様書は内容を確認して扱いを決める。`output/`配下のIPA・archive・DerivedData・シミュレータ生成物、秘密鍵、ローカル設定を含めない。
-3. 移行先へGitの履歴・必要なブランチ・タグを移送する。履歴を書き直さず、移送前後のcommit SHAとタグを照合する。
+3. 移行先へGitの履歴・必要なブランチ・タグを移送する。履歴を書き直さず、移送前後のcommit SHAとタグを照合する。公開GitHubリポジトリから移す場合は、移行変更を含むブランチも公開してからGitLabの「Repository by URL」でインポートできる。インポート後は移行ブランチの内容をデフォルトブランチへ反映する。[Git URLによる移行の公式資料](https://docs.gitlab.com/user/import/third_party_systems/repo_by_url/)
 4. 移行先のデフォルトブランチ、Pages公開範囲、Runnerが利用可能なことを確認する。
 5. GitLabのCI Lintと実際のpipelineを確認し、Pagesの初回公開を確認する。
 6. 確認後に普段のpush先をGitLabへ変更する。旧GitHubのURLと履歴は切り替え・復元のために記録しておく。
@@ -83,5 +83,6 @@ GitHub Pagesのワークフローは、お知らせを旧サイトへ配信す�
 - お知らせからセーブ画面へ移動し、暗号化バックアップを書き出し、異なるローカルオリジンで資源・通貨を復元するテストに成功。
 - ネイティブ実行を模擬した環境でWeb向けのタイトル告知を非表示にし、不正な既読記録からもお知らせを開けることを確認。
 - 現行GitHub Pagesへお知らせを公開済み。公開コミットは`896389e274078b4cfc446f4901460d1d08113119`、[公開ジョブ](https://github.com/KAEDENARI-mikami/fireworks/actions/runs/38197829628)は成功。[現行サイト](https://kaedenari-mikami.github.io/fireworks/)でお知らせの閲覧とバックアップ画面への導線を確認。
-- GitLabはメール認証待ち。移行先プロジェクト・Pages URLは未作成のため、GitLab上のCI Lint・pipeline・Pages公開、実機でのGPS・広告・PWA再登録は未検証。
+- GitLabのメール認証とログインは完了。初回プロフィール設定の完了待ち。移行先プロジェクト・Pages URLは未作成のため、GitLab上のCI Lint・pipeline・Pages公開、実機でのGPS・広告・PWA再登録は未検証。
 - ローカル移行ブランチにはCI・移行案内と既存のiOS / Androidソースを記録済み。新URL・移行日時の告知と旧サイト終了日は、公開先を検証してから確定する。
+- 移行対象のネイティブ追加・変更33ファイルを確認し、秘密鍵・証明書本体・非公開トークン等の機密情報が含まれていないことを確認。Git履歴の接続性も検証済み。
