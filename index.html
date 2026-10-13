@@ -652,7 +652,8 @@ body.state-catchup #catchup{display:flex;}
     </section>
     <section class="savevault-section">
       <h3>暗号化バックアップを復元</h3>
-      <input id="savefile" type="file" accept=".fwsave,application/json" hidden>
+      <!-- iOSで.fwsaveを選択不能にしない。サイズ・形式・暗号化の検証は復元時に行う。 -->
+      <input id="savefile" type="file" hidden>
       <label>バックアップファイル<input id="savefilename" type="text" readonly placeholder="ファイルを選択"></label>
       <label>パスフレーズ<input id="saveimportpass" type="password" autocomplete="current-password" placeholder="書き出し時のパスフレーズ"></label>
       <div class="savevault-actions"><button id="saveselectfile" type="button">ファイルを選択</button><button id="saveimport" type="button">復元する</button></div>
